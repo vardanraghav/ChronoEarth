@@ -2,9 +2,22 @@
 
 import { useEffect, useRef, useState } from 'react';
 import * as Cesium from 'cesium';
-import { Viewer, Scene, Entity, Polyline } from 'resium';
+import { Viewer, Scene, Entity, Polyline, ImageryLayer, useCesium } from 'resium';
 import { citiesRawData, CityData } from '../data/citiesData';
 import "cesium/Build/Cesium/Widgets/widgets.css";
+
+// Helper component to configure the Cesium Viewer from inside its React Context
+function ViewerConfigurator({ onReady }: { onReady: (viewer: any) => void }) {
+  const { viewer } = useCesium();
+
+  useEffect(() => {
+    if (viewer) {
+      onReady(viewer);
+    }
+  }, [viewer, onReady]);
+
+  return null;
+}
 
 interface CesiumGlobeContentProps {
   activeYear: number;
@@ -54,7 +67,6 @@ const categoryThemes: Record<
   },
 };
 
-// Connections array representing the inter-city energy hypergrid links
 const cityConnections = [
   { start: 'Mumbai', end: 'Delhi' },
   { start: 'Bangalore', end: 'Hyderabad' },
@@ -74,20 +86,17 @@ const cityConnections = [
   { start: 'Riyadh', end: 'Dubai' },
 ];
 
-// Helper to look up coordinates from city data list
 const getCityCoords = (cityName: string) => {
   const city = citiesRawData.find(c => c.name === cityName);
   return city ? { lat: city.lat, lon: city.lon } : null;
 };
 
-// Ocean Temperature / Climate warming hotspots
 const climateZones = [
   { name: 'Pacific Ocean Thermal Center', lat: 0.0, lon: -140.0 },
   { name: 'Atlantic Ocean Thermal Center', lat: 20.0, lon: -40.0 },
   { name: 'Indian Ocean Thermal Center', lat: -10.0, lon: 75.0 },
 ];
 
-// Major industrial AQI pollution centers
 const pollutionZones = [
   { name: 'Delhi Industrial AQI Node', lat: 28.6139, lon: 77.2090 },
   { name: 'Shanghai Port Silt Node', lat: 31.2304, lon: 121.4737 },
@@ -97,7 +106,6 @@ const pollutionZones = [
   { name: 'Dubai Desal Outflow Center', lat: 25.2048, lon: 55.2708 },
 ];
 
-// High-tech AI server grid clusters
 const aiZones = [
   { name: 'Bangalore Bio-Computing Grid', lat: 12.9716, lon: 77.5946 },
   { name: 'Silicon Valley/NY Cyber Core', lat: 40.7128, lon: -74.0060 },
@@ -118,10 +126,37 @@ export default function CesiumGlobeContent({
   const [isInteracting, setIsInteracting] = useState(false);
   const [hoveredCity, setHoveredCity] = useState<CityData | null>(null);
   const [hoverPos, setHoverPos] = useState<{ x: number; y: number } | null>(null);
+  
+  // Custom states to handle the WebGL loading progression
+  const [isGlobeReady, setIsGlobeReady] = useState(false);
+  const [imageryProvider, setImageryProvider] = useState<any>(null);
 
   const theme = categoryThemes[activeCategory] || categoryThemes['Ocean Monitoring'];
 
-  // Global overlay ticker
+  // Ref to store cleanup function for tile loading progress listeners
+  const tileLoadCleanupRef = useRef<(() => void) | null>(null);
+
+  // Clean up tile loader listener on unmount
+  useEffect(() => {
+    return () => {
+      if (tileLoadCleanupRef.current) {
+        tileLoadCleanupRef.current();
+      }
+    };
+  }, []);
+
+  // Initialize CartoDB Dark Matter Imagery Provider
+  useEffect(() => {
+    const provider = new Cesium.UrlTemplateImageryProvider({
+      url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+      subdomains: ['a', 'b', 'c', 'd'],
+      minimumLevel: 0,
+      maximumLevel: 18,
+    });
+    setImageryProvider(provider);
+  }, []);
+
+  // Satellite and radar animation loop
   useEffect(() => {
     let animationId: number;
     const start = Date.now();
@@ -219,7 +254,7 @@ export default function CesiumGlobeContent({
 
   // Handle continuous slow rotation when user is NOT dragging the globe
   useEffect(() => {
-    if (isInteracting || activeCity) return;
+    if (isInteracting || activeCity || !isGlobeReady) return; // Freeze if loading or interacting
 
     let lastTime = Date.now();
     let frameId: number;
@@ -246,9 +281,83 @@ export default function CesiumGlobeContent({
       clearTimeout(timeout);
       cancelAnimationFrame(frameId);
     };
-  }, [isInteracting, activeCity]);
+  }, [isInteracting, activeCity, isGlobeReady]);
 
-  // Generate satellite orbits
+  // Setup viewer configuration on load: sets coordinates view, overlays, brightness, and fades loading layer
+  const handleViewerReady = (viewer: any) => {
+    // 1. Zoom and tilt camera view immediately to fill viewport (cinematic curvature focus)
+    // We bring the camera closer (7,200,000 meters) and tilt it slightly (-30 degrees) to reduce empty space and emphasize the Earth's curvature.
+    viewer.camera.setView({
+      destination: Cesium.Cartesian3.fromDegrees(38.0, 25.0, 7200000), // Focused closer to center the globe and reduce empty space
+      orientation: {
+        heading: Cesium.Math.toRadians(0),
+        pitch: Cesium.Math.toRadians(-30), // Cinematic angle highlighting curved horizon and space background
+        roll: 0.0,
+      },
+    });
+
+    // 2. Tweak brightness/contrast on our CartoDB Dark Matter imagery to make it vibrant and neon
+    const layer = viewer.imageryLayers.get(0);
+    if (layer) {
+      layer.brightness = 2.2;  // Significantly brighten the base imagery
+      layer.contrast = 1.6;    // Increase contrast for sharp landmasses and glowing city lights
+      layer.saturation = 1.4;  // Saturate colors for high-contrast neon tones
+    }
+
+    // 3. Customize atmospheric glow, lighting defaults, and sky transparency
+    viewer.scene.skyAtmosphere.show = true;
+    viewer.scene.globe.showGroundAtmosphere = true;
+    viewer.scene.globe.enableLighting = true; // Enable lighting so the globe is realistically shaded
+    
+    // Set a transparent background for WebGL to let the CSS stars/auroras show through
+    viewer.scene.backgroundColor = Cesium.Color.TRANSPARENT;
+
+    // Add a custom DirectionalLight to illuminate the Earth cinematically from front-left
+    viewer.scene.light = new Cesium.DirectionalLight({
+      direction: new Cesium.Cartesian3(-0.8, -0.6, -0.6), // Beautiful side/top lighting angle
+      color: Cesium.Color.fromCssColorString('#ffffff'),
+      intensity: 3.8, // Brighter sun lighting
+    });
+
+    // Add glowing blue/indigo ambient color so the night side is clearly visible and has a beautiful sci-fi glow
+    viewer.scene.ambientColor = new Cesium.Color(0.08, 0.14, 0.35, 1.0); // Soft glowing indigo/blue ambient
+
+    // Tweak atmosphere properties for a beautiful futuristic cyan/purple glow matching our theme
+    viewer.scene.globe.atmosphereLightIntensity = 22.0; // Intensely bright atmosphere glow
+    viewer.scene.globe.atmosphereHueShift = 0.58; // Shifts atmosphere colors to futuristic cyan/blue
+    viewer.scene.globe.atmosphereSaturationShift = 0.85; // Highly saturated neon atmosphere
+    viewer.scene.globe.atmosphereBrightnessShift = 0.35; // Brighter atmospheric envelope
+
+    viewer.scene.skyAtmosphere.hueShift = 0.58;
+    viewer.scene.skyAtmosphere.saturationShift = 0.85;
+    viewer.scene.skyAtmosphere.brightnessShift = 0.35;
+
+    // 4. Track tile loading progress to fade out the loader overlay only when imagery is fully rendered
+    let isFullyLoaded = false;
+    const removeTileLoadListener = viewer.scene.globe.tileLoadProgressEvent.addEventListener((queueLength: number) => {
+      if (queueLength === 0 && !isFullyLoaded) {
+        isFullyLoaded = true;
+        setIsGlobeReady(true);
+        removeTileLoadListener();
+      }
+    });
+
+    // Safety fallback: force ready state after 3.5 seconds max to ensure it doesn't hang
+    const safetyTimeout = setTimeout(() => {
+      if (!isFullyLoaded) {
+        isFullyLoaded = true;
+        setIsGlobeReady(true);
+        try { removeTileLoadListener(); } catch(e){}
+      }
+    }, 3500);
+
+    tileLoadCleanupRef.current = () => {
+      clearTimeout(safetyTimeout);
+      try { removeTileLoadListener(); } catch(e){}
+    };
+  };
+
+  // Generate coordinates for high-tech satellite orbit circles
   const generateOrbitPoints = (tiltRad: number, height: number) => {
     const points = [];
     const radius = 6378137 + height;
@@ -271,59 +380,46 @@ export default function CesiumGlobeContent({
     return new Cesium.Cartesian3(x, y, z);
   };
 
-  // Pulse calculations (concentric radar loops)
-  const pulseFactor = (time * 1.2) % 1.0;
-  const pulseRadius = pulseFactor * 320000;
-  const pulseAlpha = 0.65 * (1.0 - pulseFactor);
-
-  // Year Progression logic scaling indicators
-  const yearFactor = (activeYear - 2025) / 25; // 0.0 at 2025, 1.0 at 2050
-
-  // 1. Satellite mesh count and shell opacity
-  const satelliteMeshOpacity = 0.03 + yearFactor * 0.05;
-  const satList = [
+  const orbits = [
     { tilt: 0.4, height: 1400000, speed: 0.08, color: Cesium.Color.fromCssColorString('#00f0ff') },
     { tilt: -0.7, height: 2000000, speed: 0.05, color: Cesium.Color.fromCssColorString('#8b5cf6') },
     { tilt: 1.2, height: 1700000, speed: 0.07, color: Cesium.Color.fromCssColorString('#14b8a6') },
     { tilt: 0.1, height: 2500000, speed: 0.06, color: Cesium.Color.fromCssColorString('#3b82f6') },
     { tilt: -1.1, height: 2200000, speed: 0.09, color: Cesium.Color.fromCssColorString('#00f0ff') },
   ];
-  // Filter active satellite counts by decade progression
-  const activeSats = activeYear <= 2025
-    ? satList.slice(0, 1)
-    : activeYear <= 2030
-      ? satList.slice(0, 2)
-      : activeYear <= 2040
-        ? satList.slice(0, 3)
-        : satList;
 
-  // 2. Climate Change parameters (Reddening oceans and expanding scope)
-  const climateRadius = 1200000 + yearFactor * 1600000; // 1.2M meters up to 2.8M meters
+  const yearFactor = (activeYear - 2025) / 25; // 0.0 to 1.0
+
+  const activeSats = activeYear <= 2025
+    ? orbits.slice(0, 1)
+    : activeYear <= 2030
+      ? orbits.slice(0, 2)
+      : activeYear <= 2040
+        ? orbits.slice(0, 3)
+        : orbits;
+
+  const climateRadius = 1200000 + yearFactor * 1600000;
   const climateColorStr = yearFactor < 0.3
-    ? '#3b82f6' // Blue
+    ? '#3b82f6'
     : yearFactor < 0.6
-      ? '#f97316' // Orange
-      : '#ef4444'; // Hot red
+      ? '#f97316'
+      : '#ef4444';
   const climateColorVal = Cesium.Color.fromCssColorString(climateColorStr).withAlpha(0.08 + yearFactor * 0.17);
 
-  // 3. AQI Pollution parameters (Cleaning up, greening, shrinking)
-  const pollutionRadius = 350000 - yearFactor * 230000; // 350km down to 120km
+  const pollutionRadius = 350000 - yearFactor * 230000;
   const pollutionColorStr = yearFactor > 0.75
-    ? '#10b981' // Clean green
+    ? '#10b981'
     : yearFactor > 0.4
-      ? '#84cc16' // Lime
-      : '#eab308'; // Heavy yellow smog
+      ? '#84cc16'
+      : '#eab308';
   const pollutionColorVal = Cesium.Color.fromCssColorString(pollutionColorStr).withAlpha(0.24 - yearFactor * 0.14);
 
-  // 4. AI Networks parameters (Vast violet expansions)
-  const aiRadius = 100000 + yearFactor * 900000; // 100km to 1000km
+  const aiRadius = 100000 + yearFactor * 900000;
   const aiColorVal = Cesium.Color.fromCssColorString('#8b5cf6').withAlpha(0.06 + yearFactor * 0.14);
 
-  // 5. Energy hypergrid calculations
   const energyPacketsCount = activeYear <= 2025 ? 1 : activeYear <= 2035 ? 2 : 3;
-  const energyPacketSpeed = 0.05 + yearFactor * 0.10; // travels faster in 2050
-  
-  // Calculate traveling packet locations along vector line segments
+  const energyPacketSpeed = 0.05 + yearFactor * 0.10;
+
   const getLinePulsePos = (start: { lat: number; lon: number }, end: { lat: number; lon: number }, speed: number, offset: number) => {
     const t = ((time * speed) + offset) % 1.0;
     const lat = start.lat + (end.lat - start.lat) * t;
@@ -331,9 +427,14 @@ export default function CesiumGlobeContent({
     return Cesium.Cartesian3.fromDegrees(lon, lat);
   };
 
+  // Radar pulse animation variables around the active selected city
+  const pulseFactor = (time * 1.2) % 1.0;
+  const pulseRadius = pulseFactor * 320000;
+  const pulseAlpha = 0.65 * (1.0 - pulseFactor);
+
   return (
     <div
-      className="absolute inset-0 w-screen h-screen bg-[#060918] z-0 overflow-hidden"
+      className="absolute inset-0 w-screen h-screen bg-transparent z-0 overflow-hidden"
       onMouseDown={() => setIsInteracting(true)}
       onMouseUp={() => setIsInteracting(false)}
       onTouchStart={() => setIsInteracting(true)}
@@ -352,13 +453,22 @@ export default function CesiumGlobeContent({
         infoBox={false}
         selectionIndicator={false}
         fullscreenButton={false}
+        skyBox={false} // Disable default skybox to allow underlying CSS stars and auroras to show through
+        contextOptions={{
+          webgl: {
+            alpha: true, // Enable WebGL transparency blending
+          },
+        }}
         creditContainer={typeof document !== 'undefined' ? document.createElement('div') : undefined}
         style={{ width: '100vw', height: '100vh' }}
       >
-        <Scene
-          skyAtmosphere={new Cesium.SkyAtmosphere()}
-          backgroundColor={Cesium.Color.BLACK}
-        />
+        <ViewerConfigurator onReady={handleViewerReady} />
+
+        {/* Render dark matter imagery provider dynamically on mount */}
+        {imageryProvider && <ImageryLayer imageryProvider={imageryProvider} />}
+
+        {/* Configure scene to be transparent and show ground atmosphere */}
+        <Scene backgroundColor={Cesium.Color.TRANSPARENT} skyAtmosphere={new Cesium.SkyAtmosphere()} />
 
         {/* 16 Futuristic Cities Rendered as Point Nodes */}
         {citiesRawData.map((city) => {
@@ -400,11 +510,7 @@ export default function CesiumGlobeContent({
           />
         )}
 
-        {/* ==============================================
-            PLANETARY SENSOR OVERLAYS (WebGL Layers)
-            ============================================== */}
-
-        {/* 1. Climate Heatmap (Ocean temperature indices) */}
+        {/* Climate Heatmap (Ocean temperature indices) */}
         {overlays.climate &&
           climateZones.map((zone, i) => (
             <Entity
@@ -414,12 +520,12 @@ export default function CesiumGlobeContent({
                 semiMajorAxis: climateRadius,
                 semiMinorAxis: climateRadius,
                 material: climateColorVal,
-                height: 5000, // floating slightly above sea level
+                height: 5000,
               }}
             />
           ))}
 
-        {/* 2. AQI Air Pollution Nodes */}
+        {/* AQI Air Pollution Nodes */}
         {overlays.pollution &&
           pollutionZones.map((zone, i) => (
             <Entity
@@ -434,7 +540,7 @@ export default function CesiumGlobeContent({
             />
           ))}
 
-        {/* 3. AI Infrastructure Zones (Purple net clusters) */}
+        {/* AI Infrastructure Zones */}
         {overlays.ai &&
           aiZones.map((zone, i) => (
             <Entity
@@ -449,14 +555,13 @@ export default function CesiumGlobeContent({
             />
           ))}
 
-        {/* 4. Inter-City Energy Hypergrids */}
+        {/* Inter-City Energy Hypergrids */}
         {overlays.energy &&
           cityConnections.map((conn, i) => {
             const c1 = getCityCoords(conn.start);
             const c2 = getCityCoords(conn.end);
             if (!c1 || !c2) return null;
 
-            // Generate traveling energy packages
             const packets = [];
             for (let k = 0; k < energyPacketsCount; k++) {
               const offset = k / energyPacketsCount;
@@ -477,7 +582,6 @@ export default function CesiumGlobeContent({
 
             return (
               <span key={`group-${i}`}>
-                {/* Static grid link */}
                 <Polyline
                   positions={[
                     Cesium.Cartesian3.fromDegrees(c1.lon, c1.lat),
@@ -488,13 +592,12 @@ export default function CesiumGlobeContent({
                     color: theme.cesiumColor.withAlpha(0.12),
                   })}
                 />
-                {/* Moving nodes */}
                 {packets}
               </span>
             );
           })}
 
-        {/* 5. Orbital Satellites & Holographic Satellite Shield */}
+        {/* Orbital Satellites & Holographic Satellite Shield */}
         {activeCategory === 'Satellite Network' || overlays.satellite ? (
           <>
             {activeSats.map((orb, i) => (
@@ -522,30 +625,27 @@ export default function CesiumGlobeContent({
               />
             ))}
 
-            {/* Futuristic spherical shield mapping quantum satcom coverage */}
             {overlays.satellite && (
               <>
-                {/* Inner shell boundary */}
                 <Entity
                   position={Cesium.Cartesian3.ZERO}
                   ellipsoid={{
                     radii: new Cesium.Cartesian3(6378137 + 400000, 6378137 + 400000, 6378137 + 400000),
-                    material: theme.cesiumColor.withAlpha(satelliteMeshOpacity),
+                    material: theme.cesiumColor.withAlpha(0.03 + yearFactor * 0.04),
                     fill: true,
                     outline: true,
-                    outlineColor: theme.cesiumColor.withAlpha(satelliteMeshOpacity * 3),
+                    outlineColor: theme.cesiumColor.withAlpha((0.03 + yearFactor * 0.04) * 3),
                     outlineWidth: 1.0,
                   }}
                 />
-                {/* Outer shell boundary */}
                 <Entity
                   position={Cesium.Cartesian3.ZERO}
                   ellipsoid={{
                     radii: new Cesium.Cartesian3(6378137 + 850000, 6378137 + 850000, 6378137 + 850000),
-                    material: theme.cesiumColor.withAlpha(satelliteMeshOpacity * 0.4),
+                    material: theme.cesiumColor.withAlpha((0.03 + yearFactor * 0.04) * 0.4),
                     fill: true,
                     outline: true,
-                    outlineColor: theme.cesiumColor.withAlpha(satelliteMeshOpacity * 1.5),
+                    outlineColor: theme.cesiumColor.withAlpha((0.03 + yearFactor * 0.04) * 1.5),
                     outlineWidth: 0.5,
                   }}
                 />
@@ -597,6 +697,26 @@ export default function CesiumGlobeContent({
           </div>
         </div>
       )}
+
+      {/* Futuristic Smooth Loader Overlay — fades out only once globe is fully loaded and centered */}
+      <div
+        className={`absolute inset-0 flex flex-col items-center justify-center bg-[#060918] z-50 transition-opacity duration-1000 ease-in-out ${
+          isGlobeReady ? 'opacity-0 pointer-events-none' : 'opacity-100'
+        }`}
+      >
+        <div className="relative w-24 h-24 rounded-full border border-cyan-500/30 flex items-center justify-center animate-pulse">
+          <div
+            className="absolute inset-0 rounded-full border border-dashed border-cyan-400/20 animate-spin"
+            style={{ animationDuration: '8s' }}
+          />
+          <div className="w-16 h-16 rounded-full bg-cyan-950/20 border border-cyan-400/50 flex items-center justify-center">
+            <span className="text-[10px] tracking-widest text-cyan-400 uppercase font-mono">GRID</span>
+          </div>
+        </div>
+        <p className="mt-4 text-xs font-light text-cyan-400/60 uppercase tracking-[0.25em] font-mono">
+          Syncing Planet Telemetry...
+        </p>
+      </div>
     </div>
   );
 }
