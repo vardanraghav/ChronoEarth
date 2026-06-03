@@ -16,68 +16,48 @@ interface CesiumGlobeContentProps {
 
 declare const Cesium: any;
 
-// ─── Category colour palette ───────────────────────────────────────────────
-const categoryThemes: Record<string, { primary: string; glow: string; cesiumColorHex: string }> = {
-  'Ocean Monitoring': {
-    primary: '#00f0ff', glow: 'rgba(0,240,255,0.15)',
-    cesiumColorHex: '#00f0ff',
-  },
-  'Biodiversity': {
-    primary: '#10b981', glow: 'rgba(16,185,129,0.15)',
-    cesiumColorHex: '#10b981',
-  },
-  'Clean Energy': {
-    primary: '#8b5cf6', glow: 'rgba(139,92,246,0.15)',
-    cesiumColorHex: '#8b5cf6',
-  },
-  'Satellite Network': {
-    primary: '#3b82f6', glow: 'rgba(59,130,246,0.15)',
-    cesiumColorHex: '#3b82f6',
-  },
+// ─── Cyberpunk Color Palette ────────────────────────────────────────────────
+const themeColors = {
+  cyan: '#00f0ff',
+  teal: '#14b8a6',
+  violet: '#8b5cf6',
+  white: '#ffffff'
 };
 
-// ─── Static city connections (for Great-Circle/Geodesic Data Highways) ─────
-const cityConnections = [
-  { start: 'New York',  end: 'London'   , alt: 420000 },
-  { start: 'London',    end: 'Berlin'   , alt: 250000 },
-  { start: 'Berlin',    end: 'Moscow'   , alt: 320000 },
-  { start: 'Moscow',    end: 'Shanghai' , alt: 580000 },
-  { start: 'Shanghai',  end: 'Delhi'    , alt: 450000 },
-  { start: 'Delhi',     end: 'Mumbai'   , alt: 250000 },
-  { start: 'Mumbai',    end: 'Dubai'    , alt: 350000 },
-  { start: 'Dubai',     end: 'Riyadh'   , alt: 200000 },
-  { start: 'Dubai',     end: 'London'   , alt: 520000 },
-  { start: 'New York',  end: 'Toronto'  , alt: 180000 },
-  { start: 'Shanghai',  end: 'Moscow'   , alt: 560000 },
-  { start: 'Bangalore', end: 'Hyderabad', alt: 200000 },
-  { start: 'Hyderabad', end: 'Mumbai'   , alt: 200000 },
-  { start: 'Bangalore', end: 'Chennai'  , alt: 180000 },
-  { start: 'Kolkata',   end: 'Delhi'    , alt: 380000 },
-  { start: 'Ahmedabad', end: 'Mumbai'   , alt: 180000 },
-];
+// Hub coordinates for the 9 specified network hubs
+const customHubCoords: Record<string, { lat: number, lon: number }> = {
+  'New York': { lat: 40.7128, lon: -74.0060 },
+  'London': { lat: 51.5074, lon: -0.1278 },
+  'Paris': { lat: 48.8566, lon: 2.3522 },
+  'Dubai': { lat: 25.2048, lon: 55.2708 },
+  'Mumbai': { lat: 19.0760, lon: 72.8777 },
+  'Singapore': { lat: 1.3521, lon: 103.8198 },
+  'Tokyo': { lat: 35.6762, lon: 139.6503 },
+  'Seoul': { lat: 37.5665, lon: 126.9780 },
+  'Sydney': { lat: -33.8688, lon: 151.2093 }
+};
 
-const getCityCoords = (name: string) => {
+const getHubCoords = (name: string) => {
+  if (customHubCoords[name]) return customHubCoords[name];
   const c = citiesRawData.find(x => x.name === name);
   return c ? { lat: c.lat, lon: c.lon } : null;
 };
 
-// Holographic overlay coordinates
-const climateZones  = [
-  { lat:   0.0, lon: -140.0 }, { lat: 20.0, lon: -40.0 }, { lat: -10.0, lon:  75.0 },
-];
-const pollutionZones = [
-  { lat: 28.6139, lon:  77.2090 }, { lat: 31.2304, lon: 121.4737 },
-  { lat: 40.7128, lon: -74.0060 }, { lat: 55.7558, lon:  37.6173 },
-  { lat: 51.5074, lon:  -0.1278 }, { lat: 25.2048, lon:  55.2708 },
-];
-const aiZones = [
-  { lat: 12.9716, lon:  77.5946 }, { lat: 40.7128, lon: -74.0060 },
-  { lat: 31.2304, lon: 121.4737 }, { lat: 51.5074, lon:  -0.1278 },
-  { lat: 25.2048, lon:  55.2708 },
+// Geodesic connections between the exact 9 hubs
+const globalHighways = [
+  { start: 'New York',  end: 'London'   , alt: 420000, color: themeColors.cyan },
+  { start: 'London',    end: 'Paris'    , alt: 120000, color: themeColors.white },
+  { start: 'Paris',     end: 'Dubai'    , alt: 350000, color: themeColors.violet },
+  { start: 'Dubai',     end: 'Mumbai'   , alt: 250000, color: themeColors.teal },
+  { start: 'Mumbai',    end: 'Singapore', alt: 300000, color: themeColors.cyan },
+  { start: 'Singapore', end: 'Sydney'   , alt: 450000, color: themeColors.teal },
+  { start: 'Singapore', end: 'Tokyo'    , alt: 320000, color: themeColors.cyan },
+  { start: 'Tokyo',     end: 'Seoul'    , alt: 150000, color: themeColors.white },
+  { start: 'Tokyo',     end: 'New York' , alt: 650000, color: themeColors.violet },
 ];
 
-// Helper to generate coordinates along a geodesic arc curving above the ellipsoid
-const generateArcPositions = (c1: {lat: number, lon: number}, c2: {lat: number, lon: number}, maxAlt: number) => {
+// Helper to generate positions along a curved geodesic path
+const generateGeodesicArcPoints = (c1: {lat: number, lon: number}, c2: {lat: number, lon: number}, maxAlt: number) => {
   const points = [];
   const count = 30;
   const sRad = Cesium.Cartographic.fromDegrees(c1.lon, c1.lat);
@@ -93,6 +73,20 @@ const generateArcPositions = (c1: {lat: number, lon: number}, c2: {lat: number, 
   return points;
 };
 
+const climateZones  = [
+  { lat:   0.0, lon: -140.0 }, { lat: 20.0, lon: -40.0 }, { lat: -10.0, lon:  75.0 },
+];
+const pollutionZones = [
+  { lat: 28.6139, lon:  77.2090 }, { lat: 31.2304, lon: 121.4737 },
+  { lat: 40.7128, lon: -74.0060 }, { lat: 55.7558, lon:  37.6173 },
+  { lat: 51.5074, lon:  -0.1278 }, { lat: 25.2048, lon:  55.2708 },
+];
+const aiZones = [
+  { lat: 12.9716, lon:  77.5946 }, { lat: 40.7128, lon: -74.0060 },
+  { lat: 31.2304, lon: 121.4737 }, { lat: 51.5074, lon:  -0.1278 },
+  { lat: 25.2048, lon:  55.2708 },
+];
+
 export default function CesiumGlobeContent({
   activeYear, activeCategory, activeCity, setActiveCity, overlays, earthMode,
 }: CesiumGlobeContentProps) {
@@ -104,7 +98,8 @@ export default function CesiumGlobeContent({
   const [hoverPos,      setHoverPos]      = useState<{ x: number; y: number } | null>(null);
   const [isGlobeReady,  setIsGlobeReady]  = useState(false);
 
-  const theme = categoryThemes[activeCategory] || categoryThemes['Ocean Monitoring'];
+  const isCyber = earthMode === 'cyber';
+  const themeColorHex = isCyber ? themeColors.cyan : '#ffffff';
 
   // Animation time counter
   useEffect(() => {
@@ -139,7 +134,7 @@ export default function CesiumGlobeContent({
 
     viewer.scene.backgroundColor = Cesium.Color.TRANSPARENT;
 
-    // Cinematic opening angle — full sphere visible
+    // Cinematic opening angle
     viewer.camera.setView({
       destination: Cesium.Cartesian3.fromDegrees(20.0, 22.0, 18000000),
       orientation: { heading: Cesium.Math.toRadians(0), pitch: Cesium.Math.toRadians(-18), roll: 0.0 },
@@ -165,9 +160,9 @@ export default function CesiumGlobeContent({
         done = true; setIsGlobeReady(true);
         if (removeTileListener) try { removeTileListener(); } catch(e){}
       }
-    }, 4000);
+    }, 4500);
 
-    // Click handlers
+    // Event Handler for clicks and hovers
     const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
     handler.setInputAction((click: any) => {
       const picked = viewer.scene.pick(click.position);
@@ -197,37 +192,30 @@ export default function CesiumGlobeContent({
   }, [setActiveCity]);
 
   // ═══════════════════════════════════════════════════════════════════════════
-  //  Update entities & styles based on props changes
+  //  Update Globe layers, assets, and 3D overlays
   // ═══════════════════════════════════════════════════════════════════════════
   useEffect(() => {
     if (!isGlobeReady || !viewerRef.current) return;
     const viewer = viewerRef.current;
 
-    // Clear previous entities
+    // Reset components
     viewer.entities.removeAll();
     viewer.imageryLayers.removeAll();
 
-    // ── Apply rendering mode styles
-    const cesiumColor = Cesium.Color.fromCssColorString(theme.cesiumColorHex);
-    const isCyber = earthMode === 'cyber';
-
-    // Base imagery: load high-detail satellite photos for realistic and digital-twin looks
+    // ── 1. Realistic Satellite Imagery Base Map (recognizable planet)
     Cesium.createWorldImageryAsync({ style: Cesium.IonWorldImageryStyle.AERIAL })
       .then((provider: any) => {
         if (viewer.isDestroyed()) return;
         const lyr = viewer.imageryLayers.addImageryProvider(provider);
         if (isCyber) {
-          // Cyber 2050: styling to look like a high-tech low-saturation digital twin
-          lyr.brightness = 0.50;
-          lyr.contrast = 1.55;
-          lyr.saturation = 0.10;
-          lyr.hue = 0.56; // shift towards cyan-blue
+          // Cyber 2050: Realistic colors but darkened so telemetry and city lights stand out
+          lyr.brightness = 0.55;
+          lyr.contrast = 1.30;
+          lyr.saturation = 0.85; // Keep natural planet colors recognizable!
         } else {
-          // Realistic: warm natural colours
           lyr.brightness = 1.05;
           lyr.contrast = 1.05;
           lyr.saturation = 1.00;
-          lyr.hue = 0.00;
         }
       })
       .catch(async () => {
@@ -237,26 +225,45 @@ export default function CesiumGlobeContent({
         );
         const lyr = viewer.imageryLayers.addImageryProvider(fb);
         if (isCyber) {
-          lyr.brightness = 0.50; lyr.contrast = 1.55; lyr.saturation = 0.10; lyr.hue = 0.56;
-        } else {
-          lyr.brightness = 1.05; lyr.contrast = 1.05; lyr.saturation = 1.00;
+          lyr.brightness = 0.55; lyr.contrast = 1.30; lyr.saturation = 0.85;
         }
       });
 
-    // Blended Earth at Night (city lights) overlay for Cyber 2050
+    // ── 2. Dynamic Rotating 3D Cloud Ellipsoid (adds depth/parallax)
+    viewer.entities.add({
+      position: Cesium.Cartesian3.ZERO,
+      orientation: new Cesium.CallbackProperty(() => {
+        // Slow rotation around the Z axis
+        const angle = timeRef.current * 0.005;
+        return Cesium.Quaternion.fromAxisAngle(Cesium.Cartesian3.UNIT_Z, angle);
+      }, false),
+      ellipsoid: {
+        radii: new Cesium.Cartesian3(6378137 + 15000, 6378137 + 15000, 6378137 + 15000), // 15km altitude shell
+        material: new Cesium.ImageMaterialProperty({
+          image: 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_clouds_1024.png',
+          transparent: true,
+          color: Cesium.Color.WHITE.withAlpha(isCyber ? 0.28 : 0.40)
+        })
+      }
+    });
+
+    // ── 3. Blended Night Lights (styled to cyberpunk cyan-blue)
     if (isCyber) {
       Cesium.IonImageryProvider.fromAssetId(3812)
         .then((nightProvider: any) => {
           if (viewer.isDestroyed()) return;
           const nightLyr = viewer.imageryLayers.addImageryProvider(nightProvider);
-          nightLyr.alpha = 0.60;
-          nightLyr.brightness = 2.80; // Bright city light connections
+          nightLyr.alpha = 0.70;
+          nightLyr.brightness = 3.20; // Prominent neon city lights
+          nightLyr.contrast = 1.80;
+          nightLyr.hue = 0.55; // Hue-shift yellow/orange lights to cyan-blue!
+          nightLyr.saturation = 1.20;
         })
         .catch(() => {});
     }
 
+    // ── 4. Ambient and Directional Lighting (day/night boundary)
     if (!isCyber) {
-      // Warm realistic lighting
       viewer.scene.light = new Cesium.DirectionalLight({
         direction: new Cesium.Cartesian3(-0.7, -0.5, -0.5),
         color:     Cesium.Color.fromCssColorString('#fff8f0'),
@@ -272,255 +279,71 @@ export default function CesiumGlobeContent({
         viewer.scene.globe.atmosphereSaturationShift = 0.0;
         viewer.scene.globe.atmosphereBrightnessShift = 0.08;
       }
-      if (viewer.scene.skyAtmosphere) {
-        viewer.scene.skyAtmosphere.show = true;
-        viewer.scene.skyAtmosphere.hueShift = 0.0;
-        viewer.scene.skyAtmosphere.saturationShift = 0.0;
-        viewer.scene.skyAtmosphere.brightnessShift = 0.08;
-      }
     } else {
-      // Intense cyan-white directional light for hologram digital-twin highlights
       viewer.scene.light = new Cesium.DirectionalLight({
         direction: new Cesium.Cartesian3(-0.7, -0.5, -0.5),
-        color:     Cesium.Color.fromCssColorString('#80ffef'),
-        intensity: 4.8,
+        color:     Cesium.Color.fromCssColorString('#80f0ff'),
+        intensity: 4.0,
       });
-      // Dark glowing ambient tone
-      viewer.scene.ambientColor = new Cesium.Color(0.04, 0.12, 0.25, 1.0);
+      viewer.scene.ambientColor = new Cesium.Color(0.04, 0.08, 0.16, 1.0);
 
       if (viewer.scene.globe) {
         viewer.scene.globe.showGroundAtmosphere = true;
         viewer.scene.globe.enableLighting       = true;
-        viewer.scene.globe.atmosphereLightIntensity  = 22.0; // Dynamic limb glow
-        viewer.scene.globe.atmosphereHueShift        = 0.53; // Cyan/blue shift
-        viewer.scene.globe.atmosphereSaturationShift = 0.75;
-        viewer.scene.globe.atmosphereBrightnessShift = 0.32;
-      }
-      if (viewer.scene.skyAtmosphere) {
-        viewer.scene.skyAtmosphere.show = true;
-        viewer.scene.skyAtmosphere.hueShift          = 0.53;
-        viewer.scene.skyAtmosphere.saturationShift   = 0.75;
-        viewer.scene.skyAtmosphere.brightnessShift   = 0.32;
+        viewer.scene.globe.atmosphereLightIntensity  = 18.0;
+        viewer.scene.globe.atmosphereHueShift        = 0.54; // Electric blue atmosphere rim
+        viewer.scene.globe.atmosphereSaturationShift = 0.80;
+        viewer.scene.globe.atmosphereBrightnessShift = 0.25;
       }
     }
 
-    // ── Variables for overlays
-    const ov = isCyber
-      ? { climate: true, pollution: true, energy: true, satellite: true, ai: true }
-      : overlays;
-    const yearFactor  = (activeYear - 2025) / 25;
-    const cyberBoost = isCyber ? 1.8 : 1.0;
-
-    // ── 1. City Points
+    // ── 5. City Hub Markers (clean white/cyan points)
+    const activeColor = Cesium.Color.fromCssColorString(themeColorHex);
     citiesRawData.forEach((city) => {
       const isSel  = activeCity?.name === city.name;
       viewer.entities.add({
         position: Cesium.Cartesian3.fromDegrees(city.lon, city.lat),
         point: {
-          pixelSize:    isCyber ? (isSel ? 14 : 8)   : (isSel ? 6 : 4),
+          pixelSize:    isCyber ? (isSel ? 12 : 7) : (isSel ? 6 : 4),
           color:        isCyber
-            ? cesiumColor.withAlpha(isSel ? 1.0 : 0.75)
+            ? (isSel ? Cesium.Color.WHITE : activeColor.withAlpha(0.75))
             : Cesium.Color.WHITE.withAlpha(isSel ? 0.90 : 0.50),
-          outlineColor: isCyber
-            ? Cesium.Color.WHITE.withAlpha(isSel ? 0.9 : 0.25)
-            : Cesium.Color.WHITE.withAlpha(0.0),
-          outlineWidth: isCyber ? (isSel ? 2.5 : 1.0) : 0,
+          outlineColor: isCyber ? activeColor : Cesium.Color.WHITE.withAlpha(0.0),
+          outlineWidth: isCyber ? 1.5 : 0,
           disableDepthTestDistance: Number.POSITIVE_INFINITY,
         },
         properties: { cityData: city }
       });
     });
 
-    // ── 2. Selected city pulse
-    if (activeCity) {
-      viewer.entities.add({
-        position: Cesium.Cartesian3.fromDegrees(activeCity.lon, activeCity.lat),
-        ellipse: {
-          semiMajorAxis: new Cesium.CallbackProperty(() => {
-            const factor = (timeRef.current * 1.2) % 1.0;
-            return factor * 320000;
-          }, false),
-          semiMinorAxis: new Cesium.CallbackProperty(() => {
-            const factor = (timeRef.current * 1.2) % 1.0;
-            return factor * 320000;
-          }, false),
-          material: new Cesium.ColorMaterialProperty(
-            new Cesium.CallbackProperty(() => {
-              const factor = (timeRef.current * 1.2) % 1.0;
-              const alpha = 0.65 * (1 - factor) * (isCyber ? 1.0 : 0.35);
-              return isCyber ? cesiumColor.withAlpha(alpha) : Cesium.Color.WHITE.withAlpha(alpha);
-            }, false)
-          ),
-          height: 0,
-        }
-      });
-    }
+    // ── 6. Geodesic Networks between the 9 exact hubs (NY, London, Paris, Dubai, Mumbai, Singapore, Tokyo, Seoul, Sydney)
+    const ov = isCyber ? { climate: true, pollution: true, energy: true, satellite: true } : overlays;
+    const yearFactor  = (activeYear - 2025) / 25;
 
-    // ── 3. Climate Heatmaps (Floating Holograms in Cyber mode)
-    if (ov.climate) {
-      const climateRadius   = 1200000 + yearFactor * 1600000;
-      const climateAlpha    = (0.08 + yearFactor * 0.17) * cyberBoost;
-      const climateColor    = Cesium.Color.fromCssColorString(
-        yearFactor < 0.3 ? '#3b82f6' : yearFactor < 0.6 ? '#f97316' : '#ef4444'
-      ).withAlpha(Math.min(climateAlpha, 0.45));
-
-      climateZones.forEach((z) => {
-        const heightVal = isCyber ? 150000 : 5000;
-        viewer.entities.add({
-          position: Cesium.Cartesian3.fromDegrees(z.lon, z.lat),
-          ellipse: {
-            semiMajorAxis: climateRadius,
-            semiMinorAxis: climateRadius,
-            material: climateColor.withAlpha(isCyber ? Math.min(climateAlpha * 0.4, 0.15) : climateColor.alpha),
-            height: heightVal,
-            outline: isCyber,
-            outlineColor: climateColor.withAlpha(0.9),
-            outlineWidth: 1.5,
-          }
-        });
-
-        if (isCyber) {
-          // Inner core floating target marker
-          viewer.entities.add({
-            position: Cesium.Cartesian3.fromDegrees(z.lon, z.lat),
-            ellipse: {
-              semiMajorAxis: climateRadius * 0.12,
-              semiMinorAxis: climateRadius * 0.12,
-              height: heightVal,
-              material: climateColor.withAlpha(0.85),
-            }
-          });
-          // Telemetry connecting line to the ground
-          viewer.entities.add({
-            polyline: {
-              positions: [
-                Cesium.Cartesian3.fromDegrees(z.lon, z.lat, 0),
-                Cesium.Cartesian3.fromDegrees(z.lon, z.lat, heightVal)
-              ],
-              width: 1,
-              material: climateColor.withAlpha(0.5)
-            }
-          });
-        }
-      });
-    }
-
-    // ── 4. Pollution Zones (Floating Holograms in Cyber mode)
-    if (ov.pollution) {
-      const pollRadius  = 350000 - yearFactor * 230000;
-      const pollAlpha   = (0.24 - yearFactor * 0.14) * cyberBoost;
-      const pollColor   = Cesium.Color.fromCssColorString(
-        yearFactor > 0.75 ? '#10b981' : yearFactor > 0.4 ? '#84cc16' : '#eab308'
-      ).withAlpha(Math.min(pollAlpha, 0.55));
-
-      pollutionZones.forEach((z) => {
-        const heightVal = isCyber ? 200000 : 10000;
-        viewer.entities.add({
-          position: Cesium.Cartesian3.fromDegrees(z.lon, z.lat),
-          ellipse: {
-            semiMajorAxis: pollRadius,
-            semiMinorAxis: pollRadius,
-            material: pollColor.withAlpha(isCyber ? Math.min(pollAlpha * 0.4, 0.15) : pollColor.alpha),
-            height: heightVal,
-            outline: isCyber,
-            outlineColor: pollColor.withAlpha(0.9),
-            outlineWidth: 1.5,
-          }
-        });
-
-        if (isCyber) {
-          viewer.entities.add({
-            position: Cesium.Cartesian3.fromDegrees(z.lon, z.lat),
-            ellipse: {
-              semiMajorAxis: pollRadius * 0.15,
-              semiMinorAxis: pollRadius * 0.15,
-              height: heightVal,
-              material: pollColor.withAlpha(0.85),
-            }
-          });
-          viewer.entities.add({
-            polyline: {
-              positions: [
-                Cesium.Cartesian3.fromDegrees(z.lon, z.lat, 0),
-                Cesium.Cartesian3.fromDegrees(z.lon, z.lat, heightVal)
-              ],
-              width: 1,
-              material: pollColor.withAlpha(0.5)
-            }
-          });
-        }
-      });
-    }
-
-    // ── 5. AI Infrastructure Zones (Floating Holograms in Cyber mode)
-    if (ov.ai) {
-      const aiRadius = 100000 + yearFactor * 900000;
-      const aiAlpha  = (0.06 + yearFactor * 0.14) * cyberBoost;
-      const aiColor  = Cesium.Color.fromCssColorString('#8b5cf6').withAlpha(Math.min(aiAlpha, 0.40));
-
-      aiZones.forEach((z) => {
-        const heightVal = isCyber ? 250000 : 8000;
-        viewer.entities.add({
-          position: Cesium.Cartesian3.fromDegrees(z.lon, z.lat),
-          ellipse: {
-            semiMajorAxis: aiRadius,
-            semiMinorAxis: aiRadius,
-            material: aiColor.withAlpha(isCyber ? Math.min(aiAlpha * 0.4, 0.15) : aiColor.alpha),
-            height: heightVal,
-            outline: isCyber,
-            outlineColor: aiColor.withAlpha(0.9),
-            outlineWidth: 1.5,
-          }
-        });
-
-        if (isCyber) {
-          viewer.entities.add({
-            position: Cesium.Cartesian3.fromDegrees(z.lon, z.lat),
-            ellipse: {
-              semiMajorAxis: aiRadius * 0.12,
-              semiMinorAxis: aiRadius * 0.12,
-              height: heightVal,
-              material: aiColor.withAlpha(0.85),
-            }
-          });
-          viewer.entities.add({
-            polyline: {
-              positions: [
-                Cesium.Cartesian3.fromDegrees(z.lon, z.lat, 0),
-                Cesium.Cartesian3.fromDegrees(z.lon, z.lat, heightVal)
-              ],
-              width: 1,
-              material: aiColor.withAlpha(0.5)
-            }
-          });
-        }
-      });
-    }
-
-    // ── 6. Geodesic Data Highways (Energy, Quantum & Shipping Lanes)
     if (ov.energy) {
-      const pktCount  = activeYear <= 2025 ? 1 : activeYear <= 2035 ? 2 : 3;
-      const pktSpeed  = 0.05 + yearFactor * 0.10;
-      const lineAlpha = isCyber ? 0.8 : 0.10;
+      const pktCount = isCyber ? 2 : 1;
+      const pktSpeed = 0.06 + yearFactor * 0.08;
 
-      cityConnections.forEach((conn) => {
-        const c1 = getCityCoords(conn.start);
-        const c2 = getCityCoords(conn.end);
+      globalHighways.forEach((highway) => {
+        const c1 = getHubCoords(highway.start);
+        const c2 = getHubCoords(highway.end);
         if (!c1 || !c2) return;
 
-        // 3D Geodesic line curving above the surface
+        const connectionColor = Cesium.Color.fromCssColorString(highway.color);
+
+        // Curving data arc above surface
         viewer.entities.add({
           polyline: {
-            positions: generateArcPositions(c1, c2, conn.alt),
-            width: isCyber ? 1.8 : 1,
+            positions: generateGeodesicArcPoints(c1, c2, highway.alt),
+            width: isCyber ? 2.0 : 1.0,
             material: new Cesium.PolylineGlowMaterialProperty({
-              glowPower: isCyber ? 0.15 : 0.05,
-              color: Cesium.Color.fromCssColorString(theme.cesiumColorHex).withAlpha(lineAlpha),
+              glowPower: 0.15,
+              color: connectionColor.withAlpha(isCyber ? 0.85 : 0.25)
             })
           }
         });
 
-        // Glowing animated transmission packets along the arc
+        // Pulsing packets along the geodesic curve
         for (let k = 0; k < pktCount; k++) {
           viewer.entities.add({
             position: new Cesium.CallbackProperty(() => {
@@ -529,13 +352,13 @@ export default function CesiumGlobeContent({
               const eRad = Cesium.Cartographic.fromDegrees(c2.lon, c2.lat);
               const geodesic = new Cesium.EllipsoidGeodesic(sRad, eRad);
               const cart = geodesic.interpolateUsingFraction(t);
-              const height = Math.sin(t * Math.PI) * conn.alt;
+              const height = Math.sin(t * Math.PI) * highway.alt;
               return Cesium.Cartesian3.fromRadians(cart.longitude, cart.latitude, height);
             }, false),
             point: {
-              pixelSize: isCyber ? 6.5 : 4.5,
-              color: isCyber ? Cesium.Color.WHITE : cesiumColor,
-              outlineColor: cesiumColor,
+              pixelSize: isCyber ? 6.0 : 4.0,
+              color: Cesium.Color.WHITE,
+              outlineColor: connectionColor,
               outlineWidth: isCyber ? 1.5 : 0.8,
               disableDepthTestDistance: Number.POSITIVE_INFINITY,
             }
@@ -544,109 +367,170 @@ export default function CesiumGlobeContent({
       });
     }
 
-    // ── 7. Massive Satellite Constellations with Decaying Trails
+    // ── 7. LEO, MEO, GEO Satellites (clean, meaningful layers)
     if (activeCategory === 'Satellite Network' || ov.satellite) {
-      const orbitsList = [
-        { tilt:  0.0,  height: 1600000, speed: 0.055, color: Cesium.Color.fromCssColorString('#00f0ff') }, // Equatorial
-        { tilt:  1.35, height: 2300000, speed: 0.065, color: Cesium.Color.fromCssColorString('#8b5cf6') }, // Polar-inclined
-        { tilt: -0.80, height: 1900000, speed: 0.045, color: Cesium.Color.fromCssColorString('#14b8a6') }, // Negative inclined
-        { tilt:  0.80, height: 2600000, speed: 0.050, color: Cesium.Color.fromCssColorString('#e0a96d') }, // Positive inclined
+      const satelliteConfig = [
+        // LEO: 3 satellites at 600km, fast orbit, polar tilt (tilt = 1.3)
+        { level: 'LEO', height: 600000, speed: 0.08, color: Cesium.Color.fromCssColorString(themeColors.cyan), count: 3, tilt: 1.3 },
+        // MEO: 2 satellites at 3500km, medium speed, inclined tilt (tilt = -0.7)
+        { level: 'MEO', height: 3500000, speed: 0.04, color: Cesium.Color.fromCssColorString(themeColors.violet), count: 2, tilt: -0.7 },
       ];
-      const activePlanes = isCyber ? orbitsList : orbitsList.slice(0, 2);
-      const satsPerPlane = isCyber ? 8 : 2;
-      const orbitAlpha = isCyber ? 0.35 : 0.15;
 
-      activePlanes.forEach((o) => {
-        // Draw the circular orbit path
-        const r = 6378137 + o.height;
+      satelliteConfig.forEach((cfg) => {
+        const r = 6378137 + cfg.height;
         const positions = Array.from({ length: 73 }, (_, i) => {
           const a = (i / 72) * Math.PI * 2;
-          return new Cesium.Cartesian3(r * Math.cos(a), r * Math.sin(a) * Math.cos(o.tilt), r * Math.sin(a) * Math.sin(o.tilt));
+          return new Cesium.Cartesian3(r * Math.cos(a), r * Math.sin(a) * Math.cos(cfg.tilt), r * Math.sin(a) * Math.sin(cfg.tilt));
         });
 
+        // Orbit path line
         viewer.entities.add({
           polyline: {
             positions: positions,
             width: 1,
-            material: o.color.withAlpha(orbitAlpha),
+            material: cfg.color.withAlpha(isCyber ? 0.25 : 0.10)
           }
         });
 
-        // Render satellites and trails
-        for (let s = 0; s < satsPerPlane; s++) {
-          const phase = (s / satsPerPlane) * Math.PI * 2;
+        // Satellites
+        for (let s = 0; s < cfg.count; s++) {
+          const phase = (s / cfg.count) * Math.PI * 2;
 
-          // Decaying glowing trail behind the satellite
+          // Decaying light trail in LEO/MEO
           if (isCyber) {
             viewer.entities.add({
               polyline: {
                 positions: new Cesium.CallbackProperty(() => {
                   const trailPoints = [];
-                  const trailLength = 12; // 12 points of trail length
-                  const step = 0.04;
+                  const trailLength = 10;
+                  const step = 0.035;
                   for (let j = 0; j < trailLength; j++) {
-                    const a = ((timeRef.current - j * step) * o.speed + phase) % (Math.PI * 2);
-                    trailPoints.push(new Cesium.Cartesian3(r * Math.cos(a), r * Math.sin(a) * Math.cos(o.tilt), r * Math.sin(a) * Math.sin(o.tilt)));
+                    const a = ((timeRef.current - j * step) * cfg.speed + phase) % (Math.PI * 2);
+                    trailPoints.push(new Cesium.Cartesian3(r * Math.cos(a), r * Math.sin(a) * Math.cos(cfg.tilt), r * Math.sin(a) * Math.sin(cfg.tilt)));
                   }
                   return trailPoints;
                 }, false),
-                width: 1.5,
+                width: 1.2,
                 material: new Cesium.PolylineGlowMaterialProperty({
-                  glowPower: 0.10,
-                  color: o.color.withAlpha(0.60),
+                  glowPower: 0.08,
+                  color: cfg.color.withAlpha(0.50),
                 })
               }
             });
           }
 
-          // Lead satellite point
+          // Satellite dot
           viewer.entities.add({
             position: new Cesium.CallbackProperty(() => {
-              const a = (timeRef.current * o.speed + phase) % (Math.PI * 2);
-              return new Cesium.Cartesian3(r * Math.cos(a), r * Math.sin(a) * Math.cos(o.tilt), r * Math.sin(a) * Math.sin(o.tilt));
+              const a = (timeRef.current * cfg.speed + phase) % (Math.PI * 2);
+              return new Cesium.Cartesian3(r * Math.cos(a), r * Math.sin(a) * Math.cos(cfg.tilt), r * Math.sin(a) * Math.sin(cfg.tilt));
             }, false),
             point: {
-              pixelSize: isCyber ? 9 : 6,
+              pixelSize: isCyber ? 8 : 5,
               color: Cesium.Color.WHITE,
-              outlineColor: o.color,
-              outlineWidth: 1.5,
+              outlineColor: cfg.color,
+              outlineWidth: 1.2,
               disableDepthTestDistance: Number.POSITIVE_INFINITY,
             }
           });
         }
       });
 
-      // Orbital atmospheric rings
-      if (ov.satellite) {
+      // GEO: 3 Stationary Satellites (12000km, equatorial orbit, static longitudes)
+      const geoSatellites = [
+        { lon: -45.0, color: Cesium.Color.fromCssColorString(themeColors.teal) }, // Geo-1 (Atlantic)
+        { lon: 55.0,  color: Cesium.Color.fromCssColorString(themeColors.cyan) }, // Geo-2 (Indian)
+        { lon: 140.0, color: Cesium.Color.fromCssColorString(themeColors.violet) } // Geo-3 (Pacific)
+      ];
+      const geoRadius = 6378137 + 12000000;
+
+      // Equatorial GEO Orbit Ring
+      const geoPositions = Array.from({ length: 73 }, (_, i) => {
+        const a = (i / 72) * Math.PI * 2;
+        return new Cesium.Cartesian3(geoRadius * Math.cos(a), geoRadius * Math.sin(a), 0);
+      });
+      viewer.entities.add({
+        polyline: {
+          positions: geoPositions,
+          width: 1,
+          material: Cesium.Color.WHITE.withAlpha(isCyber ? 0.15 : 0.05)
+        }
+      });
+
+      geoSatellites.forEach((sat) => {
         viewer.entities.add({
-          position: Cesium.Cartesian3.ZERO,
-          ellipsoid: {
-            radii: new Cesium.Cartesian3(6378137 + 400000, 6378137 + 400000, 6378137 + 400000),
-            material: cesiumColor.withAlpha(0.03 + yearFactor * 0.04),
-            fill: true,
-            outline: true,
-            outlineColor: cesiumColor.withAlpha((0.03 + yearFactor * 0.04) * 3),
-            outlineWidth: 1,
+          position: Cesium.Cartesian3.fromDegrees(sat.lon, 0, 12000000),
+          point: {
+            pixelSize: isCyber ? 9 : 5,
+            color: Cesium.Color.WHITE,
+            outlineColor: sat.color,
+            outlineWidth: 1.5,
+            disableDepthTestDistance: Number.POSITIVE_INFINITY,
           }
         });
-        viewer.entities.add({
-          position: Cesium.Cartesian3.ZERO,
-          ellipsoid: {
-            radii: new Cesium.Cartesian3(6378137 + 850000, 6378137 + 850000, 6378137 + 850000),
-            material: cesiumColor.withAlpha((0.03 + yearFactor * 0.04) * 0.4),
-            fill: true,
-            outline: true,
-            outlineColor: cesiumColor.withAlpha((0.03 + yearFactor * 0.04) * 1.5),
-            outlineWidth: 0.5,
-          }
-        });
-      }
+      });
     }
 
-  }, [isGlobeReady, activeYear, activeCategory, activeCity, overlays, earthMode, theme]);
+    // ── 8. Climate Recovery Holographic Indicators (Floating at 200km - 300km)
+    if (ov.climate) {
+      // 3 Layers representing metrics in Cyan, Teal, Violet
+      const climateLayers = [
+        { name: 'Climate Recovery', alt: 200000, radius: 1500000, color: Cesium.Color.fromCssColorString(themeColors.cyan), lon: (z: { lon: number, lat: number }) => z.lon, lat: (z: { lon: number, lat: number }) => z.lat },
+        { name: 'Ocean Restoration', alt: 250000, radius: 1300000, color: Cesium.Color.fromCssColorString(themeColors.teal), lon: (z: { lon: number, lat: number }) => z.lon + 5.0, lat: (z: { lon: number, lat: number }) => z.lat - 5.0 },
+        { name: 'Renewable Grid Coverage', alt: 300000, radius: 1100000, color: Cesium.Color.fromCssColorString(themeColors.violet), lon: (z: { lon: number, lat: number }) => z.lon - 5.0, lat: (z: { lon: number, lat: number }) => z.lat + 5.0 }
+      ];
+
+      climateZones.forEach((z) => {
+        climateLayers.forEach((layer) => {
+          const cLon = layer.lon(z);
+          const cLat = layer.lat(z);
+
+          // Floating wireframe ring
+          viewer.entities.add({
+            position: Cesium.Cartesian3.fromDegrees(cLon, cLat),
+            ellipse: {
+              semiMajorAxis: layer.radius,
+              semiMinorAxis: layer.radius,
+              material: layer.color.withAlpha(0.04),
+              height: layer.alt,
+              outline: true,
+              outlineColor: layer.color.withAlpha(isCyber ? 0.80 : 0.20),
+              outlineWidth: 1.5
+            }
+          });
+
+          if (isCyber) {
+            // Floating center core target
+            viewer.entities.add({
+              position: Cesium.Cartesian3.fromDegrees(cLon, cLat),
+              ellipse: {
+                semiMajorAxis: layer.radius * 0.08,
+                semiMinorAxis: layer.radius * 0.08,
+                height: layer.alt,
+                material: layer.color.withAlpha(0.80)
+              }
+            });
+
+            // Center telemetry pole extending to ground
+            viewer.entities.add({
+              polyline: {
+                positions: [
+                  Cesium.Cartesian3.fromDegrees(cLon, cLat, 0),
+                  Cesium.Cartesian3.fromDegrees(cLon, cLat, layer.alt)
+                ],
+                width: 1.0,
+                material: layer.color.withAlpha(0.40)
+              }
+            });
+          }
+        });
+      });
+    }
+
+  }, [isGlobeReady, activeYear, activeCategory, activeCity, overlays, earthMode]);
 
   // ═══════════════════════════════════════════════════════════════════════════
-  //  Camera Flying (to activeCity or activeCategory target)
+  //  Camera Control & Orbit transitions
   // ═══════════════════════════════════════════════════════════════════════════
   useEffect(() => {
     if (!isGlobeReady || !viewerRef.current || !activeCity) return;
@@ -694,7 +578,7 @@ export default function CesiumGlobeContent({
     return () => { try { r1(); } catch(e){} try { r2(); } catch(e){} };
   }, [hoveredCity, isGlobeReady]);
 
-  // ─── Slow Orbit Auto-Rotation
+  // ─── Auto Rotation
   useEffect(() => {
     if (isInteracting || activeCity || !isGlobeReady) return;
     if (!viewerRef.current) return;
@@ -702,7 +586,7 @@ export default function CesiumGlobeContent({
     if (viewer.isDestroyed() || !viewer.scene) return;
     let last  = Date.now();
     const speed = 0.012;
-    const spin  = () => {
+    const spin = () => {
       if (!viewerRef.current) return;
       const v = viewerRef.current;
       if (v.isDestroyed() || !v.scene?.camera) return;
@@ -724,34 +608,34 @@ export default function CesiumGlobeContent({
       onMouseDown={() => setIsInteracting(true)}   onMouseUp={() => setIsInteracting(false)}
       onTouchStart={() => setIsInteracting(true)}  onTouchEnd={() => setIsInteracting(false)}
     >
-      {/* ── Cesium Canvas Container */}
+      {/* ── Cesium Container */}
       <div ref={containerRef} className="w-full h-full" />
 
-      {/* ── Hover card */}
+      {/* ── Hover Overlay Card */}
       {hoveredCity && hoverPos && (
         <div className="absolute pointer-events-none select-none z-50"
           style={{ left: `${hoverPos.x + 14}px`, top: `${hoverPos.y - 42}px`, animation: 'fade-in-up 0.2s ease-out forwards' }}>
-          {earthMode === 'cyber' ? (
-            <div style={{ padding: '7px 12px', background: 'rgba(0,8,20,0.90)', backdropFilter: 'blur(16px)',
-              border: `1px solid ${theme.primary}50`, borderRadius: '2px', boxShadow: `0 0 20px ${theme.primary}20` }}>
-              <div style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '0.25em', color: theme.primary,
-                textTransform: 'uppercase', textShadow: `0 0 10px ${theme.primary}80`, marginBottom: '3px' }}>
+          {isCyber ? (
+            <div style={{ padding: '7px 12px', background: 'rgba(0,8,20,0.92)', backdropFilter: 'blur(20px)',
+              border: `1px solid ${themeColors.cyan}50`, borderRadius: '2px', boxShadow: `0 0 20px ${themeColors.cyan}25` }}>
+              <div style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '0.25em', color: themeColors.cyan,
+                textTransform: 'uppercase', textShadow: `0 0 10px ${themeColors.cyan}80`, marginBottom: '3px' }}>
                 {hoveredCity.name}
               </div>
               <div style={{ fontSize: '7px', color: 'rgba(255,255,255,0.35)', fontFamily: 'monospace', letterSpacing: '0.12em' }}>
                 {hoveredCity.lat.toFixed(3)}° N · {hoveredCity.lon.toFixed(3)}° E
               </div>
-              <div style={{ marginTop: '2px', fontSize: '7px', color: `${theme.primary}90`, fontFamily: 'monospace', letterSpacing: '0.15em' }}>
-                {hoveredCity.country.toUpperCase()} · FOCUS NODE
+              <div style={{ marginTop: '2px', fontSize: '7px', color: `${themeColors.teal}c0`, fontFamily: 'monospace', letterSpacing: '0.15em' }}>
+                {hoveredCity.country.toUpperCase()} · ORBITAL CONNECTOR
               </div>
             </div>
           ) : (
-            <div style={{ padding: '6px 10px', background: 'rgba(3,5,10,0.75)', backdropFilter: 'blur(12px)',
+            <div style={{ padding: '6px 10px', background: 'rgba(3,5,10,0.80)', backdropFilter: 'blur(12px)',
               border: '1px solid rgba(255,255,255,0.08)', borderRadius: '2px' }}>
-              <div style={{ fontSize: '9px', fontWeight: 300, letterSpacing: '0.2em', color: 'rgba(255,255,255,0.80)', textTransform: 'uppercase' }}>
+              <div style={{ fontSize: '9px', fontWeight: 300, letterSpacing: '0.2em', color: 'rgba(255,255,255,0.85)', textTransform: 'uppercase' }}>
                 {hoveredCity.name}
               </div>
-              <div style={{ marginTop: '2px', fontSize: '7px', fontWeight: 200, letterSpacing: '0.15em', color: 'rgba(255,255,255,0.30)' }}>
+              <div style={{ marginTop: '2px', fontSize: '7px', fontWeight: 200, letterSpacing: '0.15em', color: 'rgba(255,255,255,0.35)' }}>
                 {hoveredCity.lat.toFixed(2)}° N &nbsp; {hoveredCity.lon.toFixed(2)}° E
               </div>
             </div>
@@ -759,17 +643,17 @@ export default function CesiumGlobeContent({
         </div>
       )}
 
-      {/* ── Loader overlay */}
+      {/* ── Load Telemetry Loader Overlay */}
       <div className={`absolute inset-0 flex flex-col items-center justify-center z-50 transition-opacity duration-1000 ease-in-out ${isGlobeReady ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
         style={{ background: '#030508' }}>
-        {earthMode === 'cyber' ? (
+        {isCyber ? (
           <>
-            <div style={{ width: 72, height: 72, borderRadius: '50%', border: '1px solid rgba(0,240,255,0.20)',
+            <div style={{ width: 72, height: 72, borderRadius: '50%', border: `1px solid ${themeColors.cyan}30`,
               display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'breathe 2s ease-in-out infinite' }}>
-              <div style={{ width: 44, height: 44, borderRadius: '50%', border: '1px dashed rgba(0,240,255,0.12)', animation: 'spin 8s linear infinite' }} />
+              <div style={{ width: 44, height: 44, borderRadius: '50%', border: `1px dashed ${themeColors.cyan}18`, animation: 'spin 8s linear infinite' }} />
             </div>
-            <p style={{ marginTop: 18, fontSize: 8, fontWeight: 300, letterSpacing: '0.4em', textTransform: 'uppercase', color: 'rgba(0,240,255,0.40)', fontFamily: 'monospace' }}>
-              Syncing Telemetry
+            <p style={{ marginTop: 18, fontSize: 8, fontWeight: 300, letterSpacing: '0.4em', textTransform: 'uppercase', color: `${themeColors.cyan}70`, fontFamily: 'monospace' }}>
+              Accessing Planet OS
             </p>
           </>
         ) : (
@@ -778,8 +662,8 @@ export default function CesiumGlobeContent({
               display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'breathe 2.5s ease-in-out infinite' }}>
               <div style={{ width: 34, height: 34, borderRadius: '50%', border: '1px dashed rgba(255,255,255,0.07)', animation: 'spin 10s linear infinite' }} />
             </div>
-            <p style={{ marginTop: 16, fontSize: 8, fontWeight: 300, letterSpacing: '0.4em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.22)' }}>
-              Initializing Globe
+            <p style={{ marginTop: 16, fontSize: 8, fontWeight: 300, letterSpacing: '0.4em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.30)' }}>
+              Initializing Planet Earth
             </p>
           </>
         )}
