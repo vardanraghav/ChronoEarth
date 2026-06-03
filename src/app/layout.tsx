@@ -42,6 +42,9 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        <link rel="stylesheet" href="/cesium/Widgets/widgets.css" />
+      </head>
       <body className="h-full overflow-hidden bg-[#060918] text-[#e8ecf4]">
         <Script src="/cesium/Cesium.js" strategy="beforeInteractive" />
         {children}
