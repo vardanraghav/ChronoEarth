@@ -210,10 +210,10 @@ export default function CesiumGlobeContent({
         if (viewer.isDestroyed()) return;
         const lyr = viewer.imageryLayers.addImageryProvider(provider);
         if (isCyber) {
-          // Cyber 2050: Realistic colors but slightly darkened so night lights and cyber lines pop
+          // Cyber 2050: Keep natural planet colors recognizable but darken slightly
           lyr.brightness = 0.55;
           lyr.contrast = 1.30;
-          lyr.saturation = 0.90; // Natural green continents & blue oceans remain visible!
+          lyr.saturation = 0.90; 
         } else {
           lyr.brightness = 1.05;
           lyr.contrast = 1.05;
@@ -249,7 +249,7 @@ export default function CesiumGlobeContent({
       }
     });
 
-    // ── 3. Blended Night Lights (styled to cyberpunk cyan-blue)
+    // ── 3. Blended Night Lights (Desaturated to Ice-Blue/White to remove Yellow/Orange tint)
     if (isCyber) {
       Cesium.IonImageryProvider.fromAssetId(3812)
         .then((nightProvider: any) => {
@@ -257,9 +257,8 @@ export default function CesiumGlobeContent({
           const nightLyr = viewer.imageryLayers.addImageryProvider(nightProvider);
           nightLyr.alpha = 0.70;
           nightLyr.brightness = 3.20; // Prominent neon city lights
-          nightLyr.contrast = 1.80;
-          nightLyr.hue = 0.55; // Hue-shift yellow/orange lights to cyan-blue!
-          nightLyr.saturation = 1.20;
+          nightLyr.contrast = 2.00;
+          nightLyr.saturation = 0.00; // Desaturate completely to make lights white/ice-blue!
         })
         .catch(() => {});
     }
@@ -285,7 +284,7 @@ export default function CesiumGlobeContent({
       if (viewer.scene.globe) {
         viewer.scene.globe.showGroundAtmosphere = true;
         viewer.scene.globe.enableLighting       = true;
-        viewer.scene.globe.atmosphereLightIntensity  = 18.0;
+        viewer.scene.globe.atmosphereLightIntensity  = 22.0; // Dynamic limb glow
         viewer.scene.globe.atmosphereHueShift        = 0.54; // Electric blue atmosphere rim
         viewer.scene.globe.atmosphereSaturationShift = 0.80;
         viewer.scene.globe.atmosphereBrightnessShift = 0.25;
@@ -311,7 +310,7 @@ export default function CesiumGlobeContent({
       });
     });
 
-    // ── 6. Geodesic Networks between the 10 exact hubs
+    // ── 6. Geodesic Networks (Pulsing glowing highways between hubs)
     const ov = isCyber ? { climate: true, pollution: true, energy: true, satellite: true, ai: true } : overlays;
     const yearFactor  = (activeYear - 2025) / 25;
 
@@ -326,13 +325,16 @@ export default function CesiumGlobeContent({
 
         const connectionColor = Cesium.Color.fromCssColorString(highway.color);
 
-        // Curving data arc above surface
+        // Curving data arc pulsing its glow intensity over time
         viewer.entities.add({
           polyline: {
             positions: generateGeodesicArcPoints(c1, c2, highway.alt),
             width: isCyber ? 2.0 : 1.0,
             material: new Cesium.PolylineGlowMaterialProperty({
-              glowPower: 0.15,
+              glowPower: new Cesium.CallbackProperty(() => {
+                // Pulsing route glow
+                return 0.15 + 0.10 * Math.sin(timeRef.current * 2.0);
+              }, false),
               color: connectionColor.withAlpha(isCyber ? 0.85 : 0.25)
             })
           }
@@ -465,16 +467,25 @@ export default function CesiumGlobeContent({
           }
         });
 
-        // GEO Solar Power Satellite: rotating holographic energy collector ring overlay
+        // GEO Solar Power Satellite: rotating/pulsing holographic energy collector ring overlay
         if (isCyber) {
           viewer.entities.add({
             position: Cesium.Cartesian3.fromDegrees(sat.lon, 0, 12000000),
             ellipse: {
-              semiMajorAxis: 250000, // 250km radius collector
-              semiMinorAxis: 250000,
+              semiMajorAxis: new Cesium.CallbackProperty(() => {
+                // Expanding / scanning solar collector
+                return 250000 + 30000 * Math.sin(timeRef.current * 1.5);
+              }, false),
+              semiMinorAxis: new Cesium.CallbackProperty(() => {
+                return 250000 + 30000 * Math.sin(timeRef.current * 1.5);
+              }, false),
               material: sat.color.withAlpha(0.12),
               outline: true,
-              outlineColor: sat.color.withAlpha(0.85),
+              outlineColor: new Cesium.CallbackProperty(() => {
+                // Flashing outline
+                const alpha = 0.5 + 0.35 * Math.sin(timeRef.current * 3.0);
+                return sat.color.withAlpha(alpha);
+              }, false),
               outlineWidth: 1.5
             }
           });
@@ -511,6 +522,34 @@ export default function CesiumGlobeContent({
           });
 
           if (isCyber) {
+            // Volumetric scanning pulse expanding outwards and fading
+            viewer.entities.add({
+              position: Cesium.Cartesian3.fromDegrees(cLon, cLat),
+              ellipse: {
+                semiMajorAxis: new Cesium.CallbackProperty(() => {
+                  const factor = (timeRef.current * 0.8) % 1.0;
+                  return factor * layer.radius;
+                }, false),
+                semiMinorAxis: new Cesium.CallbackProperty(() => {
+                  const factor = (timeRef.current * 0.8) % 1.0;
+                  return factor * layer.radius;
+                }, false),
+                height: layer.alt,
+                material: new Cesium.ColorMaterialProperty(
+                  new Cesium.CallbackProperty(() => {
+                    const factor = (timeRef.current * 0.8) % 1.0;
+                    return layer.color.withAlpha(0.20 * (1.0 - factor));
+                  }, false)
+                ),
+                outline: true,
+                outlineColor: new Cesium.CallbackProperty(() => {
+                  const factor = (timeRef.current * 0.8) % 1.0;
+                  return layer.color.withAlpha(0.60 * (1.0 - factor));
+                }, false),
+                outlineWidth: 1.0
+              }
+            });
+
             // Floating center core target
             viewer.entities.add({
               position: Cesium.Cartesian3.fromDegrees(cLon, cLat),
