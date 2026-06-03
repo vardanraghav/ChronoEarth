@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import * as Cesium from 'cesium';
-import { Viewer, Scene, Entity, Polyline, ImageryLayer, useCesium } from 'resium';
+import { Viewer, Scene, Entity, Polyline, useCesium } from 'resium';
 import { citiesRawData, CityData } from '../data/citiesData';
 import "cesium/Build/Cesium/Widgets/widgets.css";
 
@@ -129,7 +129,6 @@ export default function CesiumGlobeContent({
   
   // Custom states to handle the WebGL loading progression
   const [isGlobeReady, setIsGlobeReady] = useState(false);
-  const [imageryProvider, setImageryProvider] = useState<any>(null);
 
   const theme = categoryThemes[activeCategory] || categoryThemes['Ocean Monitoring'];
 
@@ -156,17 +155,6 @@ export default function CesiumGlobeContent({
         tileLoadCleanupRef.current();
       }
     };
-  }, []);
-
-  // Initialize CartoDB Dark Matter Imagery Provider
-  useEffect(() => {
-    const provider = new Cesium.UrlTemplateImageryProvider({
-      url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
-      subdomains: ['a', 'b', 'c', 'd'],
-      minimumLevel: 0,
-      maximumLevel: 18,
-    });
-    setImageryProvider(provider);
   }, []);
 
   // Satellite and radar animation loop (drives UI-level time state)
@@ -309,77 +297,115 @@ export default function CesiumGlobeContent({
     };
   }, [isInteracting, activeCity, isGlobeReady]);
 
-  // Setup viewer configuration on load: sets coordinates view, overlays, brightness, and fades loading layer
+  // ─── Viewer Initialization ────────────────────────────────────────────────
+  // Called once by ViewerConfigurator after the Cesium Viewer has fully mounted.
+  // We configure EVERYTHING here — imagery, lighting, atmosphere, camera — so there
+  // is a single source of truth and no race conditions with JSX-rendered layers.
   const handleViewerReady = useCallback((viewer: any) => {
     if (!viewer || viewer.isDestroyed() || !viewer.scene || !viewer.camera) return;
 
-    // 1. Zoom and tilt camera view immediately to fill viewport (cinematic curvature focus)
-    // We bring the camera closer (7,200,000 meters) and tilt it slightly (-30 degrees) to reduce empty space and emphasize the Earth's curvature.
+    // ── 1. CAMERA — cinematic opening angle ──────────────────────────────────
+    // Pull back far enough to see the whole sphere beautifully, slight tilt
+    // so the horizon curve is visible. This is the NASA/Interstellar aesthetic.
     viewer.camera.setView({
-      destination: Cesium.Cartesian3.fromDegrees(38.0, 25.0, 7200000), // Focused closer to center the globe and reduce empty space
+      destination: Cesium.Cartesian3.fromDegrees(20.0, 22.0, 18000000),
       orientation: {
         heading: Cesium.Math.toRadians(0),
-        pitch: Cesium.Math.toRadians(-30), // Cinematic angle highlighting curved horizon and space background
-        roll: 0.0,
+        pitch:   Cesium.Math.toRadians(-18), // slight downward tilt — feels cinematic
+        roll:    0.0,
       },
     });
 
-    // 2. Tweak brightness/contrast on our CartoDB Dark Matter imagery to make it vibrant and neon
-    const layer = viewer.imageryLayers.get(0);
-    if (layer) {
-      layer.brightness = 2.2;  // Significantly brighten the base imagery
-      layer.contrast = 1.6;    // Increase contrast for sharp landmasses and glowing city lights
-      layer.saturation = 1.4;  // Saturate colors for high-contrast neon tones
-    }
+    // ── 2. IMAGERY — replace default tiles with real satellite photography ────
+    // The #1 fix: CartoDB "dark_all" is a stylized map, NOT a satellite photo.
+    // Cesium Ion asset 2 = Bing Maps Aerial — real 15m global satellite imagery.
+    // We removeAll() first so we never double-stack layers.
+    viewer.imageryLayers.removeAll();
 
-    // 3. Customize atmospheric glow, lighting defaults, and sky transparency
-    if (viewer.scene.skyAtmosphere) viewer.scene.skyAtmosphere.show = true;
-    if (viewer.scene.globe) {
-      viewer.scene.globe.showGroundAtmosphere = true;
-      viewer.scene.globe.enableLighting = true; // Enable lighting so the globe is realistically shaded
-    }
-    
-    // Set a transparent background for WebGL to let the CSS stars/auroras show through
-    viewer.scene.backgroundColor = Cesium.Color.TRANSPARENT;
-
-    // Add a custom DirectionalLight to illuminate the Earth cinematically from front-left
-    viewer.scene.light = new Cesium.DirectionalLight({
-      direction: new Cesium.Cartesian3(-0.8, -0.6, -0.6), // Beautiful side/top lighting angle
-      color: Cesium.Color.fromCssColorString('#ffffff'),
-      intensity: 3.8, // Brighter sun lighting
+    Cesium.createWorldImageryAsync({
+      style: Cesium.IonWorldImageryStyle.AERIAL,
+    }).then((provider: any) => {
+      if (viewer.isDestroyed()) return;
+      const satelliteLayer = viewer.imageryLayers.addImageryProvider(provider);
+      // Minimal corrections only — keep it looking like real Earth photography.
+      // The old settings (brightness 2.2, contrast 1.6, saturation 1.4) caused
+      // the yellow/blown-out tint. Natural values restore true colors.
+      satelliteLayer.brightness = 1.05; // imperceptibly lifted for monitor gamma
+      satelliteLayer.contrast   = 1.05; // very slightly crisper continents
+      satelliteLayer.saturation = 1.0;  // pure natural saturation
+      satelliteLayer.hue        = 0.0;  // zero hue shift — actual Earth colors
+    }).catch(() => {
+      // Fallback: ESRI World Imagery — free, always available, natural colors
+      if (viewer.isDestroyed()) return;
+      const fallback = new Cesium.ArcGisMapServerImageryProvider({
+        url: 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer',
+      });
+      const fallbackLayer = viewer.imageryLayers.addImageryProvider(fallback);
+      fallbackLayer.brightness = 1.05;
+      fallbackLayer.contrast   = 1.05;
+      fallbackLayer.saturation = 1.0;
     });
 
-    // Add glowing blue/indigo ambient color so the night side is clearly visible and has a beautiful sci-fi glow
-    viewer.scene.ambientColor = new Cesium.Color(0.08, 0.14, 0.35, 1.0); // Soft glowing indigo/blue ambient
+    // ── 3. WEBGL TRANSPARENCY — let the CSS star field show through ───────────
+    viewer.scene.backgroundColor = Cesium.Color.TRANSPARENT;
 
-    // Tweak atmosphere properties for a beautiful futuristic cyan/purple glow matching our theme
+    // ── 4. GLOBE — enable real lighting, keep atmosphere natural ─────────────
     if (viewer.scene.globe) {
-      viewer.scene.globe.atmosphereLightIntensity = 22.0; // Intensely bright atmosphere glow
-      viewer.scene.globe.atmosphereHueShift = 0.58; // Shifts atmosphere colors to futuristic cyan/blue
-      viewer.scene.globe.atmosphereSaturationShift = 0.85; // Highly saturated neon atmosphere
-      viewer.scene.globe.atmosphereBrightnessShift = 0.35; // Brighter atmospheric envelope
+      viewer.scene.globe.showGroundAtmosphere = true;
+      // enableLighting = true gives a real day/night terminator line — critical
+      // for the volumetric, spherical feel. Night side goes naturally dark.
+      viewer.scene.globe.enableLighting = true;
+
+      // Atmosphere tweaks:
+      // Old values (22.0 intensity, 0.58 hue shift) caused the RGB chromatic
+      // edge glow artifact. Restored to near-default for a natural blue limb.
+      viewer.scene.globe.atmosphereLightIntensity    = 10.0; // Cesium default — no glow artifact
+      viewer.scene.globe.atmosphereHueShift          = 0.0;  // Natural blue — NOT shifted to cyan
+      viewer.scene.globe.atmosphereSaturationShift   = 0.0;  // Natural saturation
+      viewer.scene.globe.atmosphereBrightnessShift   = 0.08; // Very subtle brightening of limb
     }
 
+    // ── 5. SKY ATMOSPHERE — thin, realistic blue rim ──────────────────────────
     if (viewer.scene.skyAtmosphere) {
-      viewer.scene.skyAtmosphere.hueShift = 0.58;
-      viewer.scene.skyAtmosphere.saturationShift = 0.85;
-      viewer.scene.skyAtmosphere.brightnessShift = 0.35;
+      viewer.scene.skyAtmosphere.show              = true;
+      // Old hueShift 0.58 turned the atmosphere cyan/green. Zero = real blue.
+      viewer.scene.skyAtmosphere.hueShift          = 0.0;
+      viewer.scene.skyAtmosphere.saturationShift   = 0.0;
+      // Very slightly lifted so the atmosphere rim reads cleanly on the dark bg
+      viewer.scene.skyAtmosphere.brightnessShift   = 0.08;
     }
 
-    // 4. Track tile loading progress to fade out the loader overlay only when imagery is fully rendered
+    // ── 6. SUNLIGHT — realistic warm-white directional light ─────────────────
+    // Old intensity 3.8 overexposed continents. 2.2 is natural and cinematic.
+    // The warm white color (#fff8f0) mimics real sunlight color temperature.
+    viewer.scene.light = new Cesium.DirectionalLight({
+      direction: new Cesium.Cartesian3(-0.7, -0.5, -0.5),
+      color:     Cesium.Color.fromCssColorString('#fff8f0'), // warm-white sunlight
+      intensity: 2.2,
+    });
+
+    // ── 7. AMBIENT LIGHT — earthshine on the night side ──────────────────────
+    // Old value (0.08, 0.14, 0.35) was a heavy indigo that tinted the dark side
+    // an unrealistic blue. Real earthshine is extremely subtle (~0.03 luminance).
+    // This barely lifts the night side so it's not pitch black — like a real photo.
+    viewer.scene.ambientColor = new Cesium.Color(0.03, 0.03, 0.04, 1.0);
+
+    // ── 8. TILE LOADING PROGRESS — fade loader when Earth is visible ──────────
     let isFullyLoaded = false;
     let removeTileLoadListener: (() => void) | undefined;
     if (viewer.scene.globe) {
-      removeTileLoadListener = viewer.scene.globe.tileLoadProgressEvent.addEventListener((queueLength: number) => {
-        if (queueLength === 0 && !isFullyLoaded) {
-          isFullyLoaded = true;
-          setIsGlobeReady(true);
-          if (removeTileLoadListener) removeTileLoadListener();
+      removeTileLoadListener = viewer.scene.globe.tileLoadProgressEvent.addEventListener(
+        (queueLength: number) => {
+          if (queueLength === 0 && !isFullyLoaded) {
+            isFullyLoaded = true;
+            setIsGlobeReady(true);
+            if (removeTileLoadListener) removeTileLoadListener();
+          }
         }
-      });
+      );
     }
 
-    // Safety fallback: force ready state after 3.5 seconds max to ensure it doesn't hang
+    // Safety: force ready after 5s max (satellite imagery takes longer than map tiles)
     const safetyTimeout = setTimeout(() => {
       if (!isFullyLoaded) {
         isFullyLoaded = true;
@@ -388,7 +414,7 @@ export default function CesiumGlobeContent({
           try { removeTileLoadListener(); } catch(e){}
         }
       }
-    }, 3500);
+    }, 5000);
 
     tileLoadCleanupRef.current = () => {
       clearTimeout(safetyTimeout);
@@ -501,11 +527,10 @@ export default function CesiumGlobeContent({
       >
         <ViewerConfigurator onReady={handleViewerReady} />
 
-        {/* Render dark matter imagery provider dynamically on mount */}
-        {imageryProvider && <ImageryLayer imageryProvider={imageryProvider} />}
-
-        {/* Configure scene to be transparent and show ground atmosphere */}
-        <Scene backgroundColor={Cesium.Color.TRANSPARENT} skyAtmosphere={new Cesium.SkyAtmosphere()} />
+        {/* Scene: transparent WebGL so CSS stars show through. SkyAtmosphere is
+            configured in handleViewerReady — don't pass new SkyAtmosphere() here
+            as it would create a fresh object on every render. */}
+        <Scene backgroundColor={Cesium.Color.TRANSPARENT} />
 
         {/* 16 Futuristic Cities Rendered as Point Nodes */}
         {citiesRawData.map((city) => {
