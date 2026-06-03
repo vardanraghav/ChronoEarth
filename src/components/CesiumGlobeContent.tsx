@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import * as Cesium from 'cesium';
 import { Viewer, Scene, Entity, Polyline, ImageryLayer, useCesium } from 'resium';
 import { citiesRawData, CityData } from '../data/citiesData';
@@ -136,19 +136,18 @@ export default function CesiumGlobeContent({
   // Ref to store cleanup function for tile loading progress listeners
   const tileLoadCleanupRef = useRef<(() => void) | null>(null);
 
-  // Stabilize contextOptions and creditContainer to prevent Viewer recreation crashes
-  const contextOptions = useMemo(() => ({
+  // Use refs (not useMemo) for Viewer constructor props — refs are 100% stable across renders.
+  // useMemo CAN be invalidated under concurrent-mode or StrictMode, causing Viewer recreation.
+  const contextOptionsRef = useRef({
     webgl: {
       alpha: true, // Enable WebGL transparency blending
     },
-  }), []);
+  });
 
-  const creditContainer = useMemo(() => {
-    if (typeof document !== 'undefined') {
-      return document.createElement('div');
-    }
-    return undefined;
-  }, []);
+  const creditContainerRef = useRef<HTMLDivElement | undefined>(undefined);
+  if (typeof document !== 'undefined' && !creditContainerRef.current) {
+    creditContainerRef.current = document.createElement('div');
+  }
 
   // Clean up tile loader listener on unmount
   useEffect(() => {
@@ -170,7 +169,7 @@ export default function CesiumGlobeContent({
     setImageryProvider(provider);
   }, []);
 
-  // Satellite and radar animation loop
+  // Satellite and radar animation loop (drives UI-level time state)
   useEffect(() => {
     let animationId: number;
     const start = Date.now();
@@ -270,35 +269,43 @@ export default function CesiumGlobeContent({
     });
   }, [activeCategory, activeCity, isGlobeReady]);
 
-  // Handle continuous slow rotation when user is NOT dragging the globe
+  // Handle continuous slow rotation using Cesium's native postRender event (safer than rAF).
+  // This fires AFTER Cesium has finished its own render, so scene/camera are always valid.
   useEffect(() => {
-    if (isInteracting || activeCity || !isGlobeReady) return; // Freeze if loading or interacting
+    if (isInteracting || activeCity || !isGlobeReady) return;
+    if (!viewerRef.current || !viewerRef.current.cesiumElement) return;
+    const viewer = viewerRef.current.cesiumElement;
+    if (viewer.isDestroyed() || !viewer.scene) return;
 
     let lastTime = Date.now();
-    let frameId: number;
+    const rotationSpeed = 0.012;
 
-    const rotate = () => {
-      if (!viewerRef.current || !viewerRef.current.cesiumElement) return;
-      const viewer = viewerRef.current.cesiumElement;
-      if (viewer.isDestroyed() || !viewer.scene || !viewer.scene.camera) return;
+    const onPostRender = () => {
+      // Re-check inside the callback — viewer may be destroyed between renders
+      if (!viewerRef.current?.cesiumElement) return;
+      const v = viewerRef.current.cesiumElement;
+      if (v.isDestroyed() || !v.scene || !v.scene.camera) return;
 
-      const currentTime = Date.now();
-      const delta = (currentTime - lastTime) / 1000;
-      lastTime = currentTime;
-
-      const rotationSpeed = 0.012;
-      viewer.scene.camera.rotate(Cesium.Cartesian3.UNIT_Z, rotationSpeed * delta);
-
-      frameId = requestAnimationFrame(rotate);
+      const now = Date.now();
+      const delta = (now - lastTime) / 1000;
+      lastTime = now;
+      v.scene.camera.rotate(Cesium.Cartesian3.UNIT_Z, rotationSpeed * delta);
     };
 
+    // Delay start slightly so camera flyTo can settle
+    let removeListener: (() => void) | undefined;
     const timeout = setTimeout(() => {
-      frameId = requestAnimationFrame(rotate);
+      if (!viewerRef.current?.cesiumElement) return;
+      const v = viewerRef.current.cesiumElement;
+      if (v.isDestroyed() || !v.scene) return;
+      removeListener = v.scene.postRender.addEventListener(onPostRender);
     }, 1500);
 
     return () => {
       clearTimeout(timeout);
-      cancelAnimationFrame(frameId);
+      if (removeListener) {
+        try { removeListener(); } catch (e) {}
+      }
     };
   }, [isInteracting, activeCity, isGlobeReady]);
 
@@ -488,8 +495,8 @@ export default function CesiumGlobeContent({
         selectionIndicator={false}
         fullscreenButton={false}
         skyBox={false} // Disable default skybox to allow underlying CSS stars and auroras to show through
-        contextOptions={contextOptions} // Memoized to prevent constructor recreation crash loops
-        creditContainer={creditContainer} // Memoized to prevent constructor recreation crash loops
+        contextOptions={contextOptionsRef.current} // Ref-stabilized to prevent constructor recreation crash loops
+        creditContainer={creditContainerRef.current} // Ref-stabilized to prevent constructor recreation crash loops
         style={{ width: '100vw', height: '100vh' }}
       >
         <ViewerConfigurator onReady={handleViewerReady} />
