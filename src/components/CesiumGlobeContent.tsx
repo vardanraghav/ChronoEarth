@@ -24,13 +24,14 @@ const themeColors = {
   white: '#ffffff'
 };
 
-// Hub coordinates for the 9 specified network hubs
+// Hub coordinates for the 10 specified network hubs
 const customHubCoords: Record<string, { lat: number, lon: number }> = {
   'New York': { lat: 40.7128, lon: -74.0060 },
   'London': { lat: 51.5074, lon: -0.1278 },
   'Paris': { lat: 48.8566, lon: 2.3522 },
   'Dubai': { lat: 25.2048, lon: 55.2708 },
   'Mumbai': { lat: 19.0760, lon: 72.8777 },
+  'Delhi': { lat: 28.6139, lon: 77.2090 },
   'Singapore': { lat: 1.3521, lon: 103.8198 },
   'Tokyo': { lat: 35.6762, lon: 139.6503 },
   'Seoul': { lat: 37.5665, lon: 126.9780 },
@@ -43,17 +44,18 @@ const getHubCoords = (name: string) => {
   return c ? { lat: c.lat, lon: c.lon } : null;
 };
 
-// Geodesic connections between the exact 9 hubs
+// Geodesic connections between the exact hubs
 const globalHighways = [
   { start: 'New York',  end: 'London'   , alt: 420000, color: themeColors.cyan },
   { start: 'London',    end: 'Paris'    , alt: 120000, color: themeColors.white },
   { start: 'Paris',     end: 'Dubai'    , alt: 350000, color: themeColors.violet },
   { start: 'Dubai',     end: 'Mumbai'   , alt: 250000, color: themeColors.teal },
-  { start: 'Mumbai',    end: 'Singapore', alt: 300000, color: themeColors.cyan },
-  { start: 'Singapore', end: 'Sydney'   , alt: 450000, color: themeColors.teal },
+  { start: 'Mumbai',    end: 'Delhi'    , alt: 200000, color: themeColors.cyan },
+  { start: 'Delhi',     end: 'Singapore', alt: 350000, color: themeColors.white },
+  { start: 'Mumbai',    end: 'Singapore', alt: 300000, color: themeColors.teal },
   { start: 'Singapore', end: 'Tokyo'    , alt: 320000, color: themeColors.cyan },
   { start: 'Tokyo',     end: 'Seoul'    , alt: 150000, color: themeColors.white },
-  { start: 'Tokyo',     end: 'New York' , alt: 650000, color: themeColors.violet },
+  { start: 'Sydney',    end: 'Singapore', alt: 450000, color: themeColors.violet },
 ];
 
 // Helper to generate positions along a curved geodesic path
@@ -208,10 +210,10 @@ export default function CesiumGlobeContent({
         if (viewer.isDestroyed()) return;
         const lyr = viewer.imageryLayers.addImageryProvider(provider);
         if (isCyber) {
-          // Cyber 2050: Realistic colors but darkened so telemetry and city lights stand out
+          // Cyber 2050: Realistic colors but slightly darkened so night lights and cyber lines pop
           lyr.brightness = 0.55;
           lyr.contrast = 1.30;
-          lyr.saturation = 0.85; // Keep natural planet colors recognizable!
+          lyr.saturation = 0.90; // Natural green continents & blue oceans remain visible!
         } else {
           lyr.brightness = 1.05;
           lyr.contrast = 1.05;
@@ -225,7 +227,7 @@ export default function CesiumGlobeContent({
         );
         const lyr = viewer.imageryLayers.addImageryProvider(fb);
         if (isCyber) {
-          lyr.brightness = 0.55; lyr.contrast = 1.30; lyr.saturation = 0.85;
+          lyr.brightness = 0.55; lyr.contrast = 1.30; lyr.saturation = 0.90;
         }
       });
 
@@ -262,15 +264,15 @@ export default function CesiumGlobeContent({
         .catch(() => {});
     }
 
-    // ── 4. Ambient and Directional Lighting (day/night boundary)
-    if (!isCyber) {
-      viewer.scene.light = new Cesium.DirectionalLight({
-        direction: new Cesium.Cartesian3(-0.7, -0.5, -0.5),
-        color:     Cesium.Color.fromCssColorString('#fff8f0'),
-        intensity: 2.2,
-      });
-      viewer.scene.ambientColor = new Cesium.Color(0.03, 0.03, 0.04, 1.0);
+    // ── 4. Ambient and Pure White Sunlight (physically plausible daylight rendering)
+    viewer.scene.light = new Cesium.DirectionalLight({
+      direction: new Cesium.Cartesian3(-0.7, -0.5, -0.5),
+      color:     Cesium.Color.fromCssColorString('#ffffff'), // Pure white realistic sunlight!
+      intensity: 3.5,
+    });
+    viewer.scene.ambientColor = new Cesium.Color(0.02, 0.03, 0.05, 1.0);
 
+    if (!isCyber) {
       if (viewer.scene.globe) {
         viewer.scene.globe.showGroundAtmosphere = true;
         viewer.scene.globe.enableLighting       = true;
@@ -280,13 +282,6 @@ export default function CesiumGlobeContent({
         viewer.scene.globe.atmosphereBrightnessShift = 0.08;
       }
     } else {
-      viewer.scene.light = new Cesium.DirectionalLight({
-        direction: new Cesium.Cartesian3(-0.7, -0.5, -0.5),
-        color:     Cesium.Color.fromCssColorString('#80f0ff'),
-        intensity: 4.0,
-      });
-      viewer.scene.ambientColor = new Cesium.Color(0.04, 0.08, 0.16, 1.0);
-
       if (viewer.scene.globe) {
         viewer.scene.globe.showGroundAtmosphere = true;
         viewer.scene.globe.enableLighting       = true;
@@ -316,8 +311,8 @@ export default function CesiumGlobeContent({
       });
     });
 
-    // ── 6. Geodesic Networks between the 9 exact hubs (NY, London, Paris, Dubai, Mumbai, Singapore, Tokyo, Seoul, Sydney)
-    const ov = isCyber ? { climate: true, pollution: true, energy: true, satellite: true } : overlays;
+    // ── 6. Geodesic Networks between the 10 exact hubs
+    const ov = isCyber ? { climate: true, pollution: true, energy: true, satellite: true, ai: true } : overlays;
     const yearFactor  = (activeYear - 2025) / 25;
 
     if (ov.energy) {
@@ -370,9 +365,9 @@ export default function CesiumGlobeContent({
     // ── 7. LEO, MEO, GEO Satellites (clean, meaningful layers)
     if (activeCategory === 'Satellite Network' || ov.satellite) {
       const satelliteConfig = [
-        // LEO: 3 satellites at 600km, fast orbit, polar tilt (tilt = 1.3)
+        // LEO: Fast orbit at 600km, polar tilt (tilt = 1.3), leaves glowing trails
         { level: 'LEO', height: 600000, speed: 0.08, color: Cesium.Color.fromCssColorString(themeColors.cyan), count: 3, tilt: 1.3 },
-        // MEO: 2 satellites at 3500km, medium speed, inclined tilt (tilt = -0.7)
+        // MEO: Medium speed at 3500km, inclined tilt (tilt = -0.7)
         { level: 'MEO', height: 3500000, speed: 0.04, color: Cesium.Color.fromCssColorString(themeColors.violet), count: 2, tilt: -0.7 },
       ];
 
@@ -458,6 +453,7 @@ export default function CesiumGlobeContent({
       });
 
       geoSatellites.forEach((sat) => {
+        // Satellite core point
         viewer.entities.add({
           position: Cesium.Cartesian3.fromDegrees(sat.lon, 0, 12000000),
           point: {
@@ -468,6 +464,21 @@ export default function CesiumGlobeContent({
             disableDepthTestDistance: Number.POSITIVE_INFINITY,
           }
         });
+
+        // GEO Solar Power Satellite: rotating holographic energy collector ring overlay
+        if (isCyber) {
+          viewer.entities.add({
+            position: Cesium.Cartesian3.fromDegrees(sat.lon, 0, 12000000),
+            ellipse: {
+              semiMajorAxis: 250000, // 250km radius collector
+              semiMinorAxis: 250000,
+              material: sat.color.withAlpha(0.12),
+              outline: true,
+              outlineColor: sat.color.withAlpha(0.85),
+              outlineWidth: 1.5
+            }
+          });
+        }
       });
     }
 
