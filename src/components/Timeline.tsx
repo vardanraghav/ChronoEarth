@@ -5,132 +5,119 @@ import { useState } from 'react';
 const years = [2025, 2030, 2035, 2040, 2045, 2050];
 
 interface TimelineProps {
-  activeYear: number;
+  activeYear:    number;
   setActiveYear: (year: number) => void;
 }
 
 export default function Timeline({ activeYear, setActiveYear }: TimelineProps) {
-  const [hoveredYear, setHoveredYear] = useState<number | null>(null);
+  const [hovered, setHovered] = useState<number | null>(null);
+  const activeIdx = years.indexOf(activeYear);
+  const fillPct   = (activeIdx / (years.length - 1)) * 100;
 
   return (
-    <>
-      <style>{`
-        @keyframes timeline-pulse-ring {
-          0% {
-            transform: translate(-50%, -50%) scale(1);
-            opacity: 0.6;
-          }
-          100% {
-            transform: translate(-50%, -50%) scale(2.5);
-            opacity: 0;
-          }
-        }
-        .timeline-dot {
-          transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-        }
-        .timeline-dot:hover {
-          background: #00f0ff !important;
-          box-shadow: 0 0 12px #00f0ff, 0 0 24px #00f0ff60 !important;
-          transform: scale(1.3);
-        }
-      `}</style>
-
+    <div
+      className="fixed bottom-0 left-0 right-0 z-40"
+      style={{
+        padding:    '0 40px 28px',
+        background: 'linear-gradient(to top, rgba(3,5,10,0.72) 0%, rgba(3,5,10,0.20) 70%, transparent 100%)',
+        animation:  'fade-up 1s 0.8s cubic-bezier(0.22, 1, 0.36, 1) both',
+      }}
+    >
       <div
-        className="fixed bottom-0 left-0 right-0 z-40 px-6 md:px-16 py-5"
         style={{
-          background: 'linear-gradient(to top, rgba(6, 9, 24, 0.85), rgba(6, 9, 24, 0.4), transparent)',
-          backdropFilter: 'blur(10px)',
-          WebkitBackdropFilter: 'blur(10px)',
+          maxWidth: '560px',
+          margin:   '0 auto',
+          position: 'relative',
         }}
       >
-        <div className="max-w-3xl mx-auto relative">
-          {/* Track line */}
-          <div
-            className="absolute top-1/2 left-0 right-0 h-px -translate-y-1/2"
-            style={{
-              background: 'linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.2) 10%, rgba(0, 240, 255, 0.2) 90%, transparent)',
-            }}
-          />
+        {/* ── Track ───────────────────────────────────────────────────── */}
+        <div
+          style={{
+            position:   'absolute',
+            top:        '5px',
+            left:       0,
+            right:      0,
+            height:     '1px',
+            background: 'rgba(255,255,255,0.08)',
+          }}
+        />
 
-          {/* Active progress fill */}
-          <div
-            className="absolute top-1/2 left-0 h-px -translate-y-1/2"
-            style={{
-              width: `${((years.indexOf(activeYear)) / (years.length - 1)) * 100}%`,
-              background: 'linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.4))',
-              boxShadow: '0 0 8px rgba(0, 240, 255, 0.2)',
-            }}
-          />
+        {/* ── Progress fill ────────────────────────────────────────────── */}
+        <div
+          style={{
+            position:   'absolute',
+            top:        '5px',
+            left:       0,
+            height:     '1px',
+            width:      `${fillPct}%`,
+            background: 'rgba(255,255,255,0.35)',
+            transition: 'width 0.7s cubic-bezier(0.22, 1, 0.36, 1)',
+          }}
+        />
 
-          {/* Year dots */}
-          <div className="flex items-center justify-between relative">
-            {years.map((year, i) => {
-              const isActive = year === activeYear;
-              const isHovered = year === hoveredYear;
-              // On mobile, show first, last, and active; hide others
-              const showOnMobile = i === 0 || i === years.length - 1 || isActive;
+        {/* ── Year markers ─────────────────────────────────────────────── */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          {years.map((year) => {
+            const isActive  = year === activeYear;
+            const isHovered = year === hovered;
+            // Mobile: show only first, last, active
+            const isMobileVisible = year === 2025 || year === 2050 || isActive;
 
-              return (
-                <button
-                  key={year}
-                  onClick={() => setActiveYear(year)}
-                  onMouseEnter={() => setHoveredYear(year)}
-                  onMouseLeave={() => setHoveredYear(null)}
-                  className={`relative flex flex-col items-center gap-3 group ${showOnMobile ? '' : 'hidden sm:flex'}`}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+            return (
+              <button
+                key={year}
+                onClick={() => setActiveYear(year)}
+                onMouseEnter={() => setHovered(year)}
+                onMouseLeave={() => setHovered(null)}
+                className={isMobileVisible ? '' : 'hidden sm:flex'}
+                style={{
+                  background:    'none',
+                  border:        'none',
+                  cursor:        'pointer',
+                  display:       isMobileVisible ? 'flex' : undefined,
+                  flexDirection: 'column',
+                  alignItems:    'center',
+                  gap:           '7px',
+                  padding:       '0 2px',
+                }}
+              >
+                {/* Tick mark */}
+                <div
+                  style={{
+                    width:      '1px',
+                    height:     isActive ? '10px' : '6px',
+                    background: isActive
+                      ? 'rgba(255,255,255,0.70)'
+                      : isHovered
+                        ? 'rgba(255,255,255,0.45)'
+                        : 'rgba(255,255,255,0.18)',
+                    transition: 'height 0.3s ease, background 0.3s ease',
+                    marginTop:  isActive ? '-2px' : '0',
+                  }}
+                />
+
+                {/* Year label */}
+                <span
+                  style={{
+                    fontSize:     '8px',
+                    fontWeight:   isActive ? 300 : 200,
+                    letterSpacing:'0.12em',
+                    color:        isActive
+                      ? 'rgba(255,255,255,0.75)'
+                      : isHovered
+                        ? 'rgba(255,255,255,0.50)'
+                        : 'rgba(255,255,255,0.20)',
+                    transition:   'color 0.3s ease',
+                    userSelect:   'none',
+                  }}
                 >
-                  {/* Pulse ring for active */}
-                  {isActive && (
-                    <span
-                      className="absolute top-0 left-1/2 w-4 h-4 rounded-full pointer-events-none"
-                      style={{
-                        border: '1px solid rgba(0, 240, 255, 0.4)',
-                        animation: 'timeline-pulse-ring 2s ease-out infinite',
-                      }}
-                    />
-                  )}
-
-                  {/* Dot */}
-                  <span
-                    className="timeline-dot relative z-10 rounded-full block"
-                    style={{
-                      width: isActive ? 14 : 8,
-                      height: isActive ? 14 : 8,
-                      background: isActive
-                        ? '#00f0ff'
-                        : isHovered
-                          ? '#00f0ff'
-                          : 'rgba(0, 240, 255, 0.25)',
-                      boxShadow: isActive
-                        ? '0 0 12px #00f0ff, 0 0 30px #00f0ff60'
-                        : isHovered
-                          ? '0 0 10px #00f0ff80'
-                          : 'none',
-                    }}
-                  />
-
-                  {/* Year label */}
-                  <span
-                    className="text-[10px] font-light"
-                    style={{
-                      letterSpacing: '0.15em',
-                      color: isActive
-                        ? '#00f0ff'
-                        : isHovered
-                          ? 'rgba(0, 240, 255, 0.7)'
-                          : 'rgba(255, 255, 255, 0.3)',
-                      textShadow: isActive ? '0 0 10px #00f0ff60' : 'none',
-                      transition: 'color 0.3s ease',
-                    }}
-                  >
-                    {year}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
+                  {year}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
-    </>
+    </div>
   );
 }

@@ -540,34 +540,29 @@ export default function CesiumGlobeContent({
               key={city.name}
               position={Cesium.Cartesian3.fromDegrees(city.lon, city.lat)}
               point={{
-                pixelSize: isSelected ? 12 : 7,
-                color: theme.cesiumColor,
-                outlineColor: Cesium.Color.WHITE,
-                outlineWidth: isSelected ? 2.0 : 1.0,
+                // Minimal white dots — city nodes are data, not decoration
+                pixelSize:  isSelected ? 6 : 4,
+                color:      Cesium.Color.WHITE.withAlpha(isSelected ? 0.90 : 0.50),
+                outlineColor: Cesium.Color.WHITE.withAlpha(0.0),
+                outlineWidth: 0,
                 disableDepthTestDistance: Number.POSITIVE_INFINITY,
               }}
-              onClick={() => {
-                setActiveCity(city as CityData);
-              }}
-              onMouseEnter={() => {
-                setHoveredCity(city as CityData);
-              }}
-              onMouseLeave={() => {
-                setHoveredCity(null);
-              }}
+              onClick={() => { setActiveCity(city as CityData); }}
+              onMouseEnter={() => { setHoveredCity(city as CityData); }}
+              onMouseLeave={() => { setHoveredCity(null); }}
             />
           );
         })}
 
-        {/* Dynamic Radar Ring Pulse overlaying around the Active/Selected City */}
+        {/* Subtle pulse ring — very low alpha so it doesn't dominate the globe */}
         {activeCity && (
           <Entity
             position={Cesium.Cartesian3.fromDegrees(activeCity.lon, activeCity.lat)}
             ellipse={{
               semiMajorAxis: pulseRadius,
               semiMinorAxis: pulseRadius,
-              material: theme.cesiumColor.withAlpha(pulseAlpha),
-              height: 0,
+              material:      Cesium.Color.WHITE.withAlpha(pulseAlpha * 0.35),
+              height:        0,
             }}
           />
         )}
@@ -717,44 +712,47 @@ export default function CesiumGlobeContent({
         ) : null}
       </Viewer>
 
-      {/* Futuristic Hover HUD Card aligned with 2D coordinates on screen */}
+      {/* City hover label — minimal floating text, no glassmorphism box */}
       {hoveredCity && hoverPos && (
         <div
           className="absolute pointer-events-none select-none z-50"
           style={{
-            left: `${hoverPos.x + 12}px`,
-            top: `${hoverPos.y - 50}px`,
-            animation: 'fade-in-up 0.25s ease-out forwards',
+            left:      `${hoverPos.x + 14}px`,
+            top:       `${hoverPos.y - 38}px`,
+            animation: 'fade-in-up 0.2s ease-out forwards',
           }}
         >
           <div
-            className="rounded px-3 py-2 border flex flex-col gap-1 min-w-[155px]"
             style={{
-              borderColor: `${theme.primary}50`,
-              background: 'rgba(6, 12, 30, 0.88)',
-              backdropFilter: 'blur(8px)',
-              boxShadow: `0 0 15px ${theme.primary}20, inset 0 0 8px rgba(0, 240, 255, 0.05)`,
+              padding:       '6px 10px',
+              background:    'rgba(3, 5, 10, 0.75)',
+              backdropFilter:'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              border:        '1px solid rgba(255,255,255,0.08)',
+              borderRadius:  '2px',
             }}
           >
             <div
-              className="flex items-center justify-between border-b pb-1"
-              style={{ borderColor: `${theme.primary}20` }}
+              style={{
+                fontSize:     '9px',
+                fontWeight:   300,
+                letterSpacing:'0.2em',
+                color:        'rgba(255,255,255,0.80)',
+                textTransform:'uppercase',
+              }}
             >
-              <span className="text-[10px] font-semibold tracking-wider text-white uppercase font-mono">
-                {hoveredCity.name}
-              </span>
-              <span className="text-[7px] font-mono tracking-widest text-white/50">
-                {hoveredCity.country.toUpperCase()}
-              </span>
+              {hoveredCity.name}
             </div>
             <div
-              className="text-[7.5px] font-mono tracking-wide"
-              style={{ color: `${theme.primary}d0` }}
+              style={{
+                marginTop:    '2px',
+                fontSize:     '7px',
+                fontWeight:   200,
+                letterSpacing:'0.15em',
+                color:        'rgba(255,255,255,0.30)',
+              }}
             >
-              LAT: {hoveredCity.lat.toFixed(3)} | LON: {hoveredCity.lon.toFixed(3)}
-            </div>
-            <div className="text-[8px] font-light text-white/60 font-mono mt-0.5">
-              Click to load telemetry.
+              {hoveredCity.lat.toFixed(2)}° N &nbsp; {hoveredCity.lon.toFixed(2)}° E
             </div>
           </div>
         </div>
