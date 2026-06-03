@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import * as Cesium from 'cesium';
 import { Viewer, Scene, Entity, Polyline, ImageryLayer, useCesium } from 'resium';
 import { citiesRawData, CityData } from '../data/citiesData';
@@ -11,7 +11,7 @@ function ViewerConfigurator({ onReady }: { onReady: (viewer: any) => void }) {
   const { viewer } = useCesium();
 
   useEffect(() => {
-    if (viewer) {
+    if (viewer && !viewer.isDestroyed()) {
       onReady(viewer);
     }
   }, [viewer, onReady]);
@@ -136,6 +136,20 @@ export default function CesiumGlobeContent({
   // Ref to store cleanup function for tile loading progress listeners
   const tileLoadCleanupRef = useRef<(() => void) | null>(null);
 
+  // Stabilize contextOptions and creditContainer to prevent Viewer recreation crashes
+  const contextOptions = useMemo(() => ({
+    webgl: {
+      alpha: true, // Enable WebGL transparency blending
+    },
+  }), []);
+
+  const creditContainer = useMemo(() => {
+    if (typeof document !== 'undefined') {
+      return document.createElement('div');
+    }
+    return undefined;
+  }, []);
+
   // Clean up tile loader listener on unmount
   useEffect(() => {
     return () => {
@@ -172,10 +186,12 @@ export default function CesiumGlobeContent({
 
   // Post-render coordinate transformer: locks HTML hover HUD box onto the 3D city node
   useEffect(() => {
-    if (!viewerRef.current || !viewerRef.current.cesiumElement) return;
+    if (!isGlobeReady || !viewerRef.current || !viewerRef.current.cesiumElement) return;
     const viewer = viewerRef.current.cesiumElement;
+    if (viewer.isDestroyed() || !viewer.scene) return;
 
     const updateHoverPosition = () => {
+      if (viewer.isDestroyed() || !viewer.scene) return;
       if (hoveredCity) {
         const cartesian = Cesium.Cartesian3.fromDegrees(hoveredCity.lon, hoveredCity.lat);
         const canvasPos = viewer.scene.cartesianToCanvasCoordinates(cartesian);
@@ -193,27 +209,29 @@ export default function CesiumGlobeContent({
     const removeCameraChange = viewer.camera.changed.addEventListener(updateHoverPosition);
 
     return () => {
-      removePostRender();
-      removeCameraChange();
+      try { removePostRender(); } catch(e){}
+      try { removeCameraChange(); } catch(e){}
     };
-  }, [hoveredCity]);
+  }, [hoveredCity, isGlobeReady]);
 
   // Handle camera movements (flyTo) for selected cities
   useEffect(() => {
-    if (!viewerRef.current || !viewerRef.current.cesiumElement || !activeCity) return;
+    if (!isGlobeReady || !viewerRef.current || !viewerRef.current.cesiumElement || !activeCity) return;
     const viewer = viewerRef.current.cesiumElement;
+    if (viewer.isDestroyed() || !viewer.camera) return;
 
     viewer.camera.flyTo({
       destination: Cesium.Cartesian3.fromDegrees(activeCity.lon, activeCity.lat - 1.2, 1400000),
       duration: 3.5,
       easingFunction: Cesium.EasingFunction.QUADRATIC_IN_OUT,
     });
-  }, [activeCity]);
+  }, [activeCity, isGlobeReady]);
 
   // Handle camera movements (flyTo) based on active category (when no city is selected)
   useEffect(() => {
-    if (!viewerRef.current || !viewerRef.current.cesiumElement) return;
+    if (!isGlobeReady || !viewerRef.current || !viewerRef.current.cesiumElement) return;
     const viewer = viewerRef.current.cesiumElement;
+    if (viewer.isDestroyed() || !viewer.camera) return;
     if (activeCity) return;
 
     let destLat = 0;
@@ -250,7 +268,7 @@ export default function CesiumGlobeContent({
       duration: 3.5,
       easingFunction: Cesium.EasingFunction.QUADRATIC_IN_OUT,
     });
-  }, [activeCategory, activeCity]);
+  }, [activeCategory, activeCity, isGlobeReady]);
 
   // Handle continuous slow rotation when user is NOT dragging the globe
   useEffect(() => {
@@ -262,6 +280,7 @@ export default function CesiumGlobeContent({
     const rotate = () => {
       if (!viewerRef.current || !viewerRef.current.cesiumElement) return;
       const viewer = viewerRef.current.cesiumElement;
+      if (viewer.isDestroyed() || !viewer.scene || !viewer.scene.camera) return;
 
       const currentTime = Date.now();
       const delta = (currentTime - lastTime) / 1000;
@@ -284,7 +303,9 @@ export default function CesiumGlobeContent({
   }, [isInteracting, activeCity, isGlobeReady]);
 
   // Setup viewer configuration on load: sets coordinates view, overlays, brightness, and fades loading layer
-  const handleViewerReady = (viewer: any) => {
+  const handleViewerReady = useCallback((viewer: any) => {
+    if (!viewer || viewer.isDestroyed() || !viewer.scene || !viewer.camera) return;
+
     // 1. Zoom and tilt camera view immediately to fill viewport (cinematic curvature focus)
     // We bring the camera closer (7,200,000 meters) and tilt it slightly (-30 degrees) to reduce empty space and emphasize the Earth's curvature.
     viewer.camera.setView({
@@ -305,9 +326,11 @@ export default function CesiumGlobeContent({
     }
 
     // 3. Customize atmospheric glow, lighting defaults, and sky transparency
-    viewer.scene.skyAtmosphere.show = true;
-    viewer.scene.globe.showGroundAtmosphere = true;
-    viewer.scene.globe.enableLighting = true; // Enable lighting so the globe is realistically shaded
+    if (viewer.scene.skyAtmosphere) viewer.scene.skyAtmosphere.show = true;
+    if (viewer.scene.globe) {
+      viewer.scene.globe.showGroundAtmosphere = true;
+      viewer.scene.globe.enableLighting = true; // Enable lighting so the globe is realistically shaded
+    }
     
     // Set a transparent background for WebGL to let the CSS stars/auroras show through
     viewer.scene.backgroundColor = Cesium.Color.TRANSPARENT;
@@ -323,39 +346,50 @@ export default function CesiumGlobeContent({
     viewer.scene.ambientColor = new Cesium.Color(0.08, 0.14, 0.35, 1.0); // Soft glowing indigo/blue ambient
 
     // Tweak atmosphere properties for a beautiful futuristic cyan/purple glow matching our theme
-    viewer.scene.globe.atmosphereLightIntensity = 22.0; // Intensely bright atmosphere glow
-    viewer.scene.globe.atmosphereHueShift = 0.58; // Shifts atmosphere colors to futuristic cyan/blue
-    viewer.scene.globe.atmosphereSaturationShift = 0.85; // Highly saturated neon atmosphere
-    viewer.scene.globe.atmosphereBrightnessShift = 0.35; // Brighter atmospheric envelope
+    if (viewer.scene.globe) {
+      viewer.scene.globe.atmosphereLightIntensity = 22.0; // Intensely bright atmosphere glow
+      viewer.scene.globe.atmosphereHueShift = 0.58; // Shifts atmosphere colors to futuristic cyan/blue
+      viewer.scene.globe.atmosphereSaturationShift = 0.85; // Highly saturated neon atmosphere
+      viewer.scene.globe.atmosphereBrightnessShift = 0.35; // Brighter atmospheric envelope
+    }
 
-    viewer.scene.skyAtmosphere.hueShift = 0.58;
-    viewer.scene.skyAtmosphere.saturationShift = 0.85;
-    viewer.scene.skyAtmosphere.brightnessShift = 0.35;
+    if (viewer.scene.skyAtmosphere) {
+      viewer.scene.skyAtmosphere.hueShift = 0.58;
+      viewer.scene.skyAtmosphere.saturationShift = 0.85;
+      viewer.scene.skyAtmosphere.brightnessShift = 0.35;
+    }
 
     // 4. Track tile loading progress to fade out the loader overlay only when imagery is fully rendered
     let isFullyLoaded = false;
-    const removeTileLoadListener = viewer.scene.globe.tileLoadProgressEvent.addEventListener((queueLength: number) => {
-      if (queueLength === 0 && !isFullyLoaded) {
-        isFullyLoaded = true;
-        setIsGlobeReady(true);
-        removeTileLoadListener();
-      }
-    });
+    let removeTileLoadListener: (() => void) | undefined;
+    if (viewer.scene.globe) {
+      removeTileLoadListener = viewer.scene.globe.tileLoadProgressEvent.addEventListener((queueLength: number) => {
+        if (queueLength === 0 && !isFullyLoaded) {
+          isFullyLoaded = true;
+          setIsGlobeReady(true);
+          if (removeTileLoadListener) removeTileLoadListener();
+        }
+      });
+    }
 
     // Safety fallback: force ready state after 3.5 seconds max to ensure it doesn't hang
     const safetyTimeout = setTimeout(() => {
       if (!isFullyLoaded) {
         isFullyLoaded = true;
         setIsGlobeReady(true);
-        try { removeTileLoadListener(); } catch(e){}
+        if (removeTileLoadListener) {
+          try { removeTileLoadListener(); } catch(e){}
+        }
       }
     }, 3500);
 
     tileLoadCleanupRef.current = () => {
       clearTimeout(safetyTimeout);
-      try { removeTileLoadListener(); } catch(e){}
+      if (removeTileLoadListener) {
+        try { removeTileLoadListener(); } catch(e){}
+      }
     };
-  };
+  }, []);
 
   // Generate coordinates for high-tech satellite orbit circles
   const generateOrbitPoints = (tiltRad: number, height: number) => {
@@ -454,12 +488,8 @@ export default function CesiumGlobeContent({
         selectionIndicator={false}
         fullscreenButton={false}
         skyBox={false} // Disable default skybox to allow underlying CSS stars and auroras to show through
-        contextOptions={{
-          webgl: {
-            alpha: true, // Enable WebGL transparency blending
-          },
-        }}
-        creditContainer={typeof document !== 'undefined' ? document.createElement('div') : undefined}
+        contextOptions={contextOptions} // Memoized to prevent constructor recreation crash loops
+        creditContainer={creditContainer} // Memoized to prevent constructor recreation crash loops
         style={{ width: '100vw', height: '100vh' }}
       >
         <ViewerConfigurator onReady={handleViewerReady} />
