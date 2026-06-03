@@ -206,11 +206,11 @@ export default function CesiumGlobeContent({
           const lyr = viewer.imageryLayers.addImageryProvider(provider);
           lyr.brightness = 1.05; lyr.contrast = 1.05; lyr.saturation = 1.0; lyr.hue = 0.0;
         })
-        .catch(() => {
+        .catch(async () => {
           if (viewer.isDestroyed()) return;
-          const fb = new Cesium.ArcGisMapServerImageryProvider({
-            url: 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer',
-          });
+const fb = await Cesium.ArcGisMapServerImageryProvider.fromUrl(
+  'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer'
+);
           const lyr = viewer.imageryLayers.addImageryProvider(fb);
           lyr.brightness = 1.05; lyr.contrast = 1.05; lyr.saturation = 1.0;
         });

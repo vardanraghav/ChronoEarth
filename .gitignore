@@ -42,3 +42,5 @@ next-env.d.ts
 
 # cesium static assets (copied dynamically in script)
 /public/cesium/
+
+.vercel
