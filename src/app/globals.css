@@ -87,6 +87,12 @@ html, body {
 .animate-breathe   { animation: breathe   2.5s ease-in-out infinite; }
 .animate-fade-in-up { animation: fade-in-up 0.25s ease-out forwards; }
 
+/* Spin keyframe — used by loader rings (inline style animation can't use Tailwind) */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
 /* ═══════════════════════════════════════════════════════════
    GLASSMORPHISM — ultra-thin variant for cinematic UI
    ═══════════════════════════════════════════════════════════ */

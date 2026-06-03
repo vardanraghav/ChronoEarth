@@ -1,20 +1,16 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import '../lib/cesium-setup'; // Ensure setup runs before Resium loads
+import '../lib/cesium-setup';
+import { EarthMode } from './CesiumGlobeContent';
 
 interface CesiumGlobeProps {
-  activeYear: number;
+  activeYear:     number;
   activeCategory: string;
-  activeCity: any;
-  setActiveCity: (city: any) => void;
-  overlays: {
-    climate: boolean;
-    pollution: boolean;
-    energy: boolean;
-    satellite: boolean;
-    ai: boolean;
-  };
+  activeCity:     any;
+  setActiveCity:  (city: any) => void;
+  overlays: { climate: boolean; pollution: boolean; energy: boolean; satellite: boolean; ai: boolean };
+  earthMode:      EarthMode;
 }
 
 const CesiumGlobeContent = dynamic(
@@ -22,22 +18,29 @@ const CesiumGlobeContent = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#060918] z-0">
-        {/* Futuristic pulsing loader */}
-        <div className="relative w-24 h-24 rounded-full border border-cyan-500/30 flex items-center justify-center animate-pulse">
-          <div className="absolute inset-0 rounded-full border border-dashed border-cyan-400/20 animate-spin" style={{ animationDuration: '8s' }} />
-          <div className="w-16 h-16 rounded-full bg-cyan-950/20 border border-cyan-400/50 flex items-center justify-center">
-            <span className="text-[10px] tracking-widest text-cyan-400 uppercase font-mono">GRID</span>
-          </div>
+      <div className="absolute inset-0 flex flex-col items-center justify-center z-50" style={{ background: '#030508' }}>
+        <div style={{ width: 56, height: 56, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.10)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'breathe 2.5s ease-in-out infinite' }}>
+          <div style={{ width: 34, height: 34, borderRadius: '50%', border: '1px dashed rgba(255,255,255,0.07)' }} />
         </div>
-        <p className="mt-4 text-xs font-light text-cyan-400/60 uppercase tracking-[0.25em] font-mono">
-          Loading WebGL Digital Twin...
+        <p style={{ marginTop: 16, fontSize: 8, fontWeight: 300, letterSpacing: '0.4em',
+          textTransform: 'uppercase', color: 'rgba(255,255,255,0.22)' }}>
+          Loading Globe
         </p>
       </div>
     ),
   }
 );
 
-export default function CesiumGlobe({ activeYear, activeCategory, activeCity, setActiveCity, overlays }: CesiumGlobeProps) {
-  return <CesiumGlobeContent activeYear={activeYear} activeCategory={activeCategory} activeCity={activeCity} setActiveCity={setActiveCity} overlays={overlays} />;
+export default function CesiumGlobe({ activeYear, activeCategory, activeCity, setActiveCity, overlays, earthMode }: CesiumGlobeProps) {
+  return (
+    <CesiumGlobeContent
+      activeYear={activeYear}
+      activeCategory={activeCategory}
+      activeCity={activeCity}
+      setActiveCity={setActiveCity}
+      overlays={overlays}
+      earthMode={earthMode}
+    />
+  );
 }

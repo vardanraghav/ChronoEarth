@@ -2,11 +2,13 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { CityData, generateCityProjections } from '../data/citiesData';
+import { EarthMode } from './CesiumGlobeContent';
 
 interface ProjectionPanelProps {
   activeYear:     number;
   activeCategory: string;
   activeCity:     CityData | null;
+  earthMode?:     EarthMode;
 }
 
 const projectionsData: Record<string, Record<number, { text: string; stability: number; status: string }>> = {
@@ -62,7 +64,7 @@ const statusPalette: Record<string, string> = {
   MAXIMUM:      'rgba(255,255,255,0.65)',
 };
 
-export default function ProjectionPanel({ activeYear, activeCategory, activeCity }: ProjectionPanelProps) {
+export default function ProjectionPanel({ activeYear, activeCategory, activeCity, earthMode = 'realistic' }: ProjectionPanelProps) {
   const [visible, setVisible]   = useState(true);
   const [content, setContent]   = useState({ text: '', stability: 0, status: '' });
   const prevKey                 = useRef('');
@@ -112,23 +114,25 @@ export default function ProjectionPanel({ activeYear, activeCategory, activeCity
           fontWeight:   300,
           letterSpacing:'0.45em',
           textTransform:'uppercase',
-          color:        statusColor,
+          color:        earthMode === 'cyber' ? 'rgba(0,240,255,0.60)' : statusColor,
           marginBottom: '8px',
+          textShadow:   earthMode === 'cyber' ? '0 0 10px rgba(0,240,255,0.40)' : 'none',
         }}
       >
         {activeCity ? activeCity.name.toUpperCase() : activeCategory.toUpperCase()}
-        <span style={{ margin: '0 8px', color: 'rgba(255,255,255,0.15)' }}>·</span>
+        <span style={{ margin: '0 8px', color: earthMode === 'cyber' ? 'rgba(0,240,255,0.15)' : 'rgba(255,255,255,0.15)' }}>·</span>
         {content.status}
       </div>
 
       {/* Projection sentence */}
       <p
         style={{
-          fontSize:   '10px',
-          fontWeight: 300,
-          lineHeight: 1.7,
-          color:      'rgba(255,255,255,0.42)',
+          fontSize:      '10px',
+          fontWeight:    300,
+          lineHeight:    1.7,
+          color:         earthMode === 'cyber' ? 'rgba(0,240,255,0.50)' : 'rgba(255,255,255,0.42)',
           letterSpacing: '0.02em',
+          transition:    'color 0.6s ease',
         }}
       >
         {content.text}
@@ -148,28 +152,27 @@ export default function ProjectionPanel({ activeYear, activeCategory, activeCity
       >
         <div
           style={{
-            position:   'absolute',
-            top:        0,
-            left:       0,
-            height:     '100%',
-            width:      `${content.stability}%`,
-            background: 'rgba(255,255,255,0.35)',
+            position: 'absolute', top: 0, left: 0, height: '100%',
+            width:    `${content.stability}%`,
+            background: earthMode === 'cyber' ? 'rgba(0,240,255,0.60)' : 'rgba(255,255,255,0.35)',
             transition: 'width 1.2s cubic-bezier(0.22, 1, 0.36, 1)',
             borderRadius: '1px',
+            boxShadow: earthMode === 'cyber' ? '0 0 6px rgba(0,240,255,0.70)' : 'none',
           }}
         />
       </div>
       {/* Stability label */}
       <div
         style={{
-          marginTop:    '5px',
-          display:      'flex',
+          marginTop:     '5px',
+          display:       'flex',
           justifyContent:'space-between',
-          fontSize:     '7px',
-          fontWeight:   300,
-          letterSpacing:'0.25em',
-          color:        'rgba(255,255,255,0.18)',
-          textTransform:'uppercase',
+          fontSize:      '7px',
+          fontWeight:    300,
+          letterSpacing: '0.25em',
+          color:         earthMode === 'cyber' ? 'rgba(0,240,255,0.25)' : 'rgba(255,255,255,0.18)',
+          textTransform: 'uppercase',
+          transition:    'color 0.6s ease',
         }}
       >
         <span>PLANETARY STABILITY</span>
