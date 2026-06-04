@@ -252,21 +252,46 @@ export const generateCityProjections = (
   let text = "";
 
   switch (category) {
-    case 'Ocean Monitoring':
-      if (city.offsets.seaLevel === 0) {
-        text = `${city.name} is landlocked. Focus is placed on local hydrological grids. By ${year}, ${city.details.climate.split('.')[1].trim()} System efficiency is at ${50 + yearIndex * 8}%, powered by smart telemetry.`;
-      } else {
-        const floodRisk = Math.max(10, 100 - (stability + 5));
-        text = `Coastal defenses in ${city.name} active. ${city.details.climate.split('.')[0].trim()} Sea wall telemetry indicates a flood risk threshold reduction of ${30 + yearIndex * 10}%. Relative sea level rise stands at +${(0.08 * yearIndex * city.offsets.seaLevel).toFixed(2)}m by ${year}.`;
-      }
+    case 'Climate Recovery':
+      text = `Climate mitigation systems in ${city.name} active. ${city.details.climate.split('.')[0].trim()} Local albedo and carbon sensors report thermal stability index at ${55 + yearIndex * 8}% by ${year}.`;
+      break;
+
+    case 'Clean Energy':
+      text = `Next-gen clean energy integration active for ${city.name}. ${city.details.energy.split('.')[0].trim()} Total grid reliance on fossil fuels reduced to ${Math.max(0, 45 - yearIndex * 9)}% by ${year}. ${city.details.energy.split('.')[1].trim()} efficiency is at peak capability.`;
       break;
 
     case 'Biodiversity':
       text = `Planetary ecological balance initiatives in ${city.name} show progress. ${city.details.biodiversity.split('.')[0].trim()} Ecological index has stabilized at ${60 + yearIndex * 7}% of pre-industrial levels by the year ${year}. ${city.details.biodiversity.split('.')[1].trim()}`;
       break;
 
-    case 'Clean Energy':
-      text = `Next-gen clean energy integration active for ${city.name}. ${city.details.energy.split('.')[0].trim()} Total grid reliance on fossil fuels reduced to ${Math.max(0, 45 - yearIndex * 9)}% by ${year}. ${city.details.energy.split('.')[1].trim()} efficiency is at peak capability.`;
+    case 'AI Infrastructure':
+      text = `${city.name} smart AI computing node online. Live connection telemetry reports quantum processing loops active. Synchronized with orbital neural backbone ChronoOS by ${year}.`;
+      break;
+
+    case 'Smart Cities':
+      text = `${city.name} biophilic metropolis adaptation index at ${65 + yearIndex * 6}% by ${year}. ${city.details.climate.split('.')[1] ? city.details.climate.split('.')[1].trim() : 'District micro-cooling loops active.'} Integration with local biome complete.`;
+      break;
+
+    case 'Transportation Networks':
+      text = `Autonomous travel slots optimized in ${city.name}. Carbon-neutral hyperloop links and maglev guidelines operating at ${70 + yearIndex * 5}% efficiency by the year ${year}.`;
+      break;
+
+    case 'Ocean Monitoring':
+      if (city.offsets.seaLevel === 0) {
+        text = `${city.name} is landlocked. Focus is placed on local inland river basin restoration. By ${year}, clean watershed indicators are at ${50 + yearIndex * 8}%, powered by telemetry.`;
+      } else {
+        const floodRisk = Math.max(10, 100 - (stability + 5));
+        text = `Coastal defenses in ${city.name} active. ${city.details.climate.split('.')[0].trim()} Sea wall telemetry indicates a flood risk threshold reduction of ${30 + yearIndex * 10}%. Relative sea level rise stands at +${(0.08 * yearIndex * city.offsets.seaLevel).toFixed(2)}m by ${year}.`;
+      }
+      break;
+
+    case 'Population Growth':
+      const projectedPop = (city.offsets.population * 1000) * Math.pow(city.offsets.popGrowth, yearIndex / 5);
+      text = `${city.name} smart carrying capacity limit optimized. Projected population stabilizes at ${projectedPop.toFixed(2)} million by ${year}, maintaining quality-of-life stability at ${80 + yearIndex * 3}%.`;
+      break;
+
+    case 'Water Systems':
+      text = `Municipal water systems in ${city.name} optimized. Hydro-capture grids and smart recycling channels running at ${60 + yearIndex * 7}% recycling capacity by the year ${year}.`;
       break;
 
     case 'Satellite Network':

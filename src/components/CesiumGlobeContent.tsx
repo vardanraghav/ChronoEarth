@@ -203,75 +203,35 @@ export default function CesiumGlobeContent({
     // Reset components
     viewer.entities.removeAll();
     viewer.imageryLayers.removeAll();
+    viewer.dataSources.removeAll();
 
-    // ── 1. Realistic Satellite Imagery Base Map (recognizable planet)
-    Cesium.createWorldImageryAsync({ style: Cesium.IonWorldImageryStyle.AERIAL })
-      .then((provider: any) => {
-        if (viewer.isDestroyed()) return;
-        const lyr = viewer.imageryLayers.addImageryProvider(provider);
-        if (isCyber) {
-          // Cyber 2050: Keep natural planet colors recognizable but darken slightly
-          lyr.brightness = 0.55;
-          lyr.contrast = 1.30;
-          lyr.saturation = 0.90; 
-        } else {
+    if (!isCyber) {
+      // ─── REALISTIC MODE ──────────────────────────────────────────────────
+      Cesium.createWorldImageryAsync({ style: Cesium.IonWorldImageryStyle.AERIAL })
+        .then((provider: any) => {
+          if (viewer.isDestroyed() || isCyber) return;
+          const lyr = viewer.imageryLayers.addImageryProvider(provider);
           lyr.brightness = 1.05;
           lyr.contrast = 1.05;
           lyr.saturation = 1.00;
-        }
-      })
-      .catch(async () => {
-        if (viewer.isDestroyed()) return;
-        const fb = await Cesium.ArcGisMapServerImageryProvider.fromUrl(
-          'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer'
-        );
-        const lyr = viewer.imageryLayers.addImageryProvider(fb);
-        if (isCyber) {
-          lyr.brightness = 0.55; lyr.contrast = 1.30; lyr.saturation = 0.90;
-        }
+        })
+        .catch(async () => {
+          if (viewer.isDestroyed() || isCyber) return;
+          const fb = await Cesium.ArcGisMapServerImageryProvider.fromUrl(
+            'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer'
+          );
+          const lyr = viewer.imageryLayers.addImageryProvider(fb);
+          lyr.brightness = 1.05; lyr.contrast = 1.05; lyr.saturation = 1.00;
+        });
+
+      // Ambient and Sunlight
+      viewer.scene.light = new Cesium.DirectionalLight({
+        direction: new Cesium.Cartesian3(-0.7, -0.5, -0.5),
+        color:     Cesium.Color.fromCssColorString('#ffffff'),
+        intensity: 3.5,
       });
+      viewer.scene.ambientColor = new Cesium.Color(0.02, 0.03, 0.05, 1.0);
 
-    // ── 2. Dynamic Rotating 3D Cloud Ellipsoid (adds depth/parallax)
-    viewer.entities.add({
-      position: Cesium.Cartesian3.ZERO,
-      orientation: new Cesium.CallbackProperty(() => {
-        // Slow rotation around the Z axis
-        const angle = timeRef.current * 0.005;
-        return Cesium.Quaternion.fromAxisAngle(Cesium.Cartesian3.UNIT_Z, angle);
-      }, false),
-      ellipsoid: {
-        radii: new Cesium.Cartesian3(6378137 + 15000, 6378137 + 15000, 6378137 + 15000), // 15km altitude shell
-        material: new Cesium.ImageMaterialProperty({
-          image: 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_clouds_1024.png',
-          transparent: true,
-          color: Cesium.Color.WHITE.withAlpha(isCyber ? 0.28 : 0.40)
-        })
-      }
-    });
-
-    // ── 3. Blended Night Lights (Desaturated to Ice-Blue/White to remove Yellow/Orange tint)
-    if (isCyber) {
-      Cesium.IonImageryProvider.fromAssetId(3812)
-        .then((nightProvider: any) => {
-          if (viewer.isDestroyed()) return;
-          const nightLyr = viewer.imageryLayers.addImageryProvider(nightProvider);
-          nightLyr.alpha = 0.70;
-          nightLyr.brightness = 3.20; // Prominent neon city lights
-          nightLyr.contrast = 2.00;
-          nightLyr.saturation = 0.00; // Desaturate completely to make lights white/ice-blue!
-        })
-        .catch(() => {});
-    }
-
-    // ── 4. Ambient and Pure White Sunlight (physically plausible daylight rendering)
-    viewer.scene.light = new Cesium.DirectionalLight({
-      direction: new Cesium.Cartesian3(-0.7, -0.5, -0.5),
-      color:     Cesium.Color.fromCssColorString('#ffffff'), // Pure white realistic sunlight!
-      intensity: 3.5,
-    });
-    viewer.scene.ambientColor = new Cesium.Color(0.02, 0.03, 0.05, 1.0);
-
-    if (!isCyber) {
       if (viewer.scene.globe) {
         viewer.scene.globe.showGroundAtmosphere = true;
         viewer.scene.globe.enableLighting       = true;
@@ -280,71 +240,191 @@ export default function CesiumGlobeContent({
         viewer.scene.globe.atmosphereSaturationShift = 0.0;
         viewer.scene.globe.atmosphereBrightnessShift = 0.08;
       }
-    } else {
-      if (viewer.scene.globe) {
-        viewer.scene.globe.showGroundAtmosphere = true;
-        viewer.scene.globe.enableLighting       = true;
-        viewer.scene.globe.atmosphereLightIntensity  = 22.0; // Dynamic limb glow
-        viewer.scene.globe.atmosphereHueShift        = 0.54; // Electric blue atmosphere rim
-        viewer.scene.globe.atmosphereSaturationShift = 0.80;
-        viewer.scene.globe.atmosphereBrightnessShift = 0.25;
-      }
-    }
 
-    // ── 5. City Hub Markers (clean white/cyan points)
-    const activeColor = Cesium.Color.fromCssColorString(themeColorHex);
-    citiesRawData.forEach((city) => {
-      const isSel  = activeCity?.name === city.name;
+      // Dynamic Clouds
       viewer.entities.add({
-        position: Cesium.Cartesian3.fromDegrees(city.lon, city.lat),
-        point: {
-          pixelSize:    isCyber ? (isSel ? 12 : 7) : (isSel ? 6 : 4),
-          color:        isCyber
-            ? (isSel ? Cesium.Color.WHITE : activeColor.withAlpha(0.75))
-            : Cesium.Color.WHITE.withAlpha(isSel ? 0.90 : 0.50),
-          outlineColor: isCyber ? activeColor : Cesium.Color.WHITE.withAlpha(0.0),
-          outlineWidth: isCyber ? 1.5 : 0,
-          disableDepthTestDistance: Number.POSITIVE_INFINITY,
-        },
-        properties: { cityData: city }
+        position: Cesium.Cartesian3.ZERO,
+        orientation: new Cesium.CallbackProperty(() => {
+          return Cesium.Quaternion.fromAxisAngle(Cesium.Cartesian3.UNIT_Z, timeRef.current * 0.005);
+        }, false),
+        ellipsoid: {
+          radii: new Cesium.Cartesian3(6378137 + 15000, 6378137 + 15000, 6378137 + 15000),
+          material: new Cesium.ImageMaterialProperty({
+            image: 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_clouds_1024.png',
+            transparent: true,
+            color: Cesium.Color.WHITE.withAlpha(0.40)
+          })
+        }
       });
-    });
 
-    // ── 6. Geodesic Networks (Pulsing glowing highways between hubs)
-    const ov = isCyber ? { climate: true, pollution: true, energy: true, satellite: true, ai: true } : overlays;
-    const yearFactor  = (activeYear - 2025) / 25;
+      // City Hub Markers (clean white points)
+      citiesRawData.forEach((city) => {
+        const isSel = activeCity?.name === city.name;
+        viewer.entities.add({
+          position: Cesium.Cartesian3.fromDegrees(city.lon, city.lat),
+          point: {
+            pixelSize: isSel ? 6 : 4,
+            color: Cesium.Color.WHITE.withAlpha(isSel ? 0.90 : 0.50),
+            disableDepthTestDistance: Number.POSITIVE_INFINITY,
+          },
+          properties: { cityData: city }
+        });
+      });
 
-    if (ov.energy) {
-      const pktCount = isCyber ? 2 : 1;
-      const pktSpeed = 0.06 + yearFactor * 0.08;
+    } else {
+      // ─── CYBER 2050 MODE (Earth's AI Operating System) ───────────────────
+      // 1. Dark Black Globe Base with glowing Emerald Green/Cyan wireframe topology
+      viewer.scene.globe.baseColor = Cesium.Color.fromCssColorString('#000305');
+      viewer.scene.globe.showGroundAtmosphere = true;
+      viewer.scene.globe.enableLighting = true;
+      viewer.scene.globe.atmosphereLightIntensity = 25.0; // High intensity atmospheric bloom
+      viewer.scene.globe.atmosphereHueShift = 0.40;        // Beautiful Cyan and Emerald green shift
+      viewer.scene.globe.atmosphereSaturationShift = 0.90;
+      viewer.scene.globe.atmosphereBrightnessShift = 0.30;
 
+      viewer.scene.light = new Cesium.DirectionalLight({
+        direction: new Cesium.Cartesian3(-0.5, -0.3, -0.7),
+        color: Cesium.Color.fromCssColorString('#00ffaa'), // Emerald/Cyan sunlight casting
+        intensity: 4.0
+      });
+      viewer.scene.ambientColor = new Cesium.Color(0.0, 0.05, 0.03, 1.0); // trans-emerald space ambient
+
+      // Add Grid topology layer
+      viewer.imageryLayers.addImageryProvider(
+        new Cesium.GridImageryProvider({
+          color: Cesium.Color.fromCssColorString('#00ff88').withAlpha(0.20), // Neon Emerald Green
+          backgroundColor: Cesium.Color.fromCssColorString('#000305'),
+          cells: 64,
+          glowColor: Cesium.Color.fromCssColorString('#00f0ff').withAlpha(0.10), // Cyan secondary glow
+          glowWidth: 8
+        })
+      );
+
+      // 2. Neon Emerald-Green Continental outlines from Natural Earth GeoJSON
+      Cesium.GeoJsonDataSource.load('https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_land.geojson', {
+        stroke: Cesium.Color.fromCssColorString('#00ff66'),
+        fill: Cesium.Color.fromCssColorString('#000804').withAlpha(0.60),
+        strokeWidth: 2
+      }).then((dataSource: any) => {
+        if (viewer.isDestroyed() || !isCyber) return;
+        viewer.dataSources.add(dataSource);
+        dataSource.entities.values.forEach((entity: any) => {
+          if (entity.polygon) {
+            entity.polygon.outline = true;
+            entity.polygon.outlineColor = Cesium.Color.fromCssColorString('#00ff66');
+            entity.polygon.outlineWidth = 2.0;
+            entity.polygon.material = Cesium.Color.fromCssColorString('#000e06').withAlpha(0.60);
+          }
+        });
+      }).catch(() => {});
+
+      // 3. Dense matrix of 300+ glowing points globally (Planetary Intelligence Mesh)
+      const numNodes = 300;
+      const nodesData: { lat: number; lon: number; phase: number; isBeam: boolean }[] = [];
+      
+      // Let's seed coordinates globally
+      for (let i = 0; i < numNodes; i++) {
+        const u = Math.random();
+        const v = Math.random();
+        const lat = Math.acos(2 * v - 1) * (180 / Math.PI) - 90;
+        const lon = u * 360 - 180;
+        const phase = Math.random() * Math.PI * 2;
+        // Make around 35 nodes shoot dramatic vertical beams
+        const isBeam = i % 8 === 0; 
+        nodesData.push({ lat, lon, phase, isBeam });
+      }
+
+      nodesData.forEach((node) => {
+        // Pulse billboard / point
+        viewer.entities.add({
+          position: Cesium.Cartesian3.fromDegrees(node.lon, node.lat, 100),
+          point: {
+            pixelSize: new Cesium.CallbackProperty(() => {
+              return 2.5 + 1.5 * Math.sin(timeRef.current * 4.0 + node.phase);
+            }, false),
+            color: new Cesium.CallbackProperty(() => {
+              const alpha = 0.4 + 0.5 * Math.sin(timeRef.current * 4.0 + node.phase);
+              return Cesium.Color.fromCssColorString('#00ff66').withAlpha(alpha);
+            }, false),
+            disableDepthTestDistance: Number.POSITIVE_INFINITY
+          }
+        });
+
+        // 4. Dramatic Vertical Light Beams (White core, Cyan glow, atmospheric bloom, variable intensity)
+        if (node.isBeam) {
+          const beamMaxHeight = 800000 + Math.random() * 1200000;
+          const beamPhase = Math.random() * Math.PI * 2;
+          const flickerSpeed = 10.0 + Math.random() * 15.0;
+
+          // Glowing Outer Beam (Cyan)
+          viewer.entities.add({
+            polyline: {
+              positions: new Cesium.CallbackProperty(() => {
+                const height = beamMaxHeight * (0.9 + 0.1 * Math.sin(timeRef.current * 2.0 + beamPhase));
+                return [
+                  Cesium.Cartesian3.fromDegrees(node.lon, node.lat, 0),
+                  Cesium.Cartesian3.fromDegrees(node.lon, node.lat, height)
+                ];
+              }, false),
+              width: new Cesium.CallbackProperty(() => {
+                // Flickering width
+                const noise = Math.sin(timeRef.current * flickerSpeed);
+                return 4.0 + 3.0 * noise;
+              }, false),
+              material: new Cesium.PolylineGlowMaterialProperty({
+                glowPower: 0.35,
+                color: Cesium.Color.fromCssColorString('#00f0ff')
+              })
+            }
+          });
+
+          // Core Beam (White)
+          viewer.entities.add({
+            polyline: {
+              positions: new Cesium.CallbackProperty(() => {
+                const height = beamMaxHeight * (0.9 + 0.1 * Math.sin(timeRef.current * 2.0 + beamPhase));
+                return [
+                  Cesium.Cartesian3.fromDegrees(node.lon, node.lat, 0),
+                  Cesium.Cartesian3.fromDegrees(node.lon, node.lat, height)
+                ];
+              }, false),
+              width: new Cesium.CallbackProperty(() => {
+                const noise = Math.sin(timeRef.current * flickerSpeed);
+                return 1.2 + 0.4 * noise;
+              }, false),
+              material: Cesium.Color.WHITE
+            }
+          });
+        }
+      });
+
+      // 5. Geodesic Connections (AI communication pathways / neural network)
       globalHighways.forEach((highway) => {
         const c1 = getHubCoords(highway.start);
         const c2 = getHubCoords(highway.end);
         if (!c1 || !c2) return;
 
-        const connectionColor = Cesium.Color.fromCssColorString(highway.color);
+        const highwayColor = Cesium.Color.fromCssColorString('#00ff66'); // Make connection green/cyan
 
-        // Curving data arc pulsing its glow intensity over time
+        // Glowing geodesic highway
         viewer.entities.add({
           polyline: {
             positions: generateGeodesicArcPoints(c1, c2, highway.alt),
-            width: isCyber ? 2.0 : 1.0,
+            width: 2.5,
             material: new Cesium.PolylineGlowMaterialProperty({
               glowPower: new Cesium.CallbackProperty(() => {
-                // Pulsing route glow
-                return 0.15 + 0.10 * Math.sin(timeRef.current * 2.0);
+                return 0.20 + 0.15 * Math.sin(timeRef.current * 3.0);
               }, false),
-              color: connectionColor.withAlpha(isCyber ? 0.85 : 0.25)
+              color: highwayColor.withAlpha(0.85)
             })
           }
         });
 
-        // Pulsing packets along the geodesic curve
-        for (let k = 0; k < pktCount; k++) {
+        // Packets
+        for (let k = 0; k < 3; k++) {
           viewer.entities.add({
             position: new Cesium.CallbackProperty(() => {
-              const t = ((timeRef.current * pktSpeed) + (k / pktCount)) % 1.0;
+              const t = ((timeRef.current * 0.15) + (k / 3)) % 1.0;
               const sRad = Cesium.Cartographic.fromDegrees(c1.lon, c1.lat);
               const eRad = Cesium.Cartographic.fromDegrees(c2.lon, c2.lat);
               const geodesic = new Cesium.EllipsoidGeodesic(sRad, eRad);
@@ -353,226 +433,117 @@ export default function CesiumGlobeContent({
               return Cesium.Cartesian3.fromRadians(cart.longitude, cart.latitude, height);
             }, false),
             point: {
-              pixelSize: isCyber ? 6.0 : 4.0,
+              pixelSize: 6.0,
               color: Cesium.Color.WHITE,
-              outlineColor: connectionColor,
-              outlineWidth: isCyber ? 1.5 : 0.8,
-              disableDepthTestDistance: Number.POSITIVE_INFINITY,
+              outlineColor: Cesium.Color.fromCssColorString('#00f0ff'),
+              outlineWidth: 1.5,
+              disableDepthTestDistance: Number.POSITIVE_INFINITY
             }
           });
         }
       });
-    }
 
-    // ── 7. LEO, MEO, GEO Satellites (clean, meaningful layers)
-    if (activeCategory === 'Satellite Network' || ov.satellite) {
-      const satelliteConfig = [
-        // LEO: Fast orbit at 600km, polar tilt (tilt = 1.3), leaves glowing trails
-        { level: 'LEO', height: 600000, speed: 0.08, color: Cesium.Color.fromCssColorString(themeColors.cyan), count: 3, tilt: 1.3 },
-        // MEO: Medium speed at 3500km, inclined tilt (tilt = -0.7)
-        { level: 'MEO', height: 3500000, speed: 0.04, color: Cesium.Color.fromCssColorString(themeColors.violet), count: 2, tilt: -0.7 },
+      // 6. 10 Hub Ground Data Layers (Concentric Scan Zones, grid rings)
+      Object.keys(customHubCoords).forEach((hubName) => {
+        const coords = customHubCoords[hubName];
+        // Dynamic scan circle
+        viewer.entities.add({
+          position: Cesium.Cartesian3.fromDegrees(coords.lon, coords.lat, 10),
+          ellipse: {
+            semiMajorAxis: new Cesium.CallbackProperty(() => {
+              return 200000 * ((timeRef.current * 0.6 + Math.random() * 0.1) % 1.0);
+            }, false),
+            semiMinorAxis: new Cesium.CallbackProperty(() => {
+              return 200000 * ((timeRef.current * 0.6 + Math.random() * 0.1) % 1.0);
+            }, false),
+            material: new Cesium.ColorMaterialProperty(
+              new Cesium.CallbackProperty(() => {
+                const age = (timeRef.current * 0.6) % 1.0;
+                return Cesium.Color.fromCssColorString('#00ff66').withAlpha(0.25 * (1.0 - age));
+              }, false)
+            ),
+            outline: true,
+            outlineColor: Cesium.Color.fromCssColorString('#00ff66').withAlpha(0.4),
+            outlineWidth: 1.5
+          }
+        });
+      });
+
+      // 7. Advanced Orbital Systems & Satellite Swarms
+      // Horizontal and Inclined orbital wireframe rings
+      const ringsConfig = [
+        { radius: 6378137 + 1200000, tiltX: 0.0, tiltY: 0.0, color: '#00ff66' },
+        { radius: 6378137 + 2500000, tiltX: 0.4, tiltY: 0.3, color: '#00f0ff' },
+        { radius: 6378137 + 4000000, tiltX: -0.5, tiltY: 0.2, color: '#00ffaa' }
       ];
 
-      satelliteConfig.forEach((cfg) => {
-        const r = 6378137 + cfg.height;
-        const positions = Array.from({ length: 73 }, (_, i) => {
-          const a = (i / 72) * Math.PI * 2;
-          return new Cesium.Cartesian3(r * Math.cos(a), r * Math.sin(a) * Math.cos(cfg.tilt), r * Math.sin(a) * Math.sin(cfg.tilt));
+      ringsConfig.forEach((rc, rIdx) => {
+        const ringPositions = Array.from({ length: 91 }, (_, idx) => {
+          const a = (idx / 90) * Math.PI * 2;
+          const pos = new Cesium.Cartesian3(rc.radius * Math.cos(a), rc.radius * Math.sin(a), 0);
+          
+          // Apply tilt rotations
+          const cosX = Math.cos(rc.tiltX); const sinX = Math.sin(rc.tiltX);
+          const cosY = Math.cos(rc.tiltY); const sinY = Math.sin(rc.tiltY);
+          
+          const y1 = pos.y * cosX - pos.z * sinX;
+          const z1 = pos.y * sinX + pos.z * cosX;
+          
+          const x2 = pos.x * cosY + z1 * sinY;
+          const z2 = -pos.x * sinY + z1 * cosY;
+          
+          return new Cesium.Cartesian3(x2, y1, z2);
         });
 
-        // Orbit path line
+        // Orbital line path
         viewer.entities.add({
           polyline: {
-            positions: positions,
-            width: 1,
-            material: cfg.color.withAlpha(isCyber ? 0.25 : 0.10)
+            positions: ringPositions,
+            width: 1.5,
+            material: Cesium.Color.fromCssColorString(rc.color).withAlpha(0.20)
           }
         });
 
-        // Satellites
-        for (let s = 0; s < cfg.count; s++) {
-          const phase = (s / cfg.count) * Math.PI * 2;
-
-          // Decaying light trail in LEO/MEO
-          if (isCyber) {
-            viewer.entities.add({
-              polyline: {
-                positions: new Cesium.CallbackProperty(() => {
-                  const trailPoints = [];
-                  const trailLength = 10;
-                  const step = 0.035;
-                  for (let j = 0; j < trailLength; j++) {
-                    const a = ((timeRef.current - j * step) * cfg.speed + phase) % (Math.PI * 2);
-                    trailPoints.push(new Cesium.Cartesian3(r * Math.cos(a), r * Math.sin(a) * Math.cos(cfg.tilt), r * Math.sin(a) * Math.sin(cfg.tilt)));
-                  }
-                  return trailPoints;
-                }, false),
-                width: 1.2,
-                material: new Cesium.PolylineGlowMaterialProperty({
-                  glowPower: 0.08,
-                  color: cfg.color.withAlpha(0.50),
-                })
-              }
-            });
-          }
-
-          // Satellite dot
+        // Satellite swarm on the rings
+        const satCount = 6;
+        for (let s = 0; s < satCount; s++) {
+          const phase = (s / satCount) * Math.PI * 2;
           viewer.entities.add({
             position: new Cesium.CallbackProperty(() => {
-              const a = (timeRef.current * cfg.speed + phase) % (Math.PI * 2);
-              return new Cesium.Cartesian3(r * Math.cos(a), r * Math.sin(a) * Math.cos(cfg.tilt), r * Math.sin(a) * Math.sin(cfg.tilt));
+              const a = (timeRef.current * (0.05 - rIdx * 0.01) + phase) % (Math.PI * 2);
+              const pos = new Cesium.Cartesian3(rc.radius * Math.cos(a), rc.radius * Math.sin(a), 0);
+              const cosX = Math.cos(rc.tiltX); const sinX = Math.sin(rc.tiltX);
+              const cosY = Math.cos(rc.tiltY); const sinY = Math.sin(rc.tiltY);
+              const y1 = pos.y * cosX - pos.z * sinX;
+              const z1 = pos.y * sinX + pos.z * cosX;
+              const x2 = pos.x * cosY + z1 * sinY;
+              const z2 = -pos.x * sinY + z1 * cosY;
+              return new Cesium.Cartesian3(x2, y1, z2);
             }, false),
             point: {
-              pixelSize: isCyber ? 8 : 5,
+              pixelSize: 8,
               color: Cesium.Color.WHITE,
-              outlineColor: cfg.color,
-              outlineWidth: 1.2,
-              disableDepthTestDistance: Number.POSITIVE_INFINITY,
+              outlineColor: Cesium.Color.fromCssColorString(rc.color),
+              outlineWidth: 2,
+              disableDepthTestDistance: Number.POSITIVE_INFINITY
             }
           });
         }
       });
 
-      // GEO: 3 Stationary Satellites (12000km, equatorial orbit, static longitudes)
-      const geoSatellites = [
-        { lon: -45.0, color: Cesium.Color.fromCssColorString(themeColors.teal) }, // Geo-1 (Atlantic)
-        { lon: 55.0,  color: Cesium.Color.fromCssColorString(themeColors.cyan) }, // Geo-2 (Indian)
-        { lon: 140.0, color: Cesium.Color.fromCssColorString(themeColors.violet) } // Geo-3 (Pacific)
-      ];
-      const geoRadius = 6378137 + 12000000;
-
-      // Equatorial GEO Orbit Ring
-      const geoPositions = Array.from({ length: 73 }, (_, i) => {
-        const a = (i / 72) * Math.PI * 2;
-        return new Cesium.Cartesian3(geoRadius * Math.cos(a), geoRadius * Math.sin(a), 0);
-      });
-      viewer.entities.add({
-        polyline: {
-          positions: geoPositions,
-          width: 1,
-          material: Cesium.Color.WHITE.withAlpha(isCyber ? 0.15 : 0.05)
-        }
-      });
-
-      geoSatellites.forEach((sat) => {
-        // Satellite core point
+      // City Hub Markers in Cyber (clean pulsing nodes)
+      citiesRawData.forEach((city) => {
+        const isSel = activeCity?.name === city.name;
         viewer.entities.add({
-          position: Cesium.Cartesian3.fromDegrees(sat.lon, 0, 12000000),
+          position: Cesium.Cartesian3.fromDegrees(city.lon, city.lat),
           point: {
-            pixelSize: isCyber ? 9 : 5,
-            color: Cesium.Color.WHITE,
-            outlineColor: sat.color,
-            outlineWidth: 1.5,
+            pixelSize: isSel ? 14 : 9,
+            color: isSel ? Cesium.Color.WHITE : Cesium.Color.fromCssColorString('#00ff66'),
+            outlineColor: Cesium.Color.fromCssColorString('#00f0ff'),
+            outlineWidth: 2.0,
             disableDepthTestDistance: Number.POSITIVE_INFINITY,
-          }
-        });
-
-        // GEO Solar Power Satellite: rotating/pulsing holographic energy collector ring overlay
-        if (isCyber) {
-          viewer.entities.add({
-            position: Cesium.Cartesian3.fromDegrees(sat.lon, 0, 12000000),
-            ellipse: {
-              semiMajorAxis: new Cesium.CallbackProperty(() => {
-                // Expanding / scanning solar collector
-                return 250000 + 30000 * Math.sin(timeRef.current * 1.5);
-              }, false),
-              semiMinorAxis: new Cesium.CallbackProperty(() => {
-                return 250000 + 30000 * Math.sin(timeRef.current * 1.5);
-              }, false),
-              material: sat.color.withAlpha(0.12),
-              outline: true,
-              outlineColor: new Cesium.CallbackProperty(() => {
-                // Flashing outline
-                const alpha = 0.5 + 0.35 * Math.sin(timeRef.current * 3.0);
-                return sat.color.withAlpha(alpha);
-              }, false),
-              outlineWidth: 1.5
-            }
-          });
-        }
-      });
-    }
-
-    // ── 8. Climate Recovery Holographic Indicators (Floating at 200km - 300km)
-    if (ov.climate) {
-      // 3 Layers representing metrics in Cyan, Teal, Violet
-      const climateLayers = [
-        { name: 'Climate Recovery', alt: 200000, radius: 1500000, color: Cesium.Color.fromCssColorString(themeColors.cyan), lon: (z: { lon: number, lat: number }) => z.lon, lat: (z: { lon: number, lat: number }) => z.lat },
-        { name: 'Ocean Restoration', alt: 250000, radius: 1300000, color: Cesium.Color.fromCssColorString(themeColors.teal), lon: (z: { lon: number, lat: number }) => z.lon + 5.0, lat: (z: { lon: number, lat: number }) => z.lat - 5.0 },
-        { name: 'Renewable Grid Coverage', alt: 300000, radius: 1100000, color: Cesium.Color.fromCssColorString(themeColors.violet), lon: (z: { lon: number, lat: number }) => z.lon - 5.0, lat: (z: { lon: number, lat: number }) => z.lat + 5.0 }
-      ];
-
-      climateZones.forEach((z) => {
-        climateLayers.forEach((layer) => {
-          const cLon = layer.lon(z);
-          const cLat = layer.lat(z);
-
-          // Floating wireframe ring
-          viewer.entities.add({
-            position: Cesium.Cartesian3.fromDegrees(cLon, cLat),
-            ellipse: {
-              semiMajorAxis: layer.radius,
-              semiMinorAxis: layer.radius,
-              material: layer.color.withAlpha(0.04),
-              height: layer.alt,
-              outline: true,
-              outlineColor: layer.color.withAlpha(isCyber ? 0.80 : 0.20),
-              outlineWidth: 1.5
-            }
-          });
-
-          if (isCyber) {
-            // Volumetric scanning pulse expanding outwards and fading
-            viewer.entities.add({
-              position: Cesium.Cartesian3.fromDegrees(cLon, cLat),
-              ellipse: {
-                semiMajorAxis: new Cesium.CallbackProperty(() => {
-                  const factor = (timeRef.current * 0.8) % 1.0;
-                  return factor * layer.radius;
-                }, false),
-                semiMinorAxis: new Cesium.CallbackProperty(() => {
-                  const factor = (timeRef.current * 0.8) % 1.0;
-                  return factor * layer.radius;
-                }, false),
-                height: layer.alt,
-                material: new Cesium.ColorMaterialProperty(
-                  new Cesium.CallbackProperty(() => {
-                    const factor = (timeRef.current * 0.8) % 1.0;
-                    return layer.color.withAlpha(0.20 * (1.0 - factor));
-                  }, false)
-                ),
-                outline: true,
-                outlineColor: new Cesium.CallbackProperty(() => {
-                  const factor = (timeRef.current * 0.8) % 1.0;
-                  return layer.color.withAlpha(0.60 * (1.0 - factor));
-                }, false),
-                outlineWidth: 1.0
-              }
-            });
-
-            // Floating center core target
-            viewer.entities.add({
-              position: Cesium.Cartesian3.fromDegrees(cLon, cLat),
-              ellipse: {
-                semiMajorAxis: layer.radius * 0.08,
-                semiMinorAxis: layer.radius * 0.08,
-                height: layer.alt,
-                material: layer.color.withAlpha(0.80)
-              }
-            });
-
-            // Center telemetry pole extending to ground
-            viewer.entities.add({
-              polyline: {
-                positions: [
-                  Cesium.Cartesian3.fromDegrees(cLon, cLat, 0),
-                  Cesium.Cartesian3.fromDegrees(cLon, cLat, layer.alt)
-                ],
-                width: 1.0,
-                material: layer.color.withAlpha(0.40)
-              }
-            });
-          }
+          },
+          properties: { cityData: city }
         });
       });
     }

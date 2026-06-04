@@ -3,10 +3,16 @@
 import { EarthMode } from './CesiumGlobeContent';
 
 const categories = [
-  { id: 'Ocean Monitoring',  label: 'OCEAN'     },
-  { id: 'Biodiversity',      label: 'BIOSPHERE' },
-  { id: 'Clean Energy',      label: 'ENERGY'    },
-  { id: 'Satellite Network', label: 'ORBITAL'   },
+  { id: 'Climate Recovery',          label: 'CLIMATE'     },
+  { id: 'Clean Energy',              label: 'ENERGY'      },
+  { id: 'Biodiversity',              label: 'BIOSPHERE'   },
+  { id: 'AI Infrastructure',          label: 'AI NET'      },
+  { id: 'Smart Cities',              label: 'CITIES'      },
+  { id: 'Transportation Networks',   label: 'TRANSPORT'   },
+  { id: 'Ocean Monitoring',          label: 'OCEANS'      },
+  { id: 'Population Growth',          label: 'PEOPLE'      },
+  { id: 'Water Systems',             label: 'WATER'       },
+  { id: 'Satellite Network',         label: 'ORBITAL'     },
 ];
 
 interface CategoryCardsProps {
