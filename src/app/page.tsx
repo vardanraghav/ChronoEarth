@@ -21,6 +21,8 @@ export default function Home() {
   const [overlays]                          = useState(DEFAULT_OVERLAYS);
   const [earthMode,      setEarthMode]      = useState<EarthMode>('realistic');
   const [transitioning,  setTransitioning]  = useState(false);
+  const [cyberTab,       setCyberTab]       = useState<'telemetry' | 'predictions' | 'kb' | 'reports' | 'saved'>('telemetry');
+  const [searchOpen,     setSearchOpen]     = useState(false);
 
   const isCyber = earthMode === 'cyber';
 
@@ -80,7 +82,12 @@ export default function Home() {
       />
 
       {/* ── Navbar ────────────────────────────────────────────────────── */}
-      <Navbar earthMode={earthMode} />
+      <Navbar 
+        earthMode={earthMode} 
+        activeTab={cyberTab}
+        setActiveTab={setCyberTab}
+        onSearchClick={() => setSearchOpen(true)}
+      />
 
       {/* ── Mode toggle ───────────────────────────────────────────────── */}
       <div
@@ -134,7 +141,14 @@ export default function Home() {
 
       {/* ── Cyber 2050: Full Command Center HUD ───────────────────────── */}
       {isCyber && !transitioning && (
-        <CyberHUD />
+        <CyberHUD 
+          activeTab={cyberTab}
+          setActiveTab={setCyberTab}
+          activeCity={activeCity}
+          setActiveCity={setActiveCity}
+          searchOpen={searchOpen}
+          setSearchOpen={setSearchOpen}
+        />
       )}
 
       {/* ── Realistic mode panels ─────────────────────────────────────── */}
