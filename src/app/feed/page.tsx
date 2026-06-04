@@ -76,162 +76,138 @@ export default function FeedPage() {
       <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-[rgba(2,8,15,0.95)] to-transparent pointer-events-none z-10" />
       <Navbar earthMode="cyber" />
 
-      <div className="max-w-6xl mx-auto px-6 pt-32 pb-24 relative z-20 flex flex-col gap-12">
+      <div className="content-container pt-32 pb-20 relative z-20 flex flex-col gap-10 animate-fade-up">
         {/* Page Header */}
-        <div className="flex flex-col gap-4 border-b border-[#00F5B0]/15 pb-8">
-          <div className="flex items-center gap-3">
-            <div className="w-1.5 h-6 bg-[#00F5B0] shadow-[0_0_10px_#00F5B0]" />
-            <span className="text-xs font-semibold tracking-[0.4em] text-[#00F5B0] uppercase font-mono">
-              FUTURES BROADCAST INTEL
-            </span>
-          </div>
-          <h1 className="text-4xl font-light tracking-tight text-white uppercase">
-            FORECASTS <span className="font-semibold text-[#00F5B0]">FEED</span>
+        <div className="flex flex-col gap-3 border-b border-[#00F5B0]/15 pb-6">
+          <h1 className="editorial-title text-white">
+            Forecasts <span className="text-[#00F5B0] font-normal">Feed</span>
           </h1>
-          <p className="text-sm font-mono text-[#7A8694] max-w-2xl">
-            Global timeline predictions streamed in real-time. Discover what is trending, explore new models, and jump into analysis sheets.
+          <p className="editorial-subtitle text-[#7A8694]">
+            Global timeline predictions simulated in real-time. Review upcoming milestones, analyze systemic indicators, and participate in discussion logs.
           </p>
         </div>
 
-        {/* SECTION 1: WHAT'S HOT HERO SECTION */}
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center gap-2 text-[10px] font-mono text-[#00F5B0]">
-            <div className="w-2 h-2 rounded-full bg-[#00F5B0] animate-pulse" />
-            <span>CRITICAL PATH // WHAT'S HOT</span>
-          </div>
+        {/* Main Grid: Left Column for Editorial News, Right Column for Trending */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-8 items-start">
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {hotPredictions.map((p, idx) => {
+          {/* Left Column: Editorial Articles */}
+          <div className="flex flex-col gap-8">
+            
+            {/* Top Story - Large Editorial Feature Card */}
+            {hotPredictions[0] && (() => {
+              const p = hotPredictions[0];
               const authorObj = FUTUROLOGISTS.find(f => f.name === p.author);
               return (
-                <div key={p.id} style={panelStyle} className="flex flex-col justify-between hover:border-[#00F5B0]/40 hover:shadow-[0_0_24px_rgba(0,245,176,0.1)] transition-colors min-h-[300px]">
-                  {cornerAccent}
-                  
+                <div className="card-tier-1 flex flex-col justify-between min-h-[340px]">
                   <div className="flex flex-col gap-4">
-                    <div className="flex justify-between items-center text-[9px] font-mono text-[#00F5B0]">
-                      <span>{p.category.toUpperCase()} // REGION: {p.city}</span>
-                      <span className="px-2 py-0.5 bg-[#040B12] border border-[#00F5B0]/20 rounded">{p.year} FORECAST</span>
+                    <div className="flex justify-between items-center text-[10px] font-mono text-[#00F5B0]">
+                      <span className="uppercase tracking-wider">{p.category} // {p.city}</span>
+                      <span className="px-2.5 py-0.5 bg-[#02060A] border border-[#00F5B0]/20 rounded font-bold uppercase">{p.year} TARGET</span>
                     </div>
 
-                    <h2 className="text-2xl font-light tracking-wide text-white uppercase leading-snug">
+                    <h2 className="text-3xl font-light text-white uppercase tracking-tight leading-tight">
                       {p.title}
                     </h2>
                     
-                    <p className="text-sm text-slate-350 leading-relaxed font-sans line-clamp-4">
+                    <p className="text-sm text-[#7A8694] leading-relaxed line-clamp-3">
                       {p.description}
                     </p>
                   </div>
 
-                  <div className="flex justify-between items-center border-t border-[#00F5B0]/40 pt-4 mt-6">
+                  <div className="flex justify-between items-center border-t border-[#00F5B0]/15 pt-4 mt-6">
                     {authorObj && (
                       <Link href={`/futurologists/${authorObj.slug}`} className="flex items-center gap-2 group">
-                        <img src={authorObj.avatar} alt={p.author} className="w-6 h-6 rounded-full border border-[#00F5B0]/20 object-cover" />
-                        <span className="text-[10px] font-mono text-[#7A8694] group-hover:text-white transition-colors">{p.author}</span>
+                        <img src={authorObj.avatar} alt={p.author} className="w-7 h-7 rounded-full border border-[#00F5B0]/20 object-cover" />
+                        <span className="text-[10px] font-mono text-[#7A8694] group-hover:text-white transition-colors uppercase">{p.author}</span>
                       </Link>
                     )}
-                    <Link href={`/predictions/${p.slug}`} className="text-xs font-mono font-bold text-[#00F5B0] hover:underline uppercase">
-                      Inspect Forecast &gt;
+                    <Link href={`/predictions/${p.slug}`} className="text-xs font-mono text-[#00F5B0] hover:underline uppercase font-bold tracking-wider">
+                      Read Analysis &gt;
                     </Link>
                   </div>
                 </div>
               );
-            })}
-          </div>
-        </div>
+            })()}
 
-        {/* SECTION 2: MAIN COLUMN & SIDEBAR */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
-          {/* Main Feed Column (Left) */}
-          <div className="lg:col-span-2 flex flex-col gap-10">
+            {/* 2-Column Article Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Hot Story 2 */}
+              {hotPredictions[1] && (() => {
+                const p = hotPredictions[1];
+                const authorObj = FUTUROLOGISTS.find(f => f.name === p.author);
+                return (
+                  <div className="card-tier-2 flex flex-col justify-between min-h-[240px]">
+                    <div className="flex flex-col gap-3">
+                      <div className="flex justify-between items-center text-[9px] font-mono text-[#00F5B0]">
+                        <span className="uppercase tracking-wider">{p.category} // {p.city}</span>
+                        <span className="text-[#7A8694]">{p.year} FORECAST</span>
+                      </div>
+                      <h3 className="text-lg font-light text-white uppercase tracking-wide leading-snug line-clamp-2">{p.title}</h3>
+                      <p className="text-xs text-[#7A8694] leading-relaxed line-clamp-3">{p.description}</p>
+                    </div>
+                    <div className="flex justify-between items-center border-t border-[#00F5B0]/15 pt-3 mt-4">
+                      {authorObj && (
+                        <span className="text-[9px] font-mono text-[#7A8694] uppercase">By {p.author}</span>
+                      )}
+                      <Link href={`/predictions/${p.slug}`} className="text-[10px] font-mono text-[#00F5B0] hover:underline uppercase font-semibold">
+                        Read &gt;
+                      </Link>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Feed Categories (Compact editorial cells) */}
+              {PREDICTIONS.filter(p => p.id !== hotPredictions[0]?.id && p.id !== hotPredictions[1]?.id).slice(0, 3).map(p => {
+                const authorObj = FUTUROLOGISTS.find(f => f.name === p.author);
+                return (
+                  <div key={p.id} className="card-tier-2 flex flex-col justify-between min-h-[240px]">
+                    <div className="flex flex-col gap-3">
+                      <div className="flex justify-between items-center text-[9px] font-mono text-[#00F5B0]">
+                        <span className="uppercase tracking-wider">{p.category} // {p.city}</span>
+                        <span className="text-[#7A8694]">{p.year} FORECAST</span>
+                      </div>
+                      <h3 className="text-lg font-light text-white uppercase tracking-wide leading-snug line-clamp-2">{p.title}</h3>
+                      <p className="text-xs text-[#7A8694] leading-relaxed line-clamp-3">{p.description}</p>
+                    </div>
+                    <div className="flex justify-between items-center border-t border-[#00F5B0]/15 pt-3 mt-4">
+                      {authorObj && (
+                        <span className="text-[9px] font-mono text-[#7A8694] uppercase">By {p.author}</span>
+                      )}
+                      <Link href={`/predictions/${p.slug}`} className="text-[10px] font-mono text-[#00F5B0] hover:underline uppercase font-semibold">
+                        Read &gt;
+                      </Link>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Right Column: Trending Sidebar */}
+          <div className="flex flex-col gap-6">
             
-            {/* What's New Section */}
-            <div className="flex flex-col gap-6">
-              <div className="flex items-center gap-2 border-b border-[#00F5B0]/15 pb-3">
-                <span className="text-xs font-mono font-bold tracking-widest text-[#00F5B0] uppercase">⚡ WHAT'S NEW</span>
+            {/* Trending Predictions */}
+            <div className="card-tier-3 flex flex-col gap-4">
+              <div className="border-b border-[#00F5B0]/15 pb-2">
+                <span className="text-[10px] font-mono font-bold text-white uppercase tracking-wider">Trending Metrics</span>
               </div>
 
               <div className="flex flex-col gap-4">
-                {newPredictions.map(p => (
-                  <div key={p.id} style={panelStyle} className="p-5 flex flex-col gap-3 hover:border-[#00F5B0]/30 transition-colors">
-                    {cornerAccent}
-                    <div className="flex justify-between text-[8px] font-mono text-slate-400">
-                      <span>{p.category.toUpperCase()} · {p.city}</span>
-                      <span>YEAR: {p.year}</span>
-                    </div>
-                    <h3 className="text-base font-semibold uppercase text-white tracking-wide">{p.title}</h3>
-                    <p className="text-xs text-slate-400 leading-relaxed line-clamp-2">{p.description}</p>
-                    <div className="flex justify-between items-center text-[9px] font-mono border-t border-[#00F5B0]/30 pt-3 mt-1">
-                      <span className="text-slate-500">AUTHOR: {p.author}</span>
-                      <Link href={`/predictions/${p.slug}`} className="text-[#00F5B0] hover:underline uppercase font-bold">
-                        Read full shards &gt;
-                      </Link>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Category Feed Shards */}
-            {feedCategories.map(cat => {
-              const catPreds = PREDICTIONS.filter(p => p.category === cat).slice(0, 2);
-              if (catPreds.length === 0) return null;
-
-              return (
-                <div key={cat} className="flex flex-col gap-6">
-                  <div className="flex items-center gap-2 border-b border-[#00F5B0]/15 pb-3">
-                    <span className="text-xs font-mono font-bold tracking-widest text-[#00D98F] uppercase">🗂️ {cat} FORECASTS</span>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {catPreds.map(p => (
-                      <Link href={`/predictions/${p.slug}`} key={p.id} style={panelStyle} className="hover:border-[#00F5B0]/40 hover:shadow-[0_0_24px_rgba(0,245,176,0.1)] transition-all flex flex-col justify-between min-h-[180px]">
-                        {cornerAccent}
-                        <div className="flex flex-col gap-3">
-                          <span className="text-[7px] font-mono text-slate-500 tracking-wider uppercase">{p.year} · {p.city}</span>
-                          <h4 className="text-sm font-semibold uppercase text-white tracking-wide line-clamp-2">{p.title}</h4>
-                          <p className="text-xs text-slate-400 leading-relaxed line-clamp-2">{p.description}</p>
-                        </div>
-                        <div className="border-t border-[#00F5B0]/20 pt-2.5 mt-4 text-[9px] font-mono text-[#7A8694] uppercase tracking-widest flex justify-between items-center">
-                          <span>By {p.author}</span>
-                          <span>Read &gt;</span>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
-
-          </div>
-
-          {/* Sidebar Column (Right) */}
-          <div className="lg:col-span-1 flex flex-col gap-6">
-            
-            {/* Trending Predictions */}
-            <div style={panelStyle} className="flex flex-col gap-4">
-              {cornerAccent}
-              
-              <div className="flex items-center gap-2 border-b border-[#00F5B0]/15 pb-3">
-                <div className="w-1 h-3 bg-[#00F5B0] shadow-[0_0_6px_#00D98F]" />
-                <span className="text-xs font-mono font-bold text-white uppercase tracking-wider">📈 TRENDING MATRIX</span>
-              </div>
-
-              <div className="flex flex-col gap-5">
                 {trendingPredictions.map((p, idx) => (
                   <Link 
                     href={`/predictions/${p.slug}`}
                     key={p.id} 
-                    className="flex gap-4 items-start group hover:opacity-90 transition-opacity"
+                    className="flex gap-3 items-start group hover:opacity-90 transition-opacity"
                   >
-                    <span className="text-xl font-bold font-mono text-[#00F5B0]/35 group-hover:text-[#00F5B0] transition-colors leading-none w-6">
+                    <span className="text-sm font-bold font-mono text-[#00F5B0]/35 group-hover:text-[#00F5B0] transition-colors leading-none w-5 pt-0.5">
                       {String(idx + 1).padStart(2, '0')}
                     </span>
-                    <div className="flex-1 flex flex-col gap-1 border-b border-[#00F5B0]/45 pb-3">
-                      <h4 className="text-xs font-semibold uppercase text-white group-hover:text-[#00F5B0] transition-colors tracking-wide">
+                    <div className="flex-1 flex flex-col gap-1 border-b border-[#00F5B0]/10 pb-2">
+                      <h4 className="text-[11px] font-medium uppercase text-white group-hover:text-[#00F5B0] transition-colors tracking-wide leading-snug">
                         {p.title}
                       </h4>
-                      <div className="flex justify-between items-center text-[7.5px] font-mono text-slate-500 uppercase mt-0.5">
+                      <div className="flex justify-between items-center text-[8px] font-mono text-[#7A8694] uppercase">
                         <span>{p.category} · {p.year}</span>
                         <span className="text-[#00F5B0] font-bold">▲ {getVotesCount(p)}</span>
                       </div>
@@ -242,12 +218,11 @@ export default function FeedPage() {
             </div>
 
             {/* Quick Metrics HUD */}
-            <div style={panelStyle} className="flex flex-col gap-4">
-              {cornerAccent}
-              <div className="flex items-center gap-2 border-b border-[#00F5B0]/15 pb-2">
-                <span className="text-xs font-mono font-bold text-white uppercase tracking-wider">🔬 SYSTEM READINGS</span>
+            <div className="card-tier-3 flex flex-col gap-3">
+              <div className="border-b border-[#00F5B0]/15 pb-2">
+                <span className="text-[10px] font-mono font-bold text-white uppercase tracking-wider">System Readings</span>
               </div>
-              <div className="flex flex-col gap-3 font-mono text-[9px]">
+              <div className="flex flex-col gap-2 font-mono text-[9px]">
                 <div className="flex justify-between">
                   <span className="text-slate-500">QUANTUM FLOW</span>
                   <span className="text-[#00F5B0]">98.7% ACCURACY</span>
@@ -262,9 +237,7 @@ export default function FeedPage() {
                 </div>
               </div>
             </div>
-
           </div>
-
         </div>
 
       </div>

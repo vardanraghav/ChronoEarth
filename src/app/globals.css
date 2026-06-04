@@ -210,3 +210,78 @@ html, body {
 /* Hide Cesium's default credit watermark */
 .cesium-viewer-bottom { display: none !important; }
 .cesium-credit-logoContainer { display: none !important; }
+
+/* ═══════════════════════════════════════════════════════════
+   PREMIUM 2050.EARTH CARD TIERS & CONTAINERS
+   ═══════════════════════════════════════════════════════════ */
+.content-container {
+  max-width: 1280px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  width: 100% !important;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+.editorial-title {
+  font-size: clamp(1.8rem, 3.5vw, 3.2rem) !important;
+  font-weight: 300 !important;
+  letter-spacing: -0.03em !important;
+  line-height: 1.05 !important;
+  text-transform: uppercase;
+}
+
+.editorial-subtitle {
+  max-width: 800px !important;
+  opacity: 0.7 !important;
+  line-height: 1.7 !important;
+  font-size: 0.95rem !important;
+}
+
+.card-tier-1 {
+  background: rgba(4, 11, 18, 0.85);
+  border: 1px solid rgba(0, 245, 176, 0.25);
+  box-shadow: 0 4px 30px rgba(0, 245, 176, 0.02);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  padding: 32px !important;
+  border-radius: 4px;
+  transition: transform 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
+  max-width: 100%;
+}
+.card-tier-1:hover {
+  transform: translateY(-4px);
+  border-color: rgba(0, 245, 176, 0.50);
+  box-shadow: 0 10px 40px rgba(0, 245, 176, 0.08);
+}
+
+.card-tier-2 {
+  background: rgba(4, 11, 18, 0.70);
+  border: 1px solid rgba(0, 245, 176, 0.12);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  padding: 24px !important;
+  border-radius: 4px;
+  transition: transform 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
+  max-width: 100%;
+}
+.card-tier-2:hover {
+  transform: translateY(-4px);
+  border-color: rgba(0, 245, 176, 0.35);
+  box-shadow: 0 8px 30px rgba(0, 245, 176, 0.05);
+}
+
+.card-tier-3 {
+  background: rgba(2, 8, 15, 0.40);
+  border: 1px solid rgba(0, 245, 176, 0.05);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding: 16px !important;
+  border-radius: 2px;
+  transition: border-color 200ms ease, box-shadow 200ms ease;
+  max-width: 100%;
+}
+.card-tier-3:hover {
+  border-color: rgba(0, 245, 176, 0.20);
+}

@@ -155,7 +155,7 @@ export default function CesiumGlobeContent({
 
     viewer.scene.backgroundColor = Cesium.Color.TRANSPARENT;
     viewer.camera.setView({
-      destination: Cesium.Cartesian3.fromDegrees(20.0, 22.0, 18000000),
+      destination: Cesium.Cartesian3.fromDegrees(20.0, 10.0, 12500000),
       orientation: { heading: 0, pitch: Cesium.Math.toRadians(-18), roll: 0 },
     });
     viewerRef.current = viewer;
@@ -471,8 +471,8 @@ export default function CesiumGlobeContent({
       const landCoords: { lat: number; lon: number }[] = [];
 
       // Generate dense wrap-around dot-matrix surface
-      for (let y = 0; y < H; y += 2) {
-        for (let x = 0; x < W; x += 2) {
+      for (let y = 0; y < H; y += 4) {
+        for (let x = 0; x < W; x += 4) {
           const idx = (y * W + x) * 4;
           const isLand = imgData[idx] > 120;
           const lon = (x / W) * 360 - 180;
@@ -515,7 +515,7 @@ export default function CesiumGlobeContent({
               nx, ny, nz,
               hubProximity,
             });
-          } else if (Math.random() < 0.08) {
+          } else if (Math.random() < 0.04) {
             // Sparse ocean dots
             dotCollection.add({
               position: Cesium.Cartesian3.fromDegrees(lon, lat, 2000),
@@ -532,8 +532,8 @@ export default function CesiumGlobeContent({
         }
       }
 
-      // Generate 2000 static global nodes
-      const numStaticNodes = 2000;
+      // Generate static global nodes
+      const numStaticNodes = 500;
       for (let i = 0; i < numStaticNodes; i++) {
         const lat = (Math.random() - 0.5) * 140; // -70 to 70
         const lon = (Math.random() - 0.5) * 360;
@@ -569,7 +569,7 @@ export default function CesiumGlobeContent({
 
       // Generate active uplink beams from land coordinates
       const shuffled = [...landCoords].sort(() => Math.random() - 0.5);
-      const numBeams = Math.min(120, shuffled.length);
+      const numBeams = Math.min(30, shuffled.length);
       for (let i = 0; i < numBeams; i++) {
         const { lat, lon } = shuffled[i];
         const maxH = 150000 + Math.random() * 1000000;
@@ -672,13 +672,13 @@ export default function CesiumGlobeContent({
             material: new Cesium.ColorMaterialProperty(
               new Cesium.CallbackProperty(() => {
                 const age = ((timeRef.current * 0.45) + ringOffset) % 1.0;
-                return Cesium.Color.fromCssColorString(hub.color).withAlpha(0.20 * (1.0 - age));
+                return Cesium.Color.fromCssColorString(hub.color).withAlpha(0.06 * (1.0 - age));
               }, false)
             ),
             outline: true,
             outlineColor: new Cesium.CallbackProperty(() => {
               const age = ((timeRef.current * 0.45) + ringOffset) % 1.0;
-              return Cesium.Color.fromCssColorString(hub.color).withAlpha(0.45 * (1.0 - age));
+              return Cesium.Color.fromCssColorString(hub.color).withAlpha(0.13 * (1.0 - age));
             }, false),
             outlineWidth: 1.0,
           },
@@ -697,7 +697,7 @@ export default function CesiumGlobeContent({
           material: new Cesium.ColorMaterialProperty(
             new Cesium.CallbackProperty(() =>
               Cesium.Color.fromCssColorString(hub.color).withAlpha(
-                0.06 + 0.03 * Math.sin(timeRef.current * 0.7 + bloomPhase)
+                0.02 + 0.01 * Math.sin(timeRef.current * 0.7 + bloomPhase)
               ), false)
           ),
           outline: false,
@@ -714,11 +714,11 @@ export default function CesiumGlobeContent({
           material: new Cesium.ColorMaterialProperty(
             new Cesium.CallbackProperty(() =>
               Cesium.Color.fromCssColorString(hub.color).withAlpha(
-                0.16 + 0.08 * Math.sin(timeRef.current * 1.1 + bloomPhase)
+                0.05 + 0.02 * Math.sin(timeRef.current * 1.1 + bloomPhase)
               ), false)
           ),
           outline: true,
-          outlineColor: Cesium.Color.fromCssColorString(hub.color).withAlpha(0.35),
+          outlineColor: Cesium.Color.fromCssColorString(hub.color).withAlpha(0.10),
           outlineWidth: 1.0,
         },
       });
@@ -737,7 +737,7 @@ export default function CesiumGlobeContent({
         polyline: {
           positions: arcPoints,
           width: 0.6,
-          material: Cesium.Color.fromCssColorString(C.emerald).withAlpha(0.08),
+          material: Cesium.Color.fromCssColorString(C.emerald).withAlpha(0.024),
         },
       });
 
@@ -764,7 +764,7 @@ export default function CesiumGlobeContent({
         polyline: {
           positions: pulsePositions,
           width: 1.2,
-          material: Cesium.Color.fromCssColorString(C.cyan).withAlpha(0.60),
+          material: Cesium.Color.fromCssColorString(C.cyan).withAlpha(0.18),
         },
       });
     });
@@ -777,7 +777,7 @@ export default function CesiumGlobeContent({
         scanRingCollection.add({
           width: 1.0,
           material: Cesium.Material.fromType('Color', {
-            color: Cesium.Color.fromCssColorString(C.cyan).withAlpha(0.12)
+            color: Cesium.Color.fromCssColorString(C.cyan).withAlpha(0.036)
           })
         })
       );
@@ -787,7 +787,7 @@ export default function CesiumGlobeContent({
         scanRingCollection.add({
           width: 0.8,
           material: Cesium.Material.fromType('Color', {
-            color: Cesium.Color.fromCssColorString(C.emerald).withAlpha(0.08)
+            color: Cesium.Color.fromCssColorString(C.emerald).withAlpha(0.024)
           })
         })
       );
@@ -808,7 +808,7 @@ export default function CesiumGlobeContent({
         polyline: {
           positions: ringPts,
           width: 0.8,
-          material: Cesium.Color.fromCssColorString(shell.color).withAlpha(0.20),
+          material: Cesium.Color.fromCssColorString(shell.color).withAlpha(0.018),
         },
       });
 
@@ -1016,7 +1016,7 @@ export default function CesiumGlobeContent({
       'Clean Energy':       [ 24.0,   12.0, 3200000],
       'Satellite Network':  [ 25.0,  -45.0, 16000000],
     };
-    const [lat, lon, height] = targets[activeCategory] ?? [0, 0, 18000000];
+    const [lat, lon, height] = targets[activeCategory] ?? [10.0, 20.0, 12500000];
     viewer.camera.flyTo({
       destination: Cesium.Cartesian3.fromDegrees(lon, lat, height),
       duration: 3.5,

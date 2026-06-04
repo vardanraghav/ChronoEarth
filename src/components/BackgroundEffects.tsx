@@ -36,13 +36,13 @@ function pickColor(palette: { color: string; weight: number }[]): string {
 
 function generateStars(mode: EarthMode): Star[] {
   const palette = mode === 'cyber' ? CYBER_COLORS : REALISTIC_COLORS;
-  const count   = mode === 'cyber' ? 280 : 180;
+  const count   = mode === 'cyber' ? 80 : 55; // Reduced star density by 50% from prior count
   return Array.from({ length: count }, (_, i) => ({
     id:       i,
     x:        Math.random() * 100,
     y:        Math.random() * 100,
     size:     i % 40 === 0 ? 2.5 + Math.random() * 1.5 : i % 12 === 0 ? 1.5 + Math.random() : 0.5 + Math.random() * 0.8,
-    opacity:  0.25 + Math.random() * 0.65,
+    opacity:  0.05 + Math.random() * 0.20, // Reduced opacity
     duration: 3 + Math.random() * 6,
     delay:    Math.random() * 8,
     color:    pickColor(palette),
@@ -74,13 +74,13 @@ export default function BackgroundEffects({ earthMode = 'realistic' }: Backgroun
         }
         @keyframes scanline-sweep {
           0%   { top: -2px; opacity: 0; }
-          5%   { opacity: 0.4; }
-          95%  { opacity: 0.4; }
+          5%   { opacity: 0.15; }
+          95%  { opacity: 0.15; }
           100% { top: 100%; opacity: 0; }
         }
         @keyframes cyber-pulse {
-          0%, 100% { opacity: 0.04; }
-          50%       { opacity: 0.10; }
+          0%, 100% { opacity: 0.01; }
+          50%       { opacity: 0.02; }
         }
       `}</style>
 
@@ -98,13 +98,13 @@ export default function BackgroundEffects({ earthMode = 'realistic' }: Backgroun
         {stars.map((star) => {
           const isBright = star.size > 2.0;
           const isMed    = star.size > 1.5;
-          const glow     = isCyber ? `0 0 ${star.size * 4}px ${star.size * 2}px ${star.color}50, 0 0 ${star.size}px ${star.color}` : undefined;
+          const glow     = isCyber ? `0 0 ${star.size * 2}px ${star.size * 1}px ${star.color}30, 0 0 ${star.size * 0.5}px ${star.color}` : undefined;
           return (
             <div key={star.id} className="absolute rounded-full" style={{
               left: `${star.x}%`, top: `${star.y}%`,
               width:  `${star.size}px`, height: `${star.size}px`,
               background: star.color,
-              boxShadow: isBright ? (isCyber ? glow : `0 0 ${star.size * 3}px ${star.size * 1.5}px ${star.color}40`) : isMed ? `0 0 ${star.size * 2}px ${star.color}30` : 'none',
+              boxShadow: isBright ? (isCyber ? glow : `0 0 ${star.size * 1.5}px ${star.size * 0.75}px ${star.color}20`) : isMed ? `0 0 ${star.size}px ${star.color}15` : 'none',
               ['--op' as string]: star.opacity,
               opacity: star.opacity,
               animation: isBright ? `twinkle-bright ${star.duration}s ease-in-out infinite` : `twinkle ${star.duration}s ease-in-out infinite`,
@@ -122,7 +122,7 @@ export default function BackgroundEffects({ earthMode = 'realistic' }: Backgroun
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" style={{
           width: '900px', height: '900px', borderRadius: '50%',
           background: isCyber
-            ? 'radial-gradient(circle, rgba(0,245,176,0.06) 0%, rgba(0,217,143,0.02) 50%, transparent 70%)'
+            ? 'radial-gradient(circle, rgba(0,245,176,0.02) 0%, rgba(0,217,143,0.005) 50%, transparent 70%)'
             : 'radial-gradient(circle, rgba(30,50,120,0.06) 0%, rgba(10,20,60,0.03) 50%, transparent 70%)',
           filter: 'blur(40px)',
           transition: 'background 1.5s ease',
@@ -134,34 +134,34 @@ export default function BackgroundEffects({ earthMode = 'realistic' }: Backgroun
             {/* Hex grid pattern */}
             <div className="absolute inset-0" style={{
               backgroundImage: `
-                linear-gradient(30deg,  rgba(0,245,176,0.02) 12%, transparent 12.5%, transparent 87%, rgba(0,245,176,0.02) 87.5%),
-                linear-gradient(150deg, rgba(0,245,176,0.02) 12%, transparent 12.5%, transparent 87%, rgba(0,245,176,0.02) 87.5%),
-                linear-gradient(60deg,  rgba(0,245,176,0.015) 25%, transparent 25.5%, transparent 75%, rgba(0,245,176,0.015) 75%)
+                linear-gradient(30deg,  rgba(0,245,176,0.0025) 12%, transparent 12.5%, transparent 87%, rgba(0,245,176,0.0025) 87.5%),
+                linear-gradient(150deg, rgba(0,245,176,0.0025) 12%, transparent 12.5%, transparent 87%, rgba(0,245,176,0.0025) 87.5%),
+                linear-gradient(60deg,  rgba(0,245,176,0.0015) 25%, transparent 25.5%, transparent 75%, rgba(0,245,176,0.0015) 75%)
               `,
               backgroundSize: '80px 140px',
               backgroundPosition: '0 0, 0 0, 40px 70px',
               animation: 'hex-drift 60s linear infinite',
-              opacity: 1,
+              opacity: 0.15, // Reduced overall opacity of the grid overlay
             }} />
 
             {/* Scanline sweep */}
             <div style={{
               position: 'absolute', left: 0, right: 0, height: '1px',
-              background: 'linear-gradient(90deg, transparent, rgba(0,245,176,0.15), transparent)',
+              background: 'linear-gradient(90deg, transparent, rgba(0,245,176,0.04), transparent)',
               animation: 'scanline-sweep 12s ease-in-out infinite',
             }} />
 
             {/* Aurora glow top */}
             <div style={{
               position: 'absolute', top: 0, left: 0, right: 0, height: '200px',
-              background: 'linear-gradient(180deg, rgba(0,245,176,0.03) 0%, transparent 100%)',
+              background: 'linear-gradient(180deg, rgba(0,245,176,0.004) 0%, transparent 100%)',
               animation: 'cyber-pulse 4s ease-in-out infinite',
             }} />
 
             {/* Aurora glow bottom */}
             <div style={{
               position: 'absolute', bottom: 0, left: 0, right: 0, height: '150px',
-              background: 'linear-gradient(0deg, rgba(0,245,176,0.03) 0%, transparent 100%)',
+              background: 'linear-gradient(0deg, rgba(0,245,176,0.004) 0%, transparent 100%)',
               animation: 'cyber-pulse 6s ease-in-out infinite',
             }} />
           </>

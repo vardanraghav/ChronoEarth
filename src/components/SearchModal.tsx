@@ -107,103 +107,54 @@ export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchMo
     animation: 'fade-up 0.3s ease-out'
   };
 
-  const cornerAccent = (
-    <>
-      <div style={{ position: 'absolute', top: 0, left: 0, width: 8, height: 8, borderTop: `1px solid ${C.primary}`, borderLeft: `1px solid ${C.primary}` }} />
-      <div style={{ position: 'absolute', top: 0, right: 0, width: 8, height: 8, borderTop: `1px solid ${C.primary}`, borderRight: `1px solid ${C.primary}` }} />
-      <div style={{ position: 'absolute', bottom: 0, left: 0, width: 8, height: 8, borderBottom: `1px solid ${C.primary}`, borderLeft: `1px solid ${C.primary}` }} />
-      <div style={{ position: 'absolute', bottom: 0, right: 0, width: 8, height: 8, borderBottom: `1px solid ${C.primary}`, borderRight: `1px solid ${C.primary}` }} />
-    </>
-  );
-
   return (
     <div 
-      style={{
-        position: 'fixed', 
-        inset: 0, 
-        background: 'rgba(2, 8, 15, 0.75)',
-        backdropFilter: 'blur(12px)', 
-        zIndex: 9999, 
-        display: 'flex',
-        alignItems: 'center', 
-        justifyContent: 'center',
-        padding: '20px'
-      }} 
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md pointer-events-auto"
       onClick={onClose}
     >
-      <div style={panelStyle} onClick={e => e.stopPropagation()}>
-        {cornerAccent}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <div style={{ width: 3, height: 10, background: C.primary, boxShadow: `0 0 6px ${C.primary}` }} />
-            <span style={{ fontSize: 8, fontWeight: 600, letterSpacing: '0.30em', color: C.primary, textTransform: 'uppercase', fontFamily: 'monospace' }}>
-              Global Platform Search Engine
-            </span>
-          </div>
+      <div 
+        className="card-tier-2 w-full max-w-[500px] p-6 max-h-[75vh] flex flex-col gap-4 relative animate-fade-up"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="flex justify-between items-center border-b border-[#00F5B0]/15 pb-2">
+          <span className="text-[10px] font-mono tracking-widest text-[#7A8694] uppercase font-bold">
+            Search Archive
+          </span>
           <button 
             onClick={onClose} 
-            style={{ 
-              background: 'none', 
-              border: 'none', 
-              color: C.primary, 
-              cursor: 'pointer', 
-              fontSize: 10,
-              fontFamily: 'monospace'
-            }}
+            className="bg-transparent border-none text-[#7A8694] hover:text-white cursor-pointer text-[10px] font-mono uppercase"
           >
-            [✕ CLOSE]
+            [Close]
           </button>
         </div>
 
-        <div style={{ position: 'relative' }}>
+        <div className="relative">
           <input
             type="text"
             autoFocus
-            placeholder="Search cities, predictions, projects, technologies, people..."
+            placeholder="Type keywords, cities, predictions, technologies..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            style={{
-              width: '100%', 
-              padding: '12px 14px', 
-              background: '#02060A',
-              border: `1px solid ${C.primary}40`, 
-              outline: 'none', 
-              color: '#fff',
-              fontFamily: 'monospace', 
-              fontSize: 11, 
-              borderRadius: 2,
-              boxShadow: '0 0 14px rgba(0, 245, 176, 0.03)'
-            }}
+            className="w-full bg-transparent border-b border-[#00F5B0]/15 outline-none py-2 text-sm text-white font-light tracking-wide transition-colors focus:border-[#00F5B0]"
           />
-          <span style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', fontSize: 11 }}>🔍</span>
         </div>
 
         {/* Results container */}
-        <div 
-          className="custom-scrollbar" 
-          style={{ 
-            flex: 1, 
-            overflowY: 'auto', 
-            display: 'flex', 
-            flexDirection: 'column', 
-            gap: 14,
-            paddingRight: 4
-          }}
-        >
+        <div className="custom-scrollbar flex-1 overflow-y-auto flex flex-col gap-4 pr-1">
           {q.length === 0 ? (
-            <div style={{ padding: '30px 0', textAlign: 'center', fontSize: 9, color: 'rgba(255,255,255,0.30)', letterSpacing: '0.12em', fontFamily: 'monospace' }}>
-              AWAITING PARAMETERS... ENTER QUERY TO INDEX THE CHRONO-DATABASE.
+            <div className="py-8 text-center text-[10px] text-[#7A8694] tracking-widest font-mono">
+              AWAITING SCAN CRITERIA... ENTER QUERY TO INDEX MEMORY SHARDS.
             </div>
           ) : !hasResults ? (
-            <div style={{ padding: '30px 0', textAlign: 'center', fontSize: 9, color: C.primary, letterSpacing: '0.1em', fontFamily: 'monospace' }}>
-              NO INDEX ENTRIES FOUND MATCHING QUERY.
+            <div className="py-8 text-center text-[10px] text-[#00F5B0] tracking-wider font-mono">
+              NO ARCHIVES COMPILED MATCHING PROTOCOL.
             </div>
           ) : (
             <>
               {/* Cities matches */}
               {cityMatches.length > 0 && (
                 <div>
-                  <div style={{ fontSize: 7, color: 'rgba(0, 245, 176, 0.5)', letterSpacing: '0.15em', marginBottom: 6, fontFamily: 'monospace' }}>🏙️ CITIES MATCHED</div>
+                  <div className="text-[9px] text-[#7A8694] tracking-widest mb-1.5 font-mono uppercase font-bold">🏙️ Cities</div>
                   {cityMatches.map(c => (
                     <div key={c.name}
                       onClick={() => {
@@ -213,23 +164,10 @@ export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchMo
                         }
                         router.push(`/?city=${encodeURIComponent(c.name)}`);
                       }}
-                      style={{
-                        padding: '10px 12px', 
-                        background: 'rgba(255,255,255,0.01)', 
-                        border: '1px solid rgba(0, 245, 176, 0.08)',
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
-                        alignItems: 'center', 
-                        marginBottom: 6,
-                        cursor: 'pointer', 
-                        borderRadius: 1,
-                        transition: 'all 0.2s ease',
-                      }}
-                      onMouseEnter={e => e.currentTarget.style.borderColor = C.primary}
-                      onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(0, 245, 176, 0.08)'}
+                      className="py-2 px-1 bg-transparent hover:bg-white/5 border-b border-[#00F5B0]/10 flex justify-between items-center cursor-pointer transition-all"
                     >
-                      <span style={{ fontSize: 9.5, color: '#fff', fontWeight: 500 }}>{c.name}, {c.country}</span>
-                      <span style={{ fontSize: 7, color: C.secondary, letterSpacing: '0.1em', fontFamily: 'monospace' }}>[LOCATE ON GLOBE]</span>
+                      <span className="text-xs text-white font-light">{c.name}, {c.country}</span>
+                      <span className="text-[8px] text-[#00D98F] font-mono uppercase tracking-wider">[Locate]</span>
                     </div>
                   ))}
                 </div>
@@ -238,68 +176,42 @@ export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchMo
               {/* Predictions matches */}
               {predMatches.length > 0 && (
                 <div>
-                  <div style={{ fontSize: 7, color: 'rgba(0, 245, 176, 0.5)', letterSpacing: '0.15em', marginBottom: 6, fontFamily: 'monospace' }}>🔮 GLOBAL FORECAST PREDICTIONS</div>
+                  <div className="text-[9px] text-[#7A8694] tracking-widest mb-1.5 font-mono uppercase font-bold">🔮 Predictions</div>
                   {predMatches.map(p => (
                     <div key={p.id}
                       onClick={() => {
                         onClose();
                         router.push(`/predictions/${p.slug}`);
                       }}
-                      style={{
-                        padding: '10px 12px', 
-                        background: 'rgba(255,255,255,0.01)', 
-                        border: '1px solid rgba(0, 245, 176, 0.08)',
-                        display: 'flex', 
-                        flexDirection: 'column', 
-                        gap: 4, 
-                        marginBottom: 6,
-                        cursor: 'pointer', 
-                        borderRadius: 1,
-                        transition: 'all 0.2s ease',
-                      }}
-                      onMouseEnter={e => e.currentTarget.style.borderColor = C.primary}
-                      onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(0, 245, 176, 0.08)'}
+                      className="py-2.5 px-1 bg-transparent hover:bg-white/5 border-b border-[#00F5B0]/10 flex flex-col gap-1 cursor-pointer transition-all"
                     >
-                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <span style={{ fontSize: 9.5, color: '#fff', fontWeight: 500 }}>{p.title}</span>
-                        <span style={{ fontSize: 7, color: C.secondary, fontFamily: 'monospace' }}>[{p.year} · {p.category.toUpperCase()}]</span>
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs text-white font-medium truncate pr-2">{p.title}</span>
+                        <span className="text-[8px] text-[#00D98F] font-mono uppercase shrink-0">[{p.year}]</span>
                       </div>
-                      <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.40)' }}>{p.description.slice(0, 100)}...</span>
+                      <span className="text-[10px] text-[#7A8694] line-clamp-1">{p.description}</span>
                     </div>
                   ))}
                 </div>
               )}
 
-              {/* Project Matches (Landmarks & Projects) */}
+              {/* Project Matches */}
               {projectMatches.length > 0 && (
                 <div>
-                  <div style={{ fontSize: 7, color: 'rgba(0, 245, 176, 0.5)', letterSpacing: '0.15em', marginBottom: 6, fontFamily: 'monospace' }}>🚧 PROJECTS & LANDMARKS</div>
+                  <div className="text-[9px] text-[#7A8694] tracking-widest mb-1.5 font-mono uppercase font-bold">🚧 Projects</div>
                   {projectMatches.map((proj, idx) => (
                     <div key={idx}
                       onClick={() => {
                         onClose();
                         router.push(`/city/${proj.citySlug}`);
                       }}
-                      style={{
-                        padding: '10px 12px', 
-                        background: 'rgba(255,255,255,0.01)', 
-                        border: '1px solid rgba(0, 245, 176, 0.08)',
-                        display: 'flex', 
-                        flexDirection: 'column', 
-                        gap: 4, 
-                        marginBottom: 6,
-                        cursor: 'pointer', 
-                        borderRadius: 1,
-                        transition: 'all 0.2s ease',
-                      }}
-                      onMouseEnter={e => e.currentTarget.style.borderColor = C.primary}
-                      onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(0, 245, 176, 0.08)'}
+                      className="py-2.5 px-1 bg-transparent hover:bg-white/5 border-b border-[#00F5B0]/10 flex flex-col gap-1 cursor-pointer transition-all"
                     >
-                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <span style={{ fontSize: 9.5, color: '#fff', fontWeight: 500 }}>{proj.name}</span>
-                        <span style={{ fontSize: 7, color: C.accent, fontFamily: 'monospace' }}>[{proj.type.toUpperCase()} · {proj.cityName}]</span>
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs text-white font-medium truncate pr-2">{proj.name}</span>
+                        <span className="text-[8px] text-white/40 font-mono uppercase shrink-0">[{proj.cityName}]</span>
                       </div>
-                      <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.40)' }}>{proj.desc.slice(0, 100)}...</span>
+                      <span className="text-[10px] text-[#7A8694] line-clamp-1">{proj.desc}</span>
                     </div>
                   ))}
                 </div>
@@ -308,42 +220,29 @@ export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchMo
               {/* Technologies Matches */}
               {techMatches.length > 0 && (
                 <div>
-                  <div style={{ fontSize: 7, color: 'rgba(0, 245, 176, 0.5)', letterSpacing: '0.15em', marginBottom: 6, fontFamily: 'monospace' }}>⚡ FUTURE TECH & KNOWLEDGE</div>
+                  <div className="text-[9px] text-[#7A8694] tracking-widest mb-1.5 font-mono uppercase font-bold">⚡ Tech & Knowledge</div>
                   {techMatches.map(t => (
                     <div key={t.id}
                       onClick={() => {
                         onClose();
                         router.push(`/knowledge?article=${t.id}`);
                       }}
-                      style={{
-                        padding: '10px 12px', 
-                        background: 'rgba(255,255,255,0.01)', 
-                        border: '1px solid rgba(0, 245, 176, 0.08)',
-                        display: 'flex', 
-                        flexDirection: 'column', 
-                        gap: 4, 
-                        marginBottom: 6,
-                        cursor: 'pointer', 
-                        borderRadius: 1,
-                        transition: 'all 0.2s ease',
-                      }}
-                      onMouseEnter={e => e.currentTarget.style.borderColor = C.primary}
-                      onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(0, 245, 176, 0.08)'}
+                      className="py-2.5 px-1 bg-transparent hover:bg-white/5 border-b border-[#00F5B0]/10 flex flex-col gap-1 cursor-pointer transition-all"
                     >
-                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <span style={{ fontSize: 9.5, color: '#fff', fontWeight: 500 }}>{t.title}</span>
-                        <span style={{ fontSize: 7, color: C.emerald, fontFamily: 'monospace' }}>[{t.category.toUpperCase()}]</span>
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs text-white font-medium truncate pr-2">{t.title}</span>
+                        <span className="text-[8px] text-[#00F5B0] font-mono uppercase shrink-0">[{t.category}]</span>
                       </div>
-                      <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.40)' }}>{t.shortDesc}</span>
+                      <span className="text-[10px] text-[#7A8694] line-clamp-1">{t.shortDesc}</span>
                     </div>
                   ))}
                 </div>
               )}
 
-              {/* People Matches (Futurologists & Architects) */}
+              {/* People Matches */}
               {(futurologistMatches.length > 0 || architectMatches.length > 0) && (
                 <div>
-                  <div style={{ fontSize: 7, color: 'rgba(0, 245, 176, 0.5)', letterSpacing: '0.15em', marginBottom: 6, fontFamily: 'monospace' }}>👤 RESEARCHERS & ARCHITECTS</div>
+                  <div className="text-[9px] text-[#7A8694] tracking-widest mb-1.5 font-mono uppercase font-bold">👥 Research Experts</div>
                   
                   {/* Futurologists */}
                   {futurologistMatches.map(f => (
@@ -352,26 +251,13 @@ export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchMo
                         onClose();
                         router.push(`/futurologists/${f.slug}`);
                       }}
-                      style={{
-                        padding: '10px 12px', 
-                        background: 'rgba(255,255,255,0.01)', 
-                        border: '1px solid rgba(0, 245, 176, 0.08)',
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
-                        alignItems: 'center', 
-                        marginBottom: 6,
-                        cursor: 'pointer', 
-                        borderRadius: 1,
-                        transition: 'all 0.2s ease',
-                      }}
-                      onMouseEnter={e => e.currentTarget.style.borderColor = C.primary}
-                      onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(0, 245, 176, 0.08)'}
+                      className="py-2 px-1 bg-transparent hover:bg-white/5 border-b border-[#00F5B0]/10 flex justify-between items-center cursor-pointer transition-all"
                     >
                       <div>
-                        <div style={{ fontSize: 9.5, color: '#fff', fontWeight: 500 }}>{f.name}</div>
-                        <div style={{ fontSize: 7, color: 'rgba(255,255,255,0.4)', fontFamily: 'monospace' }}>{f.role}</div>
+                        <div className="text-xs text-white font-light">{f.name}</div>
+                        <div className="text-[9px] text-[#7A8694] font-mono">{f.role}</div>
                       </div>
-                      <span style={{ fontSize: 7, color: C.primary, letterSpacing: '0.1em', fontFamily: 'monospace' }}>[EXPERT SHEETS]</span>
+                      <span className="text-[8px] text-[#00F5B0] font-mono uppercase tracking-wider">[Expert Sheet]</span>
                     </div>
                   ))}
 
@@ -382,26 +268,13 @@ export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchMo
                         onClose();
                         router.push(`/city/${arch.citySlug}`);
                       }}
-                      style={{
-                        padding: '10px 12px', 
-                        background: 'rgba(255, 255, 255, 0.01)', 
-                        border: '1px solid rgba(0, 245, 176, 0.08)',
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
-                        alignItems: 'center', 
-                        marginBottom: 6,
-                        cursor: 'pointer', 
-                        borderRadius: 1,
-                        transition: 'all 0.2s ease',
-                      }}
-                      onMouseEnter={e => e.currentTarget.style.borderColor = C.primary}
-                      onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(0, 245, 176, 0.08)'}
+                      className="py-2 px-1 bg-transparent hover:bg-white/5 border-b border-[#00F5B0]/10 flex justify-between items-center cursor-pointer transition-all"
                     >
                       <div>
-                        <div style={{ fontSize: 9.5, color: '#fff', fontWeight: 500 }}>{arch.name}</div>
-                        <div style={{ fontSize: 7, color: 'rgba(255,255,255,0.4)', fontFamily: 'monospace' }}>{arch.role} · {arch.cityName}</div>
+                        <div className="text-xs text-white font-light">{arch.name}</div>
+                        <div className="text-[9px] text-[#7A8694] font-mono">{arch.role} · {arch.cityName}</div>
                       </div>
-                      <span style={{ fontSize: 7, color: C.accent, letterSpacing: '0.1em', fontFamily: 'monospace' }}>[METROPOLIS PANEL]</span>
+                      <span className="text-[8px] text-[#7A8694] font-mono uppercase tracking-wider">[Metropolis Panel]</span>
                     </div>
                   ))}
                 </div>

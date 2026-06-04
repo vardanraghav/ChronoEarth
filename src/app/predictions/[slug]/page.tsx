@@ -29,7 +29,6 @@ function MiniSparkline({ color }: { color: string }) {
         stroke={color}
         strokeWidth="1.5"
         className="opacity-80"
-        style={{ filter: `drop-shadow(0 0 3px ${color})` }}
       />
     </svg>
   );
@@ -49,11 +48,11 @@ function CircularGauge({ value, color, label }: { value: number; color: string; 
           strokeDasharray={circ} strokeDashoffset={offset}
           strokeLinecap="round"
           transform="rotate(-90 28 28)"
-          style={{ filter: `drop-shadow(0 0 4px ${color})`, transition: 'stroke-dashoffset 0.8s ease' }} 
+          style={{ strokeDashoffset: offset, transition: 'stroke-dashoffset 0.8s ease' }} 
         />
         <text x={28} y={28} textAnchor="middle" dominantBaseline="middle" fill={color} fontSize={10} fontWeight={600} fontFamily="monospace">{value}%</text>
       </svg>
-      <span className="text-[7px] tracking-widest text-slate-500 uppercase font-mono text-center">{label}</span>
+      <span className="text-[7px] tracking-widest text-[#7A8694] uppercase font-mono text-center">{label}</span>
     </div>
   );
 }
@@ -80,23 +79,23 @@ function CommentNode({ comment, onReply, onVote }: CommentNodeProps) {
   };
 
   return (
-    <div className="border-l border-[#00F5B0]/60 pl-4 mt-4 flex flex-col gap-2 relative">
+    <div className="border-l border-[#00F5B0]/20 pl-4 mt-4 flex flex-col gap-2 relative">
       {/* Visual node line connector dot */}
-      <div className="absolute -left-[3px] top-1.5 w-1.5 h-1.5 rounded-full bg-[#040B12] border border-[#00F5B0]/40" />
+      <div className="absolute -left-[3px] top-1.5 w-1.5 h-1.5 rounded-full bg-[#040B12] border border-[#00F5B0]/20" />
       
-      <div className="flex justify-between items-center text-[9px] font-mono text-[#00F5B0]">
-        <span className="font-semibold">{comment.author}</span>
-        <span className="text-slate-500">{new Date(comment.timestamp).toLocaleDateString()}</span>
+      <div className="flex justify-between items-center text-[10px] font-mono text-[#00F5B0]">
+        <span className="font-semibold text-white">{comment.author}</span>
+        <span className="text-[#7A8694]">{new Date(comment.timestamp).toLocaleDateString()}</span>
       </div>
       
-      <p className="text-xs text-slate-300 font-sans leading-relaxed">
+      <p className="text-xs text-[#7A8694] font-sans leading-relaxed">
         {comment.content}
       </p>
       
-      <div className="flex items-center gap-4 text-[8px] font-mono mt-1">
+      <div className="flex items-center gap-4 text-[9px] font-mono mt-1">
         <button 
           onClick={() => onVote(comment.id)} 
-          className="text-emerald-400 hover:text-emerald-300 transition-colors font-semibold"
+          className="text-[#00F5B0] hover:text-[#00D98F] transition-colors font-semibold"
         >
           ▲ {comment.votes}
         </button>
@@ -109,7 +108,7 @@ function CommentNode({ comment, onReply, onVote }: CommentNodeProps) {
       </div>
 
       {replyOpen && (
-        <form onSubmit={submitReply} className="mt-2 flex flex-col gap-2 p-3 bg-[#00F5B0]/5 border border-[#00F5B0]/40 rounded">
+        <form onSubmit={submitReply} className="mt-2 flex flex-col gap-2 card-tier-3">
           <input
             type="text"
             placeholder="Enter Identity Alias..."
@@ -126,7 +125,7 @@ function CommentNode({ comment, onReply, onVote }: CommentNodeProps) {
             required
           />
           <div className="flex gap-2 justify-end">
-            <button type="button" onClick={() => setReplyOpen(false)} className="text-[9px] font-mono text-slate-500 uppercase px-2 hover:text-white">Cancel</button>
+            <button type="button" onClick={() => setReplyOpen(false)} className="text-[9px] font-mono text-[#7A8694] uppercase px-2 hover:text-white">Cancel</button>
             <button type="submit" className="text-[9px] font-mono text-[#00F5B0] uppercase font-bold px-2 hover:underline">Transmit</button>
           </div>
         </form>
@@ -374,17 +373,7 @@ Generated via ChronoEarth forecast engine.`;
     position: 'relative',
     overflow: 'hidden',
   };
-
-  const cornerAccent = (
-    <>
-      <div style={{ position: 'absolute', top: 0, left: 0, width: 8, height: 8, borderTop: `1px solid ${C.cyan}`, borderLeft: `1px solid ${C.cyan}` }} />
-      <div style={{ position: 'absolute', top: 0, right: 0, width: 8, height: 8, borderTop: `1px solid ${C.cyan}`, borderRight: `1px solid ${C.cyan}` }} />
-      <div style={{ position: 'absolute', bottom: 0, left: 0, width: 8, height: 8, borderBottom: `1px solid ${C.cyan}`, borderLeft: `1px solid ${C.cyan}` }} />
-      <div style={{ position: 'absolute', bottom: 0, right: 0, width: 8, height: 8, borderBottom: `1px solid ${C.cyan}`, borderRight: `1px solid ${C.cyan}` }} />
-    </>
-  );
-
-  return (
+    return (
     <main className="h-screen w-screen overflow-y-auto bg-[#02060A] text-[#e2e8f0] relative custom-scrollbar">
       <BackgroundEffects earthMode="cyber" />
       
@@ -392,36 +381,35 @@ Generated via ChronoEarth forecast engine.`;
 
       <Navbar earthMode="cyber" />
 
-      <div className="max-w-6xl mx-auto px-6 pt-32 pb-24 relative z-20 flex flex-col gap-8">
+      <div className="content-container pt-32 pb-20 relative z-20 flex flex-col gap-8 animate-fade-up">
         
         {/* Navigation Breadcrumb */}
-        <div className="flex items-center gap-2 font-mono text-[9px] text-[#00F5B0]">
+        <div className="flex items-center gap-2 font-mono text-[10px] text-[#00F5B0]">
           <Link href="/predictions" className="hover:text-white transition-colors">FORECASTS DIRECTORY</Link>
           <span>/</span>
-          <span className="text-slate-400">{p.title.toUpperCase()}</span>
+          <span className="text-[#7A8694]">{p.title.toUpperCase()}</span>
         </div>
 
         {/* 2-Column Dashboard layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           
           {/* Left Column: Forecast Metadata */}
           <div className="lg:col-span-1 flex flex-col gap-6">
-            <div style={panelStyle} className="flex flex-col gap-6">
-              {cornerAccent}
+            <div className="card-tier-2 flex flex-col gap-6">
 
               <div className="flex flex-col gap-1 border-b border-[#00F5B0]/15 pb-4">
-                <span className="text-[7px] font-mono text-[#00F5B0]">FORECAST ID: {p.id.toUpperCase()}</span>
+                <span className="text-[9px] font-mono text-[#7A8694]">FORECAST ID: {p.id.toUpperCase()}</span>
                 <h2 className="text-lg font-bold text-white uppercase tracking-wider">Metrics Matrix</h2>
               </div>
 
               {/* Gauges */}
-              <div className="flex justify-around items-center py-2 border-b border-[#00F5B0]/60">
+              <div className="flex justify-around items-center py-2 border-b border-[#00F5B0]/15">
                 <CircularGauge value={p.confidenceScore} color={C.cyan} label="Confidence Score" />
                 <CircularGauge value={82} color={C.emerald} label="Planetary Stability" />
               </div>
 
               {/* Stats Lists */}
-              <div className="flex flex-col gap-3 font-mono text-xs border-b border-[#00F5B0]/60 pb-4">
+              <div className="flex flex-col gap-3 font-mono text-xs border-b border-[#00F5B0]/15 pb-4">
                 <div className="flex justify-between">
                   <span className="text-slate-500 text-[10px]">GEOLOCATION KEY</span>
                   <span className="text-[#00F5B0] font-semibold">{p.city.toUpperCase()}</span>
@@ -438,14 +426,14 @@ Generated via ChronoEarth forecast engine.`;
 
               {/* Mini Charts */}
               <div className="flex flex-col gap-3">
-                <span className="text-[8px] font-mono tracking-wider text-slate-500 uppercase">SIMULATED DATA TRENDS</span>
+                <span className="text-[10px] font-mono tracking-wider text-slate-500 uppercase">SIMULATED DATA TRENDS</span>
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="p-2 bg-[#00F5B0]/5 border border-[#00F5B0]/40 rounded">
-                    <span className="text-[7px] text-slate-400 font-mono block mb-1">STRENGTH VARIATION</span>
+                  <div className="card-tier-3 flex flex-col">
+                    <span className="text-[7px] text-[#7A8694] font-mono block mb-1">STRENGTH VARIATION</span>
                     <MiniSparkline color={C.cyan} />
                   </div>
-                  <div className="p-2 bg-[#00F5B0]/5 border border-[#00F5B0]/40 rounded">
-                    <span className="text-[7px] text-slate-400 font-mono block mb-1">NETWORK ACCURACY</span>
+                  <div className="card-tier-3 flex flex-col">
+                    <span className="text-[7px] text-[#7A8694] font-mono block mb-1">NETWORK ACCURACY</span>
                     <MiniSparkline color={C.emerald} />
                   </div>
                 </div>
@@ -460,8 +448,8 @@ Generated via ChronoEarth forecast engine.`;
                     onClick={() => triggerVote('up')}
                     className={`flex-1 py-2 font-mono text-[9px] tracking-widest uppercase transition-all ${
                       hasVoted === 'up'
-                        ? 'bg-[#040B12] text-emerald-400 border-r border-[#00F5B0]/15'
-                        : 'bg-[#00F5B0]/5 hover:bg-[#00F5B0]/10 text-slate-400 border-r border-[#00F5B0]/15'
+                        ? 'bg-[#040B12] text-[#00F5B0] border-r border-[#00F5B0]/15'
+                        : 'bg-[#00F5B0]/5 hover:bg-[#00F5B0]/10 text-[#7A8694] border-r border-[#00F5B0]/15'
                     }`}
                   >
                     ▲ VOTE PROBABLE
@@ -470,8 +458,8 @@ Generated via ChronoEarth forecast engine.`;
                     onClick={() => triggerVote('down')}
                     className={`flex-1 py-2 font-mono text-[9px] tracking-widest uppercase transition-all ${
                       hasVoted === 'down'
-                        ? 'bg-rose-950/65 text-rose-400'
-                        : 'bg-[#00F5B0]/5 hover:bg-[#00F5B0]/10 text-slate-400'
+                        ? 'bg-rose-950/65 text-rose-455'
+                        : 'bg-[#00F5B0]/5 hover:bg-[#00F5B0]/10 text-[#7A8694]'
                     }`}
                   >
                     ▼ VOTE IMPROBABLE
@@ -484,7 +472,7 @@ Generated via ChronoEarth forecast engine.`;
                   className={`w-full py-2 font-mono text-[9px] tracking-widest uppercase border rounded transition-all duration-200 ${
                     isSaved
                       ? 'bg-[#00F5B0]/10 border-[#00F5B0] text-[#00F5B0] font-bold shadow-none'
-                      : 'bg-transparent border-[#00F5B0]/15 text-slate-400 hover:border-[#00F5B0]/35 hover:text-white'
+                      : 'bg-transparent border-[#00F5B0]/15 text-[#7A8694] hover:border-[#00F5B0]/35 hover:text-white'
                   }`}
                 >
                   {isSaved ? '🔖 TIMELINE PATH SAVED' : '🔖 SAVE FOR MONITORING'}
@@ -501,7 +489,7 @@ Generated via ChronoEarth forecast engine.`;
                 {/* Download Report */}
                 <button
                   onClick={triggerExport}
-                  className="w-full py-2 font-mono text-[9px] tracking-widest uppercase bg-gradient-to-r from-cyan-400/80 to-[#00F5B0]/80 text-[#000] border-none font-bold rounded shadow-none hover:opacity-90 transition-all duration-200"
+                  className="w-full py-2 font-mono text-[9px] tracking-widest uppercase bg-[#00F5B0] hover:bg-[#00D98F] text-[#02060A] font-bold rounded transition-all duration-200"
                 >
                   ⚡ EXPORT INTEL REPORT (.TXT)
                 </button>
@@ -515,8 +503,7 @@ Generated via ChronoEarth forecast engine.`;
           <div className="lg:col-span-2 flex flex-col gap-6">
             
             {/* Forecast Content Panel */}
-            <div style={panelStyle} className="flex flex-col gap-6">
-              {cornerAccent}
+            <div className="card-tier-1 flex flex-col gap-6">
 
               <div className="flex justify-between items-center text-[10px] font-mono">
                 <span className="px-2 py-0.5 bg-[#040B12] text-[#00F5B0] border border-[#00F5B0]/20 uppercase tracking-wider rounded-sm">{p.category}</span>
@@ -539,18 +526,18 @@ Generated via ChronoEarth forecast engine.`;
                     />
                     <div>
                       <span className="text-xs font-semibold text-white group-hover:text-[#00F5B0] transition-colors">{p.author}</span>
-                      <span className="text-[8px] font-mono text-slate-500 uppercase block">{authorObj.role}</span>
+                      <span className="text-[8px] font-mono text-[#7A8694] uppercase block">{authorObj.role}</span>
                     </div>
                   </Link>
                 )}
               </div>
 
-              <div className="border-t border-[#00F5B0]/60 pt-6 text-sm leading-relaxed text-slate-300 font-sans whitespace-pre-wrap">
+              <div className="border-t border-[#00F5B0]/15 pt-6 text-sm leading-relaxed text-[#7A8694] font-sans whitespace-pre-wrap">
                 {p.description}
               </div>
 
               {/* Tags */}
-              <div className="flex flex-wrap gap-2 pt-2 border-t border-[#00F5B0]/20">
+              <div className="flex flex-wrap gap-2 pt-2 border-t border-[#00F5B0]/15">
                 {p.tags.map(tag => (
                   <span key={tag} className="px-2 py-1 bg-[#00F5B0]/10 text-[9px] font-mono text-[#00F5B0] uppercase tracking-wider border border-[#00F5B0]/10 rounded-full">
                     #{tag.replace(/\s+/g, '')}
@@ -560,12 +547,10 @@ Generated via ChronoEarth forecast engine.`;
             </div>
 
             {/* Nested Comments Panel */}
-            <div style={panelStyle} className="flex flex-col gap-6">
-              {cornerAccent}
+            <div className="card-tier-2 flex flex-col gap-6">
               
               <div className="flex justify-between items-center border-b border-[#00F5B0]/15 pb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-1.5 h-5 bg-[#00F5B0] shadow-[0_0_8px_#00F5B0]" />
                   <h3 className="text-lg font-light text-white uppercase tracking-wider">Planetary Consensus Thread</h3>
                 </div>
 
@@ -576,7 +561,7 @@ Generated via ChronoEarth forecast engine.`;
                     className={`px-2 py-1 font-mono text-[8px] uppercase border rounded transition-all ${
                       sortMode === 'top'
                         ? 'bg-[#040B12] text-[#00F5B0] border-[#00F5B0]/30'
-                        : 'bg-transparent border-[#00F5B0]/15 text-slate-500 hover:text-slate-300'
+                        : 'bg-transparent border-[#00F5B0]/15 text-[#7A8694] hover:text-white'
                     }`}
                   >
                     Top Ratings
@@ -586,7 +571,7 @@ Generated via ChronoEarth forecast engine.`;
                     className={`px-2 py-1 font-mono text-[8px] uppercase border rounded transition-all ${
                       sortMode === 'newest'
                         ? 'bg-[#040B12] text-[#00F5B0] border-[#00F5B0]/30'
-                        : 'bg-transparent border-[#00F5B0]/15 text-slate-500 hover:text-slate-300'
+                        : 'bg-transparent border-[#00F5B0]/15 text-[#7A8694] hover:text-white'
                     }`}
                   >
                     Newest
@@ -595,8 +580,8 @@ Generated via ChronoEarth forecast engine.`;
               </div>
 
               {/* Top-Level Add Comment Form */}
-              <form onSubmit={handleAddTopComment} className="flex flex-col gap-3 p-4 bg-[#00F5B0]/5 border border-[#00F5B0]/50 rounded">
-                <span className="text-[8px] font-mono text-[#7A8694] uppercase">Add Transmission Feedback</span>
+              <form onSubmit={handleAddTopComment} className="card-tier-3 flex flex-col gap-3">
+                <span className="text-[10px] font-mono text-[#7A8694] uppercase">Add Transmission Feedback</span>
                 <input
                   type="text"
                   placeholder="Identity matrix / Username..."
@@ -609,7 +594,7 @@ Generated via ChronoEarth forecast engine.`;
                   placeholder="Input detailed fourier analysis feedback or prediction critiques..."
                   value={newContent}
                   onChange={e => setNewContent(e.target.value)}
-                  className="bg-[#00050c]/60 border border-[#00F5B0]/15 text-xs text-slate-300 p-3 outline-none focus:border-[#00F5B0] rounded min-h-[80px] font-sans"
+                  className="bg-[#00050c]/60 border border-[#00F5B0]/15 text-xs text-[#7A8694] p-3 outline-none focus:border-[#00F5B0] rounded min-h-[80px] font-sans"
                   required
                 />
                 <button
@@ -623,7 +608,7 @@ Generated via ChronoEarth forecast engine.`;
               {/* Comments Thread List */}
               <div className="flex flex-col gap-6 mt-2 divide-y divide-[#00F5B0]/10">
                 {sortedComments.length === 0 ? (
-                  <div className="text-center py-8 font-mono text-xs text-slate-500">
+                  <div className="text-center py-8 font-mono text-xs text-[#7A8694]">
                     AWAITING INITIAL TRANSMISSIONS... BE THE FIRST TO COMMENT.
                   </div>
                 ) : (

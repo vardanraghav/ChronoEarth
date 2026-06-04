@@ -83,39 +83,34 @@ function PredictionsDirectoryContent() {
   const cornerAccent = null;
 
   return (
-    <div className="max-w-6xl mx-auto px-6 pt-32 pb-24 relative z-20 flex flex-col gap-10">
+    <div className="content-container pt-32 pb-20 relative z-20 flex flex-col gap-10 animate-fade-up">
       
       {/* Page Header */}
-      <div className="flex flex-col gap-4 border-b border-white/5 pb-8">
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] font-sans-editorial text-white/40 tracking-[0.25em] uppercase font-medium">
-            TIMELINE ARCHIVE & INDEX
-          </span>
-        </div>
-        <h1 className="text-4xl md:text-[#FFFFFF]xl font-display font-light text-white tracking-wide">
+      <div className="flex flex-col gap-3 border-b border-[#00F5B0]/15 pb-6">
+        <h1 className="editorial-title text-white">
           Forecast Matrix Directory
         </h1>
-        <p className="text-sm font-serif text-white/60 max-w-2xl leading-relaxed">
+        <p className="editorial-subtitle text-[#7A8694]">
           Search and filter all timeline predictions. Select a prediction card to open the detail sheets and participate in discussions.
         </p>
       </div>
 
-      {/* Filter and Search Bar */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
+      {/* Filter and Search Bar: 280px sidebar layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8 items-start">
         
         {/* Left Side Filters Sidebar */}
-        <div className="lg:col-span-1 flex flex-col gap-6">
+        <div className="flex flex-col gap-6">
           
           {/* Search Box */}
-          <div style={panelStyle} className="p-5 flex flex-col gap-3">
-            <span className="text-[9px] font-sans-editorial tracking-widest text-white/40 uppercase font-medium">Search Archive</span>
+          <div className="card-tier-3 flex flex-col gap-3">
+            <span className="text-[10px] font-mono tracking-widest text-[#7A8694] uppercase">Search Archive</span>
             <div className="relative">
               <input
                 type="text"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 placeholder="Keywords, authors, cities..."
-                className="w-full bg-transparent border-b border-white/10 px-0 py-2 text-xs font-sans-editorial text-white outline-none focus:border-white transition-colors"
+                className="w-full bg-transparent border-b border-[#00F5B0]/15 px-0 py-2 text-xs font-mono text-white outline-none focus:border-[#00F5B0] transition-colors"
               />
               {searchQuery && (
                 <button 
@@ -129,8 +124,8 @@ function PredictionsDirectoryContent() {
           </div>
 
           {/* Year Box */}
-          <div style={panelStyle} className="p-5 flex flex-col gap-3">
-            <span className="text-[9px] font-sans-editorial tracking-widest text-white/40 uppercase font-medium">Chrono Year</span>
+          <div className="card-tier-3 flex flex-col gap-3">
+            <span className="text-[10px] font-mono tracking-widest text-[#7A8694] uppercase font-medium">Chrono Year</span>
             <div className="flex flex-col gap-2">
               {['ALL', 2030, 2040, 2050].map((yr) => {
                 const isSelected = selectedYear === yr;
@@ -138,10 +133,10 @@ function PredictionsDirectoryContent() {
                   <button
                     key={yr}
                     onClick={() => setSelectedYear(yr as any)}
-                    className={`text-left px-3 py-2 font-sans-editorial text-[10px] uppercase rounded border tracking-wider transition-all duration-150 ${
+                    className={`text-left px-3 py-2 font-mono text-[10px] uppercase rounded border tracking-wider transition-all duration-150 ${
                       isSelected 
-                        ? 'bg-white border-white text-black font-semibold'
-                        : 'bg-transparent border-white/10 text-white/50 hover:border-white/30 hover:text-white'
+                         ? 'bg-[#00F5B0] border-[#00F5B0] text-[#02060A] font-semibold'
+                        : 'bg-transparent border-[#00F5B0]/15 text-[#7A8694] hover:border-[#00F5B0]/30 hover:text-white'
                     }`}
                   >
                     {yr === 'ALL' ? 'ALL YEARS' : `${yr} FORECAST`}
@@ -154,7 +149,7 @@ function PredictionsDirectoryContent() {
         </div>
 
         {/* Right Side Categories & Cards Feed */}
-        <div className="lg:col-span-3 flex flex-col gap-6">
+        <div className="flex flex-col gap-6">
           
           {/* Categories Horizontal Scrolling */}
           <div className="flex flex-wrap gap-2">
@@ -164,10 +159,10 @@ function PredictionsDirectoryContent() {
                 <button
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
-                  className={`px-3 py-1.5 font-sans-editorial text-[9px] uppercase border rounded tracking-widest transition-all duration-150 ${
+                  className={`px-3 py-1.5 font-mono text-[9px] uppercase border rounded tracking-widest transition-all duration-150 ${
                     isSelected
-                      ? 'bg-white text-black border-transparent font-medium'
-                      : 'bg-transparent border-white/10 text-white/60 hover:bg-white/5 hover:border-white/30'
+                      ? 'bg-[#00F5B0] text-[#02060A] border-transparent font-medium'
+                      : 'bg-transparent border-[#00F5B0]/15 text-[#7A8694] hover:bg-white/5 hover:border-[#00F5B0]/30'
                   }`}
                 >
                   {cat}
@@ -179,7 +174,7 @@ function PredictionsDirectoryContent() {
           {/* Results Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {filteredPredictions.length === 0 ? (
-              <div className="col-span-2 text-center py-20 font-sans-editorial text-xs text-white/30">
+              <div className="col-span-2 text-center py-20 font-mono text-xs text-[#7A8694]">
                 NO FUTURES MATRIX FOUND MATCHING PROTOCOL CRITERIA.
               </div>
             ) : (
@@ -191,53 +186,37 @@ function PredictionsDirectoryContent() {
                   <Link
                     href={`/predictions/${p.slug}`}
                     key={p.id}
-                    style={panelStyle}
-                    className="hover:border-white/20 hover:shadow-[0_0_24px_rgba(255,255,255,0.02)] group flex flex-col justify-between"
+                    className="card-tier-2 flex flex-col justify-between p-5 min-h-[170px]"
                   >
-                    <div className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-2.5">
                       {/* Badge Header */}
-                      <div className="flex justify-between items-center text-[9px] font-sans-editorial">
-                        <div className="flex gap-2">
-                          <span className="px-2 py-0.5 border border-white/10 text-white/60 uppercase rounded-sm text-[8px]">{p.category}</span>
-                          <span className="px-2 py-0.5 border border-white/15 text-white uppercase rounded-sm text-[8px]">{p.year}</span>
-                        </div>
-                        <span className="text-white/40">{p.city}</span>
+                      <div className="flex justify-between items-center text-[9px] font-mono">
+                        <span className="text-[#00F5B0] font-semibold uppercase">{p.category} // {p.city}</span>
+                        <span className="text-white font-bold">{p.year} FORECAST</span>
                       </div>
 
                       {/* Content */}
-                      <div className="flex flex-col gap-2">
-                        <h3 className="text-lg font-display font-light text-white group-hover:text-white/80 transition-colors uppercase leading-snug">
+                      <div className="flex flex-col gap-1.5">
+                        <h3 className="text-base font-light text-white group-hover:text-[#00F5B0] transition-colors uppercase leading-snug">
                           {p.title}
                         </h3>
-                        <p className="text-xs text-white/65 leading-relaxed font-serif line-clamp-3">
+                        <p className="text-xs text-[#7A8694] leading-relaxed line-clamp-2">
                           {p.description}
                         </p>
                       </div>
                     </div>
 
                     {/* Footer */}
-                    <div className="flex justify-between items-center border-t border-white/5 pt-4 mt-5 font-sans-editorial text-[9px]">
-                      {/* Author */}
+                    <div className="flex justify-between items-center border-t border-[#00F5B0]/15 pt-2.5 mt-3 font-mono text-[9px]">
+                      <span className="text-slate-500">BY {p.author.toUpperCase()}</span>
+                      
                       <div className="flex items-center gap-2">
-                        {authorObj && (
-                          <img 
-                            src={authorObj.avatar} 
-                            alt={p.author} 
-                            className="w-4 h-4 rounded-full border border-white/10 object-cover"
-                          />
-                        )}
-                        <span className="text-white/50 uppercase">{p.author}</span>
-                      </div>
-
-                      {/* Votes & Actions */}
-                      <div className="flex items-center gap-3">
                         <button
                           onClick={(e) => handleVote(p.id, e)}
-                          className="hover:text-white text-white/40 font-bold transition-colors flex items-center gap-1"
+                          className="hover:text-[#00F5B0] text-[#7A8694] font-bold transition-colors flex items-center gap-1"
                         >
                           ▲ {predVotes}
                         </button>
-                        <span className="text-white/40 font-semibold uppercase group-hover:underline text-[8px] tracking-wider">Read &gt;</span>
                       </div>
                     </div>
                   </Link>

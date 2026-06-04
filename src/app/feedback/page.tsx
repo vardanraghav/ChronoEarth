@@ -140,41 +140,36 @@ export default function FeedbackPage() {
 
       <Navbar earthMode="cyber" />
 
-      <div className="max-w-6xl mx-auto px-6 pt-32 pb-24 relative z-20 flex flex-col gap-10">
+      <div className="content-container pt-32 pb-20 relative z-20 flex flex-col gap-10 animate-fade-up">
         
         {/* Page Header */}
-        <div className="flex flex-col gap-4 border-b border-white/5 pb-8">
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-sans-editorial text-white/40 tracking-[0.25em] uppercase font-medium">
-              COMMUNITY LEDGER DEPLOYMENT
-            </span>
-          </div>
-          <h1 className="text-4xl md:text-[#FFFFFF]xl font-display font-light text-white tracking-wide">
+        <div className="flex flex-col gap-3 border-b border-[#00F5B0]/15 pb-6">
+          <h1 className="editorial-title text-white">
             Feedback & Intelligence Portal
           </h1>
-          <p className="text-sm font-serif text-white/60 max-w-2xl leading-relaxed">
+          <p className="editorial-subtitle text-[#7A8694]">
             Input bugs, feature requests, partnership applications, or prediction submissions. Fully synced with decentralized node records.
           </p>
         </div>
 
         {/* 2-Column Core Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           
-          {/* Left Column: Form submission */}
+          {/* Left Column: Form submission - Tier 3 */}
           <div className="lg:col-span-1 flex flex-col gap-6">
-            <div style={panelStyle} className="flex flex-col gap-5">
+            <div className="card-tier-3 flex flex-col gap-5">
               
-              <div className="flex items-center gap-3 border-b border-white/5 pb-3">
-                <span className="text-xs font-sans-editorial font-bold text-white uppercase tracking-wider">Submit Transmission</span>
+              <div className="flex items-center gap-3 border-b border-[#00F5B0]/15 pb-3">
+                <span className="text-xs font-mono font-bold text-white uppercase tracking-wider">Submit Transmission</span>
               </div>
 
               <form onSubmit={handleTransmit} className="flex flex-col gap-4">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[8px] font-sans-editorial text-white/45 uppercase tracking-widest font-medium">TRANSMISSION CATEGORY</label>
+                  <label className="text-[9px] font-mono text-[#7A8694] uppercase tracking-widest font-medium">TRANSMISSION CATEGORY</label>
                   <select
                     value={category}
                     onChange={e => setCategory(e.target.value as any)}
-                    className="bg-[#03050a] border-b border-white/10 py-2 text-xs font-sans-editorial text-white outline-none focus:border-white transition-colors"
+                    className="bg-[#03050a] border-b border-[#00F5B0]/15 py-2 text-xs font-mono text-white outline-none focus:border-[#00F5B0] transition-colors"
                   >
                     <option value="General Feedback">General Feedback</option>
                     <option value="Bug Report">Bug Report</option>
@@ -185,43 +180,43 @@ export default function FeedbackPage() {
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[8px] font-sans-editorial text-white/45 uppercase tracking-widest font-medium">IDENTITY CODE (NAME)</label>
+                  <label className="text-[9px] font-mono text-[#7A8694] uppercase tracking-widest font-medium">IDENTITY CODE (NAME)</label>
                   <input
                     type="text"
                     value={author}
                     onChange={e => setAuthor(e.target.value)}
                     placeholder="E.g., User_Node_412"
-                    className="bg-transparent border-b border-white/10 py-2 text-xs font-sans-editorial text-white outline-none focus:border-white transition-colors"
+                    className="bg-transparent border-b border-[#00F5B0]/15 py-2 text-xs font-mono text-white outline-none focus:border-[#00F5B0] transition-colors"
                     required
                   />
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[8px] font-sans-editorial text-white/45 uppercase tracking-widest font-medium">SUMMARY SUBJECT</label>
+                  <label className="text-[9px] font-mono text-[#7A8694] uppercase tracking-widest font-medium">SUMMARY SUBJECT</label>
                   <input
                     type="text"
                     value={title}
                     onChange={e => setTitle(e.target.value)}
                     placeholder="Brief description..."
-                    className="bg-transparent border-b border-white/10 py-2 text-xs font-sans-editorial text-white outline-none focus:border-white transition-colors"
+                    className="bg-transparent border-b border-[#00F5B0]/15 py-2 text-xs font-mono text-white outline-none focus:border-[#00F5B0] transition-colors"
                     required
                   />
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[8px] font-sans-editorial text-white/45 uppercase tracking-widest font-medium">DETAILED LOG CONTENTS</label>
+                  <label className="text-[9px] font-mono text-[#7A8694] uppercase tracking-widest font-medium">DETAILED LOG CONTENTS</label>
                   <textarea
                     value={content}
                     onChange={e => setContent(e.target.value)}
                     placeholder="Enter analytical details..."
-                    className="bg-transparent border border-white/10 rounded p-3 text-xs font-serif text-slate-300 outline-none focus:border-white transition-colors min-h-[120px] leading-relaxed"
+                    className="bg-transparent border border-[#00F5B0]/15 rounded p-3 text-xs font-serif text-[#7A8694] outline-none focus:border-[#00F5B0] transition-colors min-h-[120px] leading-relaxed"
                     required
                   />
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full py-2.5 border border-white/10 hover:border-white hover:bg-white hover:text-black bg-transparent text-white font-sans-editorial text-[9px] tracking-widest uppercase transition-all duration-300"
+                  className="w-full py-2.5 border border-[#00F5B0]/20 hover:border-transparent hover:bg-[#00F5B0] hover:text-[#02060A] bg-transparent text-[#00F5B0] font-mono text-[9px] tracking-widest uppercase transition-all duration-300"
                 >
                   TRANSMIT TO CONSOLE
                 </button>
@@ -230,31 +225,31 @@ export default function FeedbackPage() {
             </div>
           </div>
 
-          {/* Middle Column: Recent Feedback Feed */}
+          {/* Middle Column: Recent Feedback Feed - Tier 2 */}
           <div className="lg:col-span-1 flex flex-col gap-6">
-            <div style={panelStyle} className="h-full flex flex-col gap-5">
+            <div className="card-tier-2 h-full flex flex-col gap-5">
 
-              <div className="flex items-center gap-3 border-b border-white/5 pb-3">
-                <span className="text-xs font-sans-editorial font-bold text-white uppercase tracking-wider">Recent Transmissions</span>
+              <div className="flex items-center gap-3 border-b border-[#00F5B0]/15 pb-3">
+                <span className="text-xs font-mono font-bold text-white uppercase tracking-wider">Recent Transmissions</span>
               </div>
 
               <div className="custom-scrollbar flex flex-col gap-4 overflow-y-auto max-h-[60vh] pr-2">
                 {feedbackList.map(item => (
                   <div 
                     key={item.id}
-                    className="p-4 border border-white/5 rounded flex flex-col gap-2 hover:border-white/10 transition-colors"
+                    className="card-tier-3 flex flex-col gap-2"
                   >
-                    <div className="flex justify-between items-center text-[7.5px] font-sans-editorial text-white/40">
-                      <span className="px-1.5 py-0.5 rounded border border-white/10 uppercase font-medium">
+                    <div className="flex justify-between items-center text-[8px] font-mono text-[#7A8694]">
+                      <span className="px-1.5 py-0.5 rounded border border-[#00F5B0]/15 text-[#00F5B0] uppercase font-medium">
                         {item.category}
                       </span>
                       <span>{new Date(item.timestamp).toLocaleDateString()}</span>
                     </div>
 
-                    <h4 className="text-xs font-display font-light text-white uppercase mt-1">{item.title}</h4>
-                    <p className="text-[11px] text-white/70 leading-relaxed font-serif">{item.content}</p>
+                    <h4 className="text-xs font-semibold text-white uppercase mt-1">{item.title}</h4>
+                    <p className="text-[11px] text-[#7A8694] leading-relaxed font-serif">{item.content}</p>
                     
-                    <span className="text-[8px] font-sans-editorial text-white/45 uppercase mt-1">Sender: {item.author}</span>
+                    <span className="text-[8px] font-mono text-[#7A8694] uppercase mt-1">Sender: {item.author}</span>
                   </div>
                 ))}
               </div>
@@ -263,26 +258,26 @@ export default function FeedbackPage() {
           </div>
 
           {/* Right Column: Most Requested & Contributors */}
-          <div className="lg:col-span-1 flex flex-col gap-8">
+          <div className="lg:col-span-1 flex flex-col gap-6">
             
-            {/* Feature Votes */}
-            <div style={panelStyle} className="flex flex-col gap-4">
+            {/* Feature Votes - Tier 2 */}
+            <div className="card-tier-2 flex flex-col gap-4">
 
-              <div className="flex items-center gap-3 border-b border-white/5 pb-3">
-                <span className="text-xs font-sans-editorial font-bold text-white uppercase tracking-wider">Most Requested Features</span>
+              <div className="flex items-center gap-3 border-b border-[#00F5B0]/15 pb-3">
+                <span className="text-xs font-mono font-bold text-white uppercase tracking-wider">Most Requested Features</span>
               </div>
 
               <div className="flex flex-col gap-4">
                 {sortedFeatures.map(feat => (
-                  <div key={feat.id} className="flex gap-3 justify-between items-start border-b border-white/5 pb-3 last:border-b-0 last:pb-0">
+                  <div key={feat.id} className="flex gap-3 justify-between items-start border-b border-[#00F5B0]/15 pb-3 last:border-b-0 last:pb-0">
                     <div className="flex-1 flex flex-col gap-1">
-                      <h4 className="text-xs font-display font-light text-white uppercase tracking-wide">{feat.title}</h4>
-                      <p className="text-[10px] text-white/50 leading-normal font-serif">{feat.desc}</p>
+                      <h4 className="text-xs font-semibold text-white uppercase tracking-wide">{feat.title}</h4>
+                      <p className="text-[10px] text-[#7A8694] leading-normal font-serif">{feat.desc}</p>
                     </div>
                     
                     <button
                       onClick={() => handleVoteFeature(feat.id)}
-                      className="px-2 py-1.5 border border-white/10 hover:border-white hover:bg-white hover:text-black rounded text-[9px] font-sans-editorial text-white bg-transparent transition-colors flex flex-col items-center justify-center w-12"
+                      className="px-2 py-1.5 border border-[#00F5B0]/15 hover:border-transparent hover:bg-[#00F5B0] hover:text-[#02060A] rounded text-[9px] font-mono text-[#00F5B0] bg-transparent transition-colors flex flex-col items-center justify-center w-12"
                     >
                       <span>▲</span>
                       <span>{getFeatureVotes(feat)}</span>
@@ -292,14 +287,14 @@ export default function FeedbackPage() {
               </div>
             </div>
 
-            {/* Contributor Rankings */}
-            <div style={panelStyle} className="flex flex-col gap-4">
+            {/* Contributor Rankings - Tier 2 */}
+            <div className="card-tier-2 flex flex-col gap-4">
 
-              <div className="flex items-center gap-3 border-b border-white/5 pb-3">
-                <span className="text-xs font-sans-editorial font-bold text-white uppercase tracking-wider">Top Forecast Contributors</span>
+              <div className="flex items-center gap-3 border-b border-[#00F5B0]/15 pb-3">
+                <span className="text-xs font-mono font-bold text-white uppercase tracking-wider">Top Forecast Contributors</span>
               </div>
 
-              <div className="flex flex-col gap-3 font-sans-editorial text-[9px]">
+              <div className="flex flex-col gap-3 font-mono text-[9px]">
                 {[
                   { name: 'Dr. Evelyn Wright', role: 'AI Ethicist', shards: 142 },
                   { name: 'Dr. Kenji Sato', role: 'Orbital Logistics', shards: 115 },
@@ -308,12 +303,12 @@ export default function FeedbackPage() {
                   { name: 'User_Aura_Monitor', role: 'Community Node', shards: 64 },
                   { name: 'Operator_Nexus', role: 'System Sync', shards: 49 },
                 ].map((item, idx) => (
-                  <div key={item.name} className="flex justify-between items-center border-b border-white/5 pb-2 last:border-0 last:pb-0">
+                  <div key={item.name} className="flex justify-between items-center border-b border-[#00F5B0]/15 pb-2 last:border-0 last:pb-0">
                     <div className="flex gap-2">
-                      <span className="text-white/40 font-bold w-3">{idx + 1}.</span>
+                      <span className="text-[#00F5B0]/40 font-bold w-3">{idx + 1}.</span>
                       <div>
                         <span className="text-white font-medium block">{item.name}</span>
-                        <span className="text-white/30 text-[7px] uppercase">{item.role}</span>
+                        <span className="text-[#7A8694] text-[7px] uppercase">{item.role}</span>
                       </div>
                     </div>
                     <span className="text-white font-medium">{item.shards} Logged</span>

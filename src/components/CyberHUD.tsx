@@ -69,7 +69,7 @@ function Sparkline({ color, height = 36 }: { color: string; height?: number }) {
 // Section header - clean, elegant, letter-spaced print header
 function SectionHeader({ title }: { title: string }) {
   return (
-    <div className="font-display text-[9px] font-light tracking-[0.25em] text-white/60 uppercase border-b border-white/5 pb-1.5 mb-3 select-none">
+    <div className="font-display text-[12px] font-light tracking-[-0.02em] text-white/70 border-b border-white/5 pb-1 mb-2.5 select-none">
       {title}
     </div>
   );
@@ -221,11 +221,11 @@ export default function CyberHUD({
   };
 
   const panelStyle: React.CSSProperties = {
-    background: 'rgba(3, 8, 20, 0.78)',
-    backdropFilter: 'blur(24px)',
-    border: '1px solid rgba(0, 229, 255, 0.15)',
+    background: 'rgba(5, 12, 18, 0.55)',
+    backdropFilter: 'blur(16px)',
+    border: '1px solid rgba(0, 245, 176, 0.08)',
     borderRadius: '4px',
-    padding: '16px 20px',
+    padding: '12px 14px',
     position: 'relative',
     overflow: 'hidden',
     pointerEvents: 'auto',
@@ -247,26 +247,26 @@ export default function CyberHUD({
         }
         .cyber-hud-grid {
           display: grid;
-          grid-template-columns: 220px 1fr 220px;
+          grid-template-columns: 143px 1fr 143px;
           grid-template-rows: 1fr auto;
           gap: 16px;
           position: fixed;
-          inset: 80px 40px 24px 40px;
-          height: calc(100vh - 104px);
+          inset: 80px 40px 12px 40px;
+          height: calc(100vh - 92px);
           pointer-events: none;
           box-sizing: border-box;
         }
         @media (min-width: 1440px) {
           .cyber-hud-grid {
-            grid-template-columns: 230px 1fr 230px;
+            grid-template-columns: 150px 1fr 150px;
             gap: 20px;
-            inset: 88px 40px 24px 40px;
-            height: calc(100vh - 112px);
+            inset: 88px 40px 12px 40px;
+            height: calc(100vh - 100px);
           }
         }
         @media (min-width: 1600px) {
           .cyber-hud-grid {
-            grid-template-columns: 240px 1fr 240px;
+            grid-template-columns: 156px 1fr 156px;
             gap: 24px;
           }
         }
@@ -296,7 +296,7 @@ export default function CyberHUD({
         }
         .cyber-hud-card {
           flex: 1;
-          height: 142px;
+          height: 70px;
           display: flex;
           flex-direction: column;
         }
@@ -322,7 +322,7 @@ export default function CyberHUD({
         <div className="cyber-hud-left" style={{ animation: 'fade-up 0.8s 0.6s cubic-bezier(0.22,1,0.36,1) both' }}>
           <div style={panelStyle}>
             {cornerAccent}
-            <SectionHeader title="Planet Status" />
+            <SectionHeader title="Planet status" />
             
             <div className="font-sans-editorial text-[10.5px] text-white/70 leading-relaxed flex flex-col gap-2.5">
               <p>
@@ -342,9 +342,9 @@ export default function CyberHUD({
               </p>
             </div>
 
-            <div style={{ marginTop: 14, marginBottom: 2 }}>
-              <div className="font-sans-editorial" style={{ fontSize: 7, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.12em', marginBottom: 4 }}>DATA MATRIX TRENDS</div>
-              <Sparkline color={C.emerald} height={28} />
+            <div style={{ marginTop: 10, marginBottom: 2 }}>
+              <div className="font-sans-editorial" style={{ fontSize: 7, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.12em', marginBottom: 4 }}>Data matrix trends</div>
+              <Sparkline color={C.emerald} height={20} />
             </div>
           </div>
         </div>
@@ -354,29 +354,29 @@ export default function CyberHUD({
           {activeCity === null ? (
             <div style={panelStyle}>
               {cornerAccent}
-              <SectionHeader title="Orbital Infrastructure" />
+              <SectionHeader title="Orbital infrastructure" />
               <div className="font-sans-editorial text-[10.5px] text-white/70 leading-relaxed flex flex-col gap-2.5">
                 <p>
-                  <span className="font-semibold text-white block text-[9px] uppercase tracking-wider" style={{ color: C.cyan }}>Low Earth Orbit (550 km)</span>
+                  <span className="font-semibold text-white block text-[9px] tracking-normal" style={{ color: C.cyan }}>Low Earth orbit (550 km)</span>
                   A mesh of 12 telemetry satellites mapping active urban zones.
                 </p>
                 <p>
-                  <span className="font-semibold text-white block text-[9px] uppercase tracking-wider" style={{ color: C.emerald }}>Medium Earth Orbit (3,200 km)</span>
+                  <span className="font-semibold text-white block text-[9px] tracking-normal" style={{ color: C.emerald }}>Medium Earth orbit (3,200 km)</span>
                   8 high-frequency arrays coordinating climate recovery grids.
                 </p>
                 <p>
-                  <span className="font-semibold text-white block text-[9px] uppercase tracking-wider" style={{ color: C.accent }}>Geostationary Orbit (10,000 km)</span>
+                  <span className="font-semibold text-white block text-[9px] tracking-normal" style={{ color: C.accent }}>Geostationary orbit (10,000 km)</span>
                   5 localized monitors tracking planetary albedo dynamics.
                 </p>
               </div>
 
               <div className="border-t border-white/5 mt-3 pt-3">
-                <SectionHeader title="System Guide" />
+                <SectionHeader title="System guide" />
                 <div className="font-sans-editorial text-[9px] text-white/50 flex flex-col gap-1.5">
-                  <div className="flex items-center gap-2"><span className="text-white">◉</span> Major Urban Hubs</div>
-                  <div className="flex items-center gap-2"><span className="text-emerald-400" style={{ color: C.emerald }}>●</span> Regional Synced Nodes</div>
-                  <div className="flex items-center gap-2"><span className="text-[#00F5B0]" style={{ color: C.cyan }}>◌</span> Climate Telemetry Points</div>
-                  <div className="flex items-center gap-2"><span className="text-cyan-300" style={{ color: C.cyan }}>—</span> Energy Pathways</div>
+                  <div className="flex items-center gap-2"><span className="text-white">◉</span> Major urban hubs</div>
+                  <div className="flex items-center gap-2"><span className="text-emerald-400" style={{ color: C.emerald }}>●</span> Regional synced nodes</div>
+                  <div className="flex items-center gap-2"><span className="text-[#00F5B0]" style={{ color: C.cyan }}>◌</span> Climate telemetry points</div>
+                  <div className="flex items-center gap-2"><span className="text-cyan-300" style={{ color: C.cyan }}>—</span> Energy pathways</div>
                 </div>
               </div>
             </div>
@@ -384,15 +384,15 @@ export default function CyberHUD({
             <div style={{ ...panelStyle, maxHeight: 'calc(100vh - 160px)', display: 'flex', flexDirection: 'column', gap: 10, overflowY: 'auto' }} className="custom-scrollbar">
               {cornerAccent}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
-                <span className="font-sans-editorial" style={{ fontSize: 7, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.12em' }}>INTELLIGENCE BRIEF</span>
-                <button onClick={() => setActiveCity(null)} className="font-sans-editorial hover:text-white transition-colors" style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.40)', cursor: 'pointer', fontSize: 8 }}>[DISMISS]</button>
+                <span className="font-sans-editorial" style={{ fontSize: 7, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.12em' }}>Intelligence brief</span>
+                <button onClick={() => setActiveCity(null)} className="font-sans-editorial hover:text-white transition-colors" style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.40)', cursor: 'pointer', fontSize: 8 }}>[Dismiss]</button>
               </div>
               
-              <div className="font-sans-editorial text-sm font-semibold text-white tracking-wide uppercase">
+              <div className="font-sans-editorial text-sm font-semibold text-white tracking-normal capitalize">
                 {activeCity.name}
               </div>
-              <div className="font-sans-editorial text-[8px] text-white/45 tracking-wider uppercase mb-1">
-                COORDINATES: {activeCity.lat.toFixed(4)}° N, {activeCity.lon.toFixed(4)}° E
+              <div className="font-sans-editorial text-[8px] text-white/45 tracking-normal mb-1">
+                Coordinates: {activeCity.lat.toFixed(4)}° N, {activeCity.lon.toFixed(4)}° E
               </div>
 
               <div className="font-sans-editorial text-[10.5px] text-white/70 leading-relaxed border-b border-white/5 pb-3 mb-2">
@@ -400,23 +400,23 @@ export default function CyberHUD({
                 Environmental systems are rated at <span className="font-semibold text-white" style={{ color: C.emerald }}>{(68 + (activeCity.offsets.tempRise > 1.0 ? 8 : 22))}% stability</span> under active adaptation profiles.
               </div>
 
-              <SectionHeader title="Planetary Projections" />
+              <SectionHeader title="Planetary projections" />
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 8 }}>
                 <div style={{ padding: '4px 0', borderBottom: '1px solid rgba(255,255,255,0.03)', fontSize: '10px' }} className="font-sans-editorial text-white/75 leading-relaxed">
-                  <div className="text-white/50 text-[7.5px] tracking-wider uppercase mb-0.5" style={{ color: C.emerald }}>CLIMATE ADAPTATION</div>
+                  <div className="text-white/50 text-[7.5px] tracking-normal mb-0.5" style={{ color: C.emerald }}>Climate adaptation</div>
                   {activeCity.details.climate}
                 </div>
                 <div style={{ padding: '4px 0', borderBottom: '1px solid rgba(255,255,255,0.03)', fontSize: '10px' }} className="font-sans-editorial text-white/75 leading-relaxed">
-                  <div className="text-white/50 text-[7.5px] tracking-wider uppercase mb-0.5" style={{ color: C.cyan }}>POWER GENERATION</div>
+                  <div className="text-white/50 text-[7.5px] tracking-normal mb-0.5" style={{ color: C.cyan }}>Power generation</div>
                   {activeCity.details.energy}
                 </div>
                 <div style={{ padding: '4px 0', fontSize: '10px' }} className="font-sans-editorial text-white/75 leading-relaxed">
-                  <div className="text-white/50 text-[7.5px] tracking-wider uppercase mb-0.5" style={{ color: C.accent }}>ORBITAL SATELLITE LINKS</div>
+                  <div className="text-white/50 text-[7.5px] tracking-normal mb-0.5" style={{ color: C.accent }}>Orbital satellite links</div>
                   {activeCity.details.satellites}
                 </div>
               </div>
 
-              <SectionHeader title="Futurologist Brief" />
+              <SectionHeader title="Futurologist brief" />
               <div className="font-sans-editorial text-[10.5px] text-white/70 leading-relaxed mb-3">
                 {generateCityProjections(activeCity, 'Ocean Monitoring', 2050).text}
               </div>
@@ -425,20 +425,20 @@ export default function CyberHUD({
               <div className="flex flex-col gap-2 mt-auto">
                 <button
                   onClick={() => toggleBookmarkCity(activeCity.name)}
-                  className={`w-full py-1.5 text-[8.5px] tracking-widest uppercase border transition-all duration-300 font-sans-editorial ${
+                  className={`w-full py-1.5 text-[8.5px] tracking-widest border transition-all duration-300 font-sans-editorial ${
                     bookmarkedCities.includes(activeCity.name)
                       ? 'bg-white/10 border-white/20 text-white'
                       : 'bg-transparent border-white/10 hover:border-white hover:bg-white hover:text-black text-white'
                   }`}
                 >
-                  {bookmarkedCities.includes(activeCity.name) ? '🔖 BOOKMARKED' : 'BOOKMARK CITY'}
+                  {bookmarkedCities.includes(activeCity.name) ? '🔖 Bookmarked' : 'Bookmark city'}
                 </button>
 
                 <button
                   onClick={() => startReportGeneration(activeCity.name, 2050)}
-                  className="w-full py-1.5 text-[8.5px] tracking-widest uppercase border border-white/10 hover:border-white hover:bg-white hover:text-black bg-transparent text-white transition-all duration-300 font-sans-editorial"
+                  className="w-full py-1.5 text-[8.5px] tracking-widest border border-white/10 hover:border-white hover:bg-white hover:text-black bg-transparent text-white transition-all duration-300 font-sans-editorial"
                 >
-                  GENERATE FORECAST REPORT
+                  Generate forecast report
                 </button>
               </div>
             </div>
@@ -449,42 +449,42 @@ export default function CyberHUD({
         <div className="cyber-hud-bottom" style={{ animation: 'fade-up 0.8s 1.0s cubic-bezier(0.22,1,0.36,1) both' }}>
           
           {/* Global Telemetry */}
-          <div style={panelStyle} className="cyber-hud-card">
+          <div style={{ ...panelStyle, padding: '8px 12px' }} className="cyber-hud-card">
             {cornerAccent}
-            <SectionHeader title="Global Telemetry" />
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1, justifyContent: 'center' }}>
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
-                  <span className="font-sans-editorial text-[7px] text-white/50 tracking-wider">DATA FLOW</span>
-                  <span className="font-sans-editorial text-[9px] text-white font-medium" style={{ color: C.cyan }}>{dataFlow.toFixed(1)} PB/s</span>
+            <SectionHeader title="Global telemetry" />
+            <div style={{ display: 'flex', gap: 10, flex: 1, alignItems: 'center' }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 1 }}>
+                  <span className="font-sans-editorial text-[7px] text-white/50 tracking-wider">Data flow</span>
+                  <span className="font-sans-editorial text-[8px] text-white font-medium" style={{ color: C.cyan }}>{dataFlow.toFixed(1)} PB/s</span>
                 </div>
-                <Sparkline color={C.cyan} height={20} />
+                <Sparkline color={C.cyan} height={14} />
               </div>
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
-                  <span className="font-sans-editorial text-[7px] text-white/50 tracking-wider">NETWORK NODES</span>
-                  <span className="font-sans-editorial text-[9px] text-white font-medium" style={{ color: C.emerald }}>{(displayNodes / 1000).toFixed(0)}K</span>
+              <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 1 }}>
+                  <span className="font-sans-editorial text-[7px] text-white/50 tracking-wider">Nodes</span>
+                  <span className="font-sans-editorial text-[8px] text-white font-medium" style={{ color: C.emerald }}>{(displayNodes / 1000).toFixed(0)}K</span>
                 </div>
-                <Sparkline color={C.emerald} height={20} />
+                <Sparkline color={C.emerald} height={14} />
               </div>
             </div>
           </div>
 
           {/* Scanning Activity */}
-          <div style={panelStyle} className="cyber-hud-card">
+          <div style={{ ...panelStyle, padding: '8px 12px' }} className="cyber-hud-card">
             {cornerAccent}
-            <SectionHeader title="Scanning Activity" />
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, flex: 1, justifyContent: 'center' }}>
+            <SectionHeader title="Scanning activity" />
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 10px', flex: 1, alignItems: 'center' }}>
               {[
-                { label: 'Climate Monitoring', val: 87, col: C.cyan },
-                { label: 'Ocean Monitoring',   val: 92, col: C.emerald },
-                { label: 'Biodiversity',        val: 74, col: C.accent },
-                { label: 'Energy Grid',         val: 94, col: C.cyan },
+                { label: 'Climate', val: 87, col: C.cyan },
+                { label: 'Ocean',   val: 92, col: C.emerald },
+                { label: 'Biodiversity', val: 74, col: C.accent },
+                { label: 'Energy grid', val: 94, col: C.cyan },
               ].map(({ label, val, col }) => (
-                <div key={label}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
+                <div key={label} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 1 }}>
                     <span className="font-sans-editorial text-[7px] text-white/50 tracking-wider">{label}</span>
-                    <span className="font-sans-editorial text-[7.5px] text-white font-medium">{val}%</span>
+                    <span className="font-sans-editorial text-[8px] text-white font-medium">{val}%</span>
                   </div>
                   <div style={{ height: 1.5, background: 'rgba(255,255,255,0.06)' }}>
                     <div style={{ height: '100%', width: `${val}%`, background: col, transition: 'width 1s ease' }} />
@@ -495,22 +495,24 @@ export default function CyberHUD({
           </div>
 
           {/* Active Data Flows */}
-          <div style={panelStyle} className="cyber-hud-card">
+          <div style={{ ...panelStyle, padding: '8px 12px' }} className="cyber-hud-card">
             {cornerAccent}
-            <SectionHeader title="Active Data Flows" />
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1, justifyContent: 'center' }}>
-              {[
-                { route: 'ASIA → EUROPE',     val: 12.6, col: C.cyan },
-                { route: 'N. AMERICA → ASIA', val: 9.8, col: C.emerald  },
-                { route: 'EUROPE → AFRICA',   val: 7.4, col: C.accent  },
-              ].map(({ route, val, col }) => (
-                <div key={route} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span className="font-sans-editorial text-[7.5px] text-white/50 tracking-wider">{route}</span>
-                  <span className="font-sans-editorial text-[8px] text-white font-medium" style={{ color: col }}>{val} PB/s</span>
-                </div>
-              ))}
-              <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: 5, marginTop: 2 }}>
-                <div className="font-sans-editorial" style={{ fontSize: 7.5, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.08em', textAlign: 'center' }}>{time}</div>
+            <SectionHeader title="Active data flows" />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1, justifyContent: 'center' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 4 }}>
+                {[
+                  { route: 'Asia→Eur',     val: 12.6, col: C.cyan },
+                  { route: 'N.Am→Asia',    val: 9.8, col: C.emerald  },
+                  { route: 'Eur→Afr',      val: 7.4, col: C.accent  },
+                ].map(({ route, val, col }) => (
+                  <div key={route} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }}>
+                    <span className="font-sans-editorial text-[6.5px] text-white/50 tracking-wider">{route}</span>
+                    <span className="font-sans-editorial text-[7.5px] text-white font-medium" style={{ color: col }}>{val} PB/s</span>
+                  </div>
+                ))}
+              </div>
+              <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: 2, marginTop: 4 }}>
+                <div className="font-sans-editorial text-center" style={{ fontSize: 7, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.05em' }}>{time}</div>
               </div>
             </div>
           </div>
@@ -529,17 +531,17 @@ export default function CyberHUD({
           <div style={{ ...panelStyle, width: '560px', height: '460px', display: 'flex', flexDirection: 'column', gap: 16 }}>
             {cornerAccent}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: 10 }}>
-              <span className="font-sans-editorial text-[10px] text-white/50 tracking-[0.2em] font-light uppercase">
-                CHRONOEARTH FUTURES COMMISSION // MATRIX ENGINE
+              <span className="font-sans-editorial text-[10px] text-white/50 tracking-[0.2em] font-light">
+                ChronoEarth futures commission // Matrix engine
               </span>
               <button 
                 onClick={() => {
                   setGeneratingReport(false);
                   setActiveReport(null);
                 }} 
-                className="font-sans-editorial text-[9px] text-red-400 hover:text-red-300 uppercase tracking-widest bg-transparent border-none cursor-pointer"
+                className="font-sans-editorial text-[9px] text-red-400 hover:text-red-300 tracking-widest bg-transparent border-none cursor-pointer"
               >
-                [✕ CLOSE]
+                [✕ Close]
               </button>
             </div>
 
@@ -561,15 +563,15 @@ export default function CyberHUD({
               <div style={{ display: 'flex', gap: 12, borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 14 }}>
                 <button
                   onClick={saveGeneratedReport}
-                  className="flex-1 py-2 text-[9px] tracking-widest uppercase border border-white/10 hover:border-white hover:bg-white hover:text-black bg-transparent text-white transition-all duration-300 font-sans-editorial"
+                  className="flex-1 py-2 text-[9px] tracking-widest border border-white/10 hover:border-white hover:bg-white hover:text-black bg-transparent text-white transition-all duration-300 font-sans-editorial"
                 >
-                  SAVE BRIEF
+                  Save brief
                 </button>
                 <button
                   onClick={() => downloadReport(activeReport)}
-                  className="flex-1 py-2 text-[9px] tracking-widest uppercase border border-white/10 hover:border-white hover:bg-white hover:text-black bg-transparent text-white transition-all duration-300 font-sans-editorial"
+                  className="flex-1 py-2 text-[9px] tracking-widest border border-white/10 hover:border-white hover:bg-white hover:text-black bg-transparent text-white transition-all duration-300 font-sans-editorial"
                 >
-                  DOWNLOAD BRIEF
+                  Download brief
                 </button>
               </div>
             )}

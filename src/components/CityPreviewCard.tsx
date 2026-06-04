@@ -67,119 +67,83 @@ export default function CityPreviewCard({ city, onClose }: CityPreviewCardProps)
 
   return (
     <div 
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 999,
-        background: 'rgba(2, 8, 15, 0.6)',
-        backdropFilter: 'blur(8px)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        pointerEvents: 'auto',
-      }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm pointer-events-auto"
       onClick={onClose}
     >
       <div 
         onClick={e => e.stopPropagation()}
-        style={{
-          width: '400px',
-          background: 'rgba(2, 8, 15, 0.75)',
-          backdropFilter: 'blur(32px)',
-          border: '1px solid rgba(255, 255, 255, 0.06)',
-          boxShadow: '0 20px 50px rgba(0, 0, 0, 0.4)',
-          padding: '24px',
-          position: 'relative',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 16,
-          animation: 'fade-up 0.4s cubic-bezier(0.22, 1, 0.36, 1)',
-        }}
+        className="card-tier-1 w-full max-w-[420px] flex flex-col gap-4 relative animate-fade-up"
       >
         {/* Hero image header */}
-        <div style={{ position: 'relative', width: '100%', height: '160px', overflow: 'hidden', borderRadius: '2px' }}>
+        <div className="relative w-full h-[160px] overflow-hidden rounded">
           <img 
             src={cityExtended.image} 
             alt={city.name} 
             loading="lazy"
-            style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(0.8)' }} 
+            className="w-full h-full object-cover filter brightness-[0.7]" 
           />
-          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(0deg, rgba(2, 8, 15, 0.95) 0%, transparent 70%)' }} />
-          <div style={{ position: 'absolute', bottom: 12, left: 12 }}>
-            <h2 className="font-display" style={{ fontSize: '20px', fontWeight: 450, color: C.white, letterSpacing: '0.02em', textTransform: 'uppercase', margin: 0 }}>
+          <div className="absolute inset-0 bg-gradient-to-t from-[#040B12] via-transparent to-transparent" />
+          <div className="absolute bottom-4 left-4">
+            <h2 className="text-xl font-light text-white uppercase m-0 leading-none">
               {city.name}
             </h2>
-            <div className="font-display" style={{ fontSize: '8px', color: C.secondary, letterSpacing: '0.08em', marginTop: 2, textTransform: 'uppercase' }}>
+            <div className="text-[9px] font-mono text-[#00F5B0] uppercase mt-1">
               {city.country} · {city.lat.toFixed(4)}° N, {city.lon.toFixed(4)}° E
             </div>
           </div>
           <button 
             onClick={onClose} 
-            style={{ position: 'absolute', top: 12, right: 12, background: 'transparent', border: 'none', color: '#ff6b6b', cursor: 'pointer', fontSize: '10px', fontFamily: 'monospace' }}
+            className="absolute top-4 right-4 bg-transparent border-none text-rose-455 cursor-pointer text-xs font-mono"
           >
             [✕]
           </button>
         </div>
 
         {/* Narrative Outlook Briefing */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, borderBottom: '1px solid rgba(255, 255, 255, 0.05)', paddingBottom: 14 }}>
-          <div className="font-display" style={{ fontSize: '8.5px', color: C.primary, letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 500 }}>
+        <div className="flex flex-col gap-1.5 border-b border-[#00F5B0]/15 pb-4">
+          <div className="text-[10px] font-mono text-[#00F5B0] uppercase tracking-widest font-semibold">
             Planetary Outlook Briefing
           </div>
-          <p className="font-serif" style={{ fontSize: '11.5px', color: 'rgba(255,255,255,0.7)', lineHeight: '1.5em', margin: 0 }}>
+          <p className="font-serif text-xs text-[#7A8694] leading-relaxed">
             {city.name} is projected to stabilize its carrying capacity at {(city.offsets.population * 1000).toFixed(0)} million residents by 2050. 
             The biophilic grid is tracking towards {75 + (city.offsets.popGrowth > 1.08 ? 19 : 8)}% AI coordination and remains highly climate-resilient, maintaining a {68 + (city.offsets.tempRise > 1.0 ? 8 : 22)}% environmental stability rating.
           </p>
         </div>
 
         {/* Predictions list */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <div className="font-display" style={{ fontSize: '8.5px', color: C.accent, letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 500 }}>
+        <div className="flex flex-col gap-2">
+          <div className="text-[10px] font-mono text-white uppercase tracking-widest font-semibold">
             Forecast Matrix Shards
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div className="flex flex-col gap-2">
             {finalPredictions.slice(0, 2).map(p => (
               <div 
                 key={p.id} 
-                className="font-serif" 
-                style={{ fontSize: '11.5px', lineHeight: '1.5em', color: 'rgba(255,255,255,0.65)' }}
+                className="font-serif text-xs text-[#7A8694] leading-relaxed" 
               >
-                <strong className="font-display" style={{ color: C.white, fontWeight: 500, letterSpacing: '0.02em' }}>{p.year} / {p.title}:</strong> {p.description.slice(0, 100)}...
+                <strong className="font-mono text-white font-medium tracking-wide uppercase">{p.year} / {p.title}:</strong> {p.description.slice(0, 100)}...
               </div>
             ))}
           </div>
         </div>
 
         {/* Countdown timer */}
-        <div className="font-display" style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', textAlign: 'center', marginTop: 4, letterSpacing: '0.05em' }}>
-          Opening Intelligence Page in <span style={{ fontWeight: 500, color: C.primary, fontSize: '11px' }}>{countdown}</span>s
+        <div className="font-mono text-[9px] text-[#7A8694] text-center mt-1">
+          Opening Intelligence Page in <span className="font-bold text-[#00F5B0] text-xs">{countdown}</span>s
         </div>
 
         {/* Action button bar */}
-        <div style={{ display: 'flex', gap: 12, marginTop: 4 }}>
+        <div className="flex gap-4 mt-2">
           <button 
             onClick={onClose}
-            style={{
-              flex: 1, padding: '8px 0', border: '1px solid rgba(255,255,255,0.1)', background: 'transparent',
-              color: 'rgba(255,255,255,0.6)', fontSize: '8.5px', letterSpacing: '0.12em', fontWeight: 500,
-              cursor: 'pointer', fontFamily: 'Space Grotesk', transition: 'all 0.3s ease'
-            }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'; e.currentTarget.style.color = '#fff'; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; }}
+            className="flex-1 py-2 border border-[#00F5B0]/15 hover:border-transparent hover:bg-white/5 hover:text-white rounded text-[9px] font-mono text-[#7A8694] bg-transparent transition-colors uppercase tracking-widest"
           >
             CANCEL
           </button>
           
           <button 
             onClick={handleOpenNow}
-            style={{
-              flex: 1.4, padding: '8px 0', border: '1px solid #00F5B0',
-              background: '#00F5B0',
-              color: '#02060A', fontSize: '8.5px', letterSpacing: '0.12em', fontWeight: 600,
-              cursor: 'pointer', fontFamily: 'Space Grotesk', transition: 'all 0.3s ease',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.opacity = '0.9'; }}
-            onMouseLeave={e => { e.currentTarget.style.opacity = '1'; }}
+            className="flex-[1.4] py-2 border border-[#00F5B0] bg-[#00F5B0] hover:bg-[#00D98F] text-[#02060A] rounded text-[9px] font-mono text-[#02060A] font-bold transition-all uppercase tracking-widest"
           >
             OPEN NOW →
           </button>

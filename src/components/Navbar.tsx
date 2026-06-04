@@ -13,19 +13,19 @@ interface NavbarProps {
 }
 
 const realisticNavLinks = [
-  { path: '/', label: 'MONITOR' },
-  { path: '/predictions', label: 'PREDICTIONS' },
-  { path: '/about',   label: 'ABOUT'   },
+  { path: '/', label: 'Monitor' },
+  { path: '/predictions', label: 'Predictions' },
+  { path: '/about',   label: 'About'   },
 ];
 
 const cyberNavLinks = [
-  { path: '/',           label: 'TELEMETRY' },
-  { path: '/feed',        label: 'FEED' },
-  { path: '/predictions', label: 'PREDICTIONS' },
-  { path: '/knowledge',    label: 'KNOWLEDGE BASE' },
-  { path: '/futurologists', label: 'FUTUROLOGISTS' },
-  { path: '/about',       label: 'ABOUT' },
-  { path: '/feedback',    label: 'FEEDBACK' },
+  { path: '/',           label: 'Telemetry' },
+  { path: '/feed',        label: 'Feed' },
+  { path: '/predictions', label: 'Predictions' },
+  { path: '/knowledge',    label: 'Knowledge base' },
+  { path: '/futurologists', label: 'Futurologists' },
+  { path: '/about',       label: 'About' },
+  { path: '/feedback',    label: 'Feedback' },
 ];
 
 export default function Navbar({
@@ -43,8 +43,8 @@ export default function Navbar({
         style={{
           padding:    '22px 40px',
           background: isCyber
-            ? 'linear-gradient(180deg, rgba(2, 8, 15, 0.85) 0%, transparent 100%)'
-            : 'linear-gradient(180deg, rgba(2, 8, 15, 0.70) 0%, transparent 100%)',
+            ? 'linear-gradient(180deg, rgba(2, 8, 15, 0.50) 0%, transparent 100%)'
+            : 'linear-gradient(180deg, rgba(2, 8, 15, 0.40) 0%, transparent 100%)',
           transition: 'background 1.5s ease',
           animation:  'fade-in 1.2s ease forwards',
         }}
@@ -70,7 +70,7 @@ export default function Navbar({
         </Link>
 
         {/* Desktop nav links */}
-        <div className="hidden md:flex items-center gap-8 font-display">
+        <div className="hidden md:flex items-center gap-12 font-display">
           {isCyber ? (
             <>
               {cyberNavLinks.map((link) => {
@@ -84,7 +84,7 @@ export default function Navbar({
                       fontWeight: isActive ? 500 : 300, 
                       fontSize: '8px', 
                       letterSpacing: '0.22em',
-                      textTransform: 'uppercase',
+                      textTransform: 'none',
                       color: isActive ? '#00F5B0' : 'rgba(255,255,255,0.4)',
                       transition: 'all 0.3s ease',
                       padding: '4px 0',
@@ -94,8 +94,8 @@ export default function Navbar({
                     {link.label}
                     {isActive && (
                       <div style={{
-                        position: 'absolute', bottom: -2, left: 0, right: 0, height: 1.5,
-                        background: '#00F5B0', boxShadow: '0 1px 4px rgba(0, 245, 176, 0.4)'
+                        position: 'absolute', bottom: -2, left: 0, right: 0, height: 1,
+                        background: '#00F5B0'
                       }} />
                     )}
                   </Link>
@@ -130,7 +130,7 @@ export default function Navbar({
                   e.currentTarget.style.color = 'rgba(255, 255, 255, 0.6)';
                 }}
               >
-                SEARCH
+                Search
               </button>
             </>
           ) : (
@@ -145,7 +145,7 @@ export default function Navbar({
                     fontWeight: 300, 
                     fontSize: '9px', 
                     letterSpacing: '0.35em',
-                    textTransform: 'uppercase',
+                    textTransform: 'none',
                     color: isActive ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.28)',
                     transition: 'color 0.3s ease',
                     padding: '4px 0',

@@ -47,72 +47,61 @@ export default function FuturologistsPage() {
 
       <Navbar earthMode="cyber" />
 
-      <div className="max-w-6xl mx-auto px-6 pt-32 pb-24 relative z-20 flex flex-col gap-12">
+      <div className="content-container pt-32 pb-20 relative z-20 flex flex-col gap-10 animate-fade-up">
         {/* Page Header */}
-        <div className="flex flex-col gap-4 border-b border-[#00F5B0]/15 pb-8">
-          <div className="flex items-center gap-3">
-            <div className="w-1.5 h-6 bg-[#00F5B0] shadow-[0_0_10px_#00F5B0]" />
-            <span className="text-xs font-semibold tracking-[0.4em] text-[#00F5B0] uppercase font-mono">
-              CERTIFIED FORECASTING EXPERTS
-            </span>
-          </div>
-          <h1 className="text-4xl font-light tracking-tight text-white uppercase">
-            FUTUROLOGISTS <span className="font-semibold text-[#00F5B0]">DIRECTORY</span>
+        <div className="flex flex-col gap-3 border-b border-[#00F5B0]/15 pb-6">
+          <h1 className="editorial-title text-white">
+            Futurologists <span className="text-[#00F5B0] font-normal">Directory</span>
           </h1>
-          <p className="text-sm font-mono text-[#7A8694] max-w-2xl">
+          <p className="editorial-subtitle text-[#7A8694]">
             Meet the primary system architects and analysts modeling ChronoEarth's future timeline matrices.
           </p>
         </div>
 
-        {/* Specialists Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* Specialists Grid - 3 Columns on desktop for maximum above fold density */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {FUTUROLOGISTS.map((f) => (
             <div 
               key={f.slug} 
-              style={panelStyle}
-              className="hover:border-cyan-400/50 hover:shadow-none group"
+              className="card-tier-2 flex flex-col justify-between p-5 min-h-[260px] group"
             >
-              {cornerAccent}
-              
-              <div className="flex gap-5 items-start">
-                <img 
-                  src={f.avatar} 
-                  alt={f.name} 
-                  className="w-20 h-20 rounded-full border border-[#00F5B0]/30 object-cover shadow-none group-hover:scale-105 transition-transform"
-                />
-                
-                <div className="flex-1 flex flex-col gap-1">
-                  <div className="flex justify-between items-start">
-                    <h2 className="text-xl font-semibold text-white tracking-wide uppercase font-sans">
-                      {f.name}
-                    </h2>
-                    <div className="flex flex-col items-end">
-                      <span className="text-[9px] text-[#00F5B0] font-mono tracking-widest uppercase">Influence</span>
-                      <span className="text-sm font-mono font-bold text-white">{f.influenceScore}%</span>
+              <div className="flex flex-col gap-3.5">
+                <div className="flex gap-3.5 items-center">
+                  <img 
+                    src={f.avatar} 
+                    alt={f.name} 
+                    className="w-12 h-12 rounded-full border border-[#00F5B0]/20 object-cover shadow-none group-hover:scale-105 transition-transform"
+                  />
+                  
+                  <div className="flex-1 flex flex-col gap-0.5 min-w-0">
+                    <div className="flex justify-between items-baseline gap-1">
+                      <h2 className="text-base font-light text-white tracking-wide uppercase truncate">
+                        {f.name}
+                      </h2>
+                      <span className="text-xs font-mono font-bold text-[#00F5B0]" title="Influence Score">{f.influenceScore}%</span>
                     </div>
+                    <div className="text-[10px] text-[#00F5B0] font-mono uppercase tracking-wider truncate">{f.role}</div>
                   </div>
-                  <div className="text-xs text-[#00F5B0] font-mono uppercase tracking-wider">{f.role}</div>
-                  <div className="text-[10px] text-slate-400 font-mono mt-1 font-semibold">{f.specialization}</div>
                 </div>
+
+                <div className="text-[9px] font-mono text-[#7A8694] uppercase tracking-wide truncate border-b border-[#00F5B0]/10 pb-1.5">{f.specialization}</div>
+
+                <p className="text-xs text-[#7A8694] leading-relaxed line-clamp-3">
+                  {f.bio}
+                </p>
               </div>
 
-              <p className="text-sm text-slate-300 leading-relaxed font-sans mt-2">
-                {f.bio}
-              </p>
-
-              <div className="flex justify-between items-center border-t border-[#00F5B0]/40 pt-4 mt-auto">
-                <div className="flex gap-4">
-                  <div className="flex flex-col">
-                    <span className="text-[7px] text-[#7A8694] font-mono tracking-wider uppercase">Contributions</span>
-                    <span className="text-xs font-mono font-semibold text-white">{f.contributions} Active</span>
-                  </div>
+              <div className="flex justify-between items-center border-t border-[#00F5B0]/15 pt-3 mt-4">
+                <div className="flex flex-col">
+                  <span className="text-[7px] text-[#7A8694] font-mono tracking-wider uppercase">Active Shards</span>
+                  <span className="text-[11px] font-mono font-medium text-white">{f.contributions} Active</span>
                 </div>
 
                 <Link
                   href={`/futurologists/${f.slug}`}
-                  className="px-4 py-2 border border-[#00F5B0]/20 bg-[#00F5B0]/5 hover:bg-[#00F5B0] hover:text-[#02060A] hover:border-transparent text-[#00F5B0] font-mono text-[9px] tracking-widest uppercase rounded transition-all duration-300"
+                  className="px-3 py-1.5 border border-[#00F5B0]/20 bg-[#00F5B0]/5 hover:bg-[#00F5B0] hover:text-[#02060A] hover:border-transparent text-[#00F5B0] font-mono text-[9px] tracking-widest uppercase rounded transition-all duration-200"
                 >
-                  View Profile Portfolio &gt;
+                  View Profile &gt;
                 </Link>
               </div>
             </div>
