@@ -458,6 +458,7 @@ export default function CyberHUD({
                                 const fullCityObj = citiesRawData.find(cr => cr.name === c.name);
                                 if (fullCityObj) setActiveCity(fullCityObj);
                                 setSearchOpen(false);
+                                setActiveTab('telemetry');
                               }}
                               style={{
                                 padding: '8px 10px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(0,229,255,0.08)',
