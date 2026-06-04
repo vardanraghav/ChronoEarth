@@ -21,12 +21,11 @@ const REALISTIC_COLORS = [
   { color: '#ffb8a0', weight: 2  },
 ];
 
-// Cyber mode: cyan/blue/purple stars
+// Cyber mode: strict palette only (cyan/iceblue/white — NO purple)
 const CYBER_COLORS = [
-  { color: '#00f0ff', weight: 20 }, { color: '#80ffef', weight: 15 },
-  { color: '#5bcfff', weight: 15 }, { color: '#8b5cf6', weight: 12 },
-  { color: '#a78bfa', weight: 10 }, { color: '#00e5cc', weight: 10 },
-  { color: '#ffffff', weight: 12 }, { color: '#c0f0ff', weight: 6  },
+  { color: '#00E5FF', weight: 28 }, { color: '#00FF88', weight: 12 },
+  { color: '#00C8FF', weight: 22 }, { color: '#80FFF0', weight: 14 },
+  { color: '#ffffff', weight: 18 }, { color: '#c0f8ff', weight: 6  },
 ];
 
 function pickColor(palette: { color: string; weight: number }[]): string {
@@ -38,7 +37,8 @@ function pickColor(palette: { color: string; weight: number }[]): string {
 
 function generateStars(mode: EarthMode): Star[] {
   const palette = mode === 'cyber' ? CYBER_COLORS : REALISTIC_COLORS;
-  return Array.from({ length: 180 }, (_, i) => ({
+  const count   = mode === 'cyber' ? 280 : 180;
+  return Array.from({ length: count }, (_, i) => ({
     id:       i,
     x:        Math.random() * 100,
     y:        Math.random() * 100,
@@ -162,7 +162,7 @@ export default function BackgroundEffects({ earthMode = 'realistic' }: Backgroun
             {/* Aurora glow bottom */}
             <div style={{
               position: 'absolute', bottom: 0, left: 0, right: 0, height: '150px',
-              background: 'linear-gradient(0deg, rgba(139,92,246,0.04) 0%, transparent 100%)',
+              background: 'linear-gradient(0deg, rgba(0,200,255,0.04) 0%, transparent 100%)',
               animation: 'cyber-pulse 6s ease-in-out infinite',
             }} />
           </>

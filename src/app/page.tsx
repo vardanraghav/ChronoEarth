@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, lazy, Suspense } from 'react';
 import Navbar            from '@/components/Navbar';
 import CesiumGlobe       from '@/components/CesiumGlobe';
 import DataPanel         from '@/components/DataPanel';
@@ -8,6 +8,7 @@ import CategoryCards     from '@/components/CategoryCards';
 import Timeline          from '@/components/Timeline';
 import BackgroundEffects from '@/components/BackgroundEffects';
 import ProjectionPanel   from '@/components/ProjectionPanel';
+import CyberHUD          from '@/components/CyberHUD';
 import { CityData }      from '@/data/citiesData';
 import { EarthMode }     from '@/components/CesiumGlobeContent';
 
@@ -23,7 +24,6 @@ export default function Home() {
 
   const isCyber = earthMode === 'cyber';
 
-  // Mode switch with brief fade transition
   const switchMode = useCallback((mode: EarthMode) => {
     if (mode === earthMode || transitioning) return;
     setTransitioning(true);
@@ -34,12 +34,12 @@ export default function Home() {
   }, [earthMode, transitioning]);
 
   return (
-    <main className="relative h-screen w-screen overflow-hidden" style={{ background: '#030508' }}>
+    <main className="relative h-screen w-screen overflow-hidden" style={{ background: '#020608' }}>
 
-      {/* ── Layer 0: Star field (adapts to mode) ──────────────────────── */}
+      {/* ── Layer 0: Star field ─────────────────────────────────────────── */}
       <BackgroundEffects earthMode={earthMode} />
 
-      {/* ── Layer 1: Cesium Globe ─────────────────────────────────────── */}
+      {/* ── Layer 1: Cesium Globe ──────────────────────────────────────── */}
       <CesiumGlobe
         activeYear={activeYear}
         activeCategory={activeCategory}
@@ -49,22 +49,32 @@ export default function Home() {
         earthMode={earthMode}
       />
 
-      {/* ── Mode transition flash ─────────────────────────────────────── */}
+      {/* ── Mode transition flash ──────────────────────────────────────── */}
       <div
         className="fixed inset-0 z-[90] pointer-events-none"
         style={{
-          background: '#030508',
+          background: '#020608',
           opacity:    transitioning ? 1 : 0,
           transition: `opacity ${transitioning ? '0.3s' : '0.6s'} ease`,
         }}
       />
 
-      {/* ── Top vignette ─────────────────────────────────────────────── */}
+      {/* ── Top vignette ──────────────────────────────────────────────── */}
       <div
         className="fixed top-0 left-0 right-0 z-10 pointer-events-none"
         style={{
-          height:     '180px',
-          background: `linear-gradient(180deg, ${isCyber ? 'rgba(0,8,20,0.60)' : 'rgba(3,5,10,0.55)'} 0%, transparent 100%)`,
+          height: '200px',
+          background: `linear-gradient(180deg, ${isCyber ? 'rgba(0,5,14,0.75)' : 'rgba(2,4,8,0.60)'} 0%, transparent 100%)`,
+          transition: 'background 1.5s ease',
+        }}
+      />
+
+      {/* ── Bottom vignette ───────────────────────────────────────────── */}
+      <div
+        className="fixed bottom-0 left-0 right-0 z-10 pointer-events-none"
+        style={{
+          height: '220px',
+          background: `linear-gradient(0deg, ${isCyber ? 'rgba(0,5,14,0.85)' : 'rgba(2,4,8,0.70)'} 0%, transparent 100%)`,
           transition: 'background 1.5s ease',
         }}
       />
@@ -72,10 +82,7 @@ export default function Home() {
       {/* ── Navbar ────────────────────────────────────────────────────── */}
       <Navbar earthMode={earthMode} />
 
-      {/* ══════════════════════════════════════════════════════════════
-          MODE TOGGLE — top-right pill below navbar
-          Realistic ←→ Cyber 2050
-         ══════════════════════════════════════════════════════════════ */}
+      {/* ── Mode toggle ───────────────────────────────────────────────── */}
       <div
         className="fixed z-50"
         style={{
@@ -83,12 +90,12 @@ export default function Home() {
           right: '40px',
           display: 'flex',
           borderRadius: '2px',
-          border: `1px solid ${isCyber ? 'rgba(0,240,255,0.20)' : 'rgba(255,255,255,0.10)'}`,
-          background:    isCyber ? 'rgba(0,8,20,0.75)' : 'rgba(3,5,10,0.65)',
-          backdropFilter: 'blur(20px)',
+          border: `1px solid ${isCyber ? 'rgba(0,229,255,0.25)' : 'rgba(255,255,255,0.10)'}`,
+          background:    isCyber ? 'rgba(0,8,20,0.82)' : 'rgba(2,4,8,0.70)',
+          backdropFilter: 'blur(24px)',
           overflow: 'hidden',
           transition: 'border-color 0.6s ease, background 0.6s ease',
-          boxShadow: isCyber ? '0 0 20px rgba(0,240,255,0.10)' : 'none',
+          boxShadow: isCyber ? '0 0 24px rgba(0,229,255,0.12), inset 0 0 12px rgba(0,229,255,0.04)' : 'none',
           animation: 'fade-in 1.2s 0.5s ease both',
         }}
       >
@@ -99,19 +106,19 @@ export default function Home() {
               key={mode}
               onClick={() => switchMode(mode)}
               style={{
-                padding:      '7px 16px',
-                fontSize:     '7px',
-                fontWeight:   isActive ? 400 : 300,
-                letterSpacing:'0.32em',
-                textTransform:'uppercase',
-                background:   isActive
-                  ? (mode === 'cyber' ? 'rgba(0,240,255,0.10)' : 'rgba(255,255,255,0.07)')
+                padding:       '8px 20px',
+                fontSize:      '7px',
+                fontWeight:    isActive ? 500 : 300,
+                letterSpacing: '0.32em',
+                textTransform: 'uppercase',
+                background:    isActive
+                  ? (mode === 'cyber' ? 'rgba(0,229,255,0.12)' : 'rgba(255,255,255,0.08)')
                   : 'transparent',
                 color: isActive
-                  ? (mode === 'cyber' ? '#00f0ff' : 'rgba(255,255,255,0.85)')
-                  : 'rgba(255,255,255,0.25)',
+                  ? (mode === 'cyber' ? '#00E5FF' : 'rgba(255,255,255,0.90)')
+                  : 'rgba(255,255,255,0.22)',
                 textShadow: isActive && mode === 'cyber'
-                  ? '0 0 12px rgba(0,240,255,0.70)'
+                  ? '0 0 14px rgba(0,229,255,0.80)'
                   : 'none',
                 border: 'none',
                 cursor:  'pointer',
@@ -125,52 +132,57 @@ export default function Home() {
         })}
       </div>
 
-      {/* ── Projection panel ─────────────────────────────────────────── */}
-      <div
-        className="fixed z-20 w-full pointer-events-none"
-        style={{
-          bottom:    '90px',
-          left: 0, right: 0,
-          padding:   '0 40px',
-          animation: 'fade-up 0.9s 1s cubic-bezier(0.22, 1, 0.36, 1) both',
-        }}
-      >
-        <ProjectionPanel
-          activeYear={activeYear}
-          activeCategory={activeCategory}
-          activeCity={activeCity}
-          earthMode={earthMode}
-        />
-      </div>
+      {/* ── Cyber 2050: Full Command Center HUD ───────────────────────── */}
+      {isCyber && !transitioning && (
+        <CyberHUD />
+      )}
 
-      {/* ── Data metrics ─────────────────────────────────────────────── */}
-      <DataPanel activeYear={activeYear} activeCity={activeCity} earthMode={earthMode} />
+      {/* ── Realistic mode panels ─────────────────────────────────────── */}
+      {!isCyber && (
+        <>
+          <div
+            className="fixed z-20 w-full pointer-events-none"
+            style={{
+              bottom: '90px', left: 0, right: 0,
+              padding: '0 40px',
+              animation: 'fade-up 0.9s 1s cubic-bezier(0.22, 1, 0.36, 1) both',
+            }}
+          >
+            <ProjectionPanel
+              activeYear={activeYear}
+              activeCategory={activeCategory}
+              activeCity={activeCity}
+              earthMode={earthMode}
+            />
+          </div>
 
-      {/* ── Category selector ─────────────────────────────────────────── */}
-      <CategoryCards
-        activeCategory={activeCategory}
-        setActiveCategory={setActiveCategory}
-        earthMode={earthMode}
-      />
+          <DataPanel activeYear={activeYear} activeCity={activeCity} earthMode={earthMode} />
 
-      {/* ── Timeline ─────────────────────────────────────────────────── */}
-      <Timeline activeYear={activeYear} setActiveYear={setActiveYear} earthMode={earthMode} />
+          <CategoryCards
+            activeCategory={activeCategory}
+            setActiveCategory={setActiveCategory}
+            earthMode={earthMode}
+          />
 
-      {/* ── City focus hint ───────────────────────────────────────────── */}
+          <Timeline activeYear={activeYear} setActiveYear={setActiveYear} earthMode={earthMode} />
+        </>
+      )}
+
+      {/* ── City focus dismiss ─────────────────────────────────────────── */}
       {activeCity && (
         <button
           onClick={() => setActiveCity(null)}
           style={{
-            position:     'fixed', top: '60px', left: '50%',
-            transform:    'translateX(-50%)', zIndex: 30,
-            background:   'none', border: 'none', cursor: 'pointer',
+            position: 'fixed', top: '60px', left: '50%',
+            transform: 'translateX(-50%)', zIndex: 40,
+            background: 'none', border: 'none', cursor: 'pointer',
             fontSize: '8px', fontWeight: 300, letterSpacing: '0.4em',
-            color: isCyber ? 'rgba(0,240,255,0.35)' : 'rgba(255,255,255,0.30)',
+            color: isCyber ? 'rgba(0,229,255,0.40)' : 'rgba(255,255,255,0.30)',
             textTransform: 'uppercase', padding: '6px 12px',
             transition: 'color 0.3s ease', animation: 'fade-in 0.5s ease forwards',
           }}
-          onMouseEnter={(e) => e.currentTarget.style.color = isCyber ? 'rgba(0,240,255,0.80)' : 'rgba(255,255,255,0.65)'}
-          onMouseLeave={(e) => e.currentTarget.style.color = isCyber ? 'rgba(0,240,255,0.35)' : 'rgba(255,255,255,0.30)'}
+          onMouseEnter={e => (e.currentTarget.style.color = isCyber ? 'rgba(0,229,255,0.90)' : 'rgba(255,255,255,0.70)')}
+          onMouseLeave={e => (e.currentTarget.style.color = isCyber ? 'rgba(0,229,255,0.40)' : 'rgba(255,255,255,0.30)')}
         >
           esc · return to orbit
         </button>
