@@ -384,7 +384,7 @@ export default function CesiumGlobeContent({
     type DotAnim = { phase: number; isLand: boolean };
     type CityLightAnim = { phase: number };
     type BeamAnim = { lat: number; lon: number; maxH: number; speed: number; phase: number; glow: any; core: any };
-    type NodeAnim = { phase: number; baseSize: number; tier: number };
+    type NodeAnim = { phase: number; baseSize: number; tier: number; period?: number };
 
     const dotAnimData: DotAnim[]      = [];
     const cityLightData: CityLightAnim[] = [];
@@ -530,7 +530,13 @@ export default function CesiumGlobeContent({
         outlineWidth: 2.5,
         disableDepthTestDistance: Number.POSITIVE_INFINITY,
       });
-      nodeAnimData.push({ phase: Math.random() * Math.PI * 2, baseSize: isSel ? 16 : 12, tier: 3 });
+      nodeAnimData.push({
+        phase: Math.random() * Math.PI * 2,
+        baseSize: isSel ? 16 : 12,
+        tier: 3,
+        // Each hub gets its own prime-based period: 1.7, 2.1, 2.7, 3.1, 2.4, ...
+        period: 1.5 + Math.random() * 1.8,
+      });
       (pt as any)._animIdx = nodeAnimData.length - 1;
       (pt as any)._cityRef = hub;
     });
@@ -547,7 +553,12 @@ export default function CesiumGlobeContent({
         outlineWidth: 1.5,
         disableDepthTestDistance: Number.POSITIVE_INFINITY,
       });
-      nodeAnimData.push({ phase: Math.random() * Math.PI * 2, baseSize: isSel ? 10 : 7, tier: 2 });
+      nodeAnimData.push({
+        phase: Math.random() * Math.PI * 2,
+        baseSize: isSel ? 10 : 7,
+        tier: 2,
+        period: 1.8 + Math.random() * 2.2,
+      });
       (pt as any)._animIdx = nodeAnimData.length - 1;
       (pt as any)._cityRef = city;
     });
@@ -571,7 +582,12 @@ export default function CesiumGlobeContent({
         outlineWidth: 1.0,
         disableDepthTestDistance: Number.POSITIVE_INFINITY,
       });
-      nodeAnimData.push({ phase: Math.random() * Math.PI * 2, baseSize: 4, tier: 1 });
+      nodeAnimData.push({
+        phase: Math.random() * Math.PI * 2,
+        baseSize: 4,
+        tier: 1,
+        period: 2.2 + Math.random() * 3.0,
+      });
       (pt as any)._animIdx = nodeAnimData.length - 1;
     });
 
@@ -582,40 +598,40 @@ export default function CesiumGlobeContent({
       if (!ca || !cb) return;
 
       // Highway glow line (entities — needed for CallbackProperty)
+      // Highway: ultra-thin, almost invisible — supports network visually, never dominates
       viewer.entities.add({
         polyline: {
           positions: geodesicArc(ca, cb, hw.alt),
-          width: 2.0,
-          material: new Cesium.PolylineGlowMaterialProperty({
-            glowPower: new Cesium.CallbackProperty(() =>
-              0.20 + 0.12 * Math.sin(timeRef.current * 2.5), false),
-            color: Cesium.Color.fromCssColorString(C.emerald).withAlpha(0.75),
-          }),
+          width: 0.8,
+          material: Cesium.Color.fromCssColorString(C.emerald).withAlpha(0.18),
         },
       });
 
-      // Data packets (3 per highway)
-      for (let k = 0; k < 3; k++) {
-        const kOffset = k / 3;
-        viewer.entities.add({
-          position: new Cesium.CallbackProperty(() => {
-            const t = ((timeRef.current * 0.12) + kOffset) % 1.0;
-            const sR = Cesium.Cartographic.fromDegrees(ca!.lon, ca!.lat);
-            const eR = Cesium.Cartographic.fromDegrees(cb!.lon, cb!.lat);
-            const g  = new Cesium.EllipsoidGeodesic(sR, eR);
-            const pt = g.interpolateUsingFraction(t);
-            const h  = Math.sin(t * Math.PI) * hw.alt;
-            return Cesium.Cartesian3.fromRadians(pt.longitude, pt.latitude, h);
-          }, false),
-          point: {
-            pixelSize: 7,
-            color: Cesium.Color.WHITE,
-            outlineColor: Cesium.Color.fromCssColorString(C.cyan),
-            outlineWidth: 2.0,
-            disableDepthTestDistance: Number.POSITIVE_INFINITY,
-          },
+      // Static breathing nodes along the route (replace moving packets)
+      // Each node has its own unique async pulse period — they never pulse together
+      const nodePositions = [0.20, 0.40, 0.60, 0.80]; // fixed fractions along route
+      const sR2 = Cesium.Cartographic.fromDegrees(ca!.lon, ca!.lat);
+      const eR2 = Cesium.Cartographic.fromDegrees(cb!.lon, cb!.lat);
+      const geo2 = new Cesium.EllipsoidGeodesic(sR2, eR2);
+      nodePositions.forEach((frac, ni) => {
+        const pt2   = geo2.interpolateUsingFraction(frac);
+        const h2    = Math.sin(frac * Math.PI) * hw.alt;
+        const pos3d = Cesium.Cartesian3.fromRadians(pt2.longitude, pt2.latitude, h2);
+        // Unique prime-based pulse period so no two nodes pulse at the same time
+        const pulsePhase  = (ni * 1.618 + hw.alt * 0.000003) % (Math.PI * 2);
+        const pulsePeriod = 1.4 + ni * 0.85; // 1.4 / 2.25 / 3.1 / 3.95 seconds
+
+        const routeNode = nodeCollection.add({
+          position: pos3d,
+          color: Cesium.Color.fromCssColorString(C.cyan).withAlpha(0.70),
+          pixelSize: 4,
+          outlineColor: Cesium.Color.fromCssColorString(C.emerald).withAlpha(0.50),
+          outlineWidth: 1.0,
+          disableDepthTestDistance: Number.POSITIVE_INFINITY,
         });
-      }
+        nodeAnimData.push({ phase: pulsePhase, baseSize: 4, tier: 0, period: pulsePeriod });
+        (routeNode as any)._animIdx = nodeAnimData.length - 1;
+      });
     });
 
     // ── AGENT 7: Hub Concentric Scan Rings ────────────────────────────────────
@@ -649,6 +665,57 @@ export default function CesiumGlobeContent({
           },
         });
       }
+    });
+
+    // ── MAJOR HUB BLOOM — 6 primary hubs emit strong environmental light ───────
+    const BLOOM_HUBS = [
+      { name: 'Tokyo',    lat: 35.6762, lon: 139.6503, r: 420000, color: C.cyan   },
+      { name: 'Seoul',    lat: 37.5665, lon: 126.9780, r: 380000, color: C.cyan   },
+      { name: 'Singapore',lat:  1.3521, lon: 103.8198, r: 360000, color: C.emerald},
+      { name: 'Dubai',    lat: 25.2048, lon:  55.2708, r: 340000, color: C.emerald},
+      { name: 'London',   lat: 51.5074, lon:  -0.1278, r: 400000, color: C.iceBlue},
+      { name: 'New York', lat: 40.7128, lon: -74.0060, r: 420000, color: C.iceBlue},
+    ];
+    BLOOM_HUBS.forEach((hub, hi) => {
+      const bloomPhase = hi * 1.047; // 60° offset each hub
+      // Outer wide bloom
+      viewer.entities.add({
+        position: Cesium.Cartesian3.fromDegrees(hub.lon, hub.lat, 12000),
+        ellipse: {
+          semiMajorAxis: new Cesium.CallbackProperty(() =>
+            hub.r * (1.0 + 0.06 * Math.sin(timeRef.current * (0.55 + hi * 0.07) + bloomPhase)), false),
+          semiMinorAxis: new Cesium.CallbackProperty(() =>
+            hub.r * (1.0 + 0.06 * Math.sin(timeRef.current * (0.55 + hi * 0.07) + bloomPhase)), false),
+          material: new Cesium.ColorMaterialProperty(
+            new Cesium.CallbackProperty(() =>
+              Cesium.Color.fromCssColorString(hub.color).withAlpha(
+                0.055 + 0.035 * Math.sin(timeRef.current * (0.55 + hi * 0.07) + bloomPhase)
+              ), false)
+          ),
+          outline: false,
+          heightReference: Cesium.HeightReference.NONE,
+        },
+      });
+      // Inner bright core bloom
+      viewer.entities.add({
+        position: Cesium.Cartesian3.fromDegrees(hub.lon, hub.lat, 8000),
+        ellipse: {
+          semiMajorAxis: new Cesium.CallbackProperty(() =>
+            hub.r * 0.30 * (1.0 + 0.10 * Math.sin(timeRef.current * (0.80 + hi * 0.09) + bloomPhase)), false),
+          semiMinorAxis: new Cesium.CallbackProperty(() =>
+            hub.r * 0.30 * (1.0 + 0.10 * Math.sin(timeRef.current * (0.80 + hi * 0.09) + bloomPhase)), false),
+          material: new Cesium.ColorMaterialProperty(
+            new Cesium.CallbackProperty(() =>
+              Cesium.Color.fromCssColorString(hub.color).withAlpha(
+                0.12 + 0.07 * Math.sin(timeRef.current * (0.80 + hi * 0.09) + bloomPhase)
+              ), false)
+          ),
+          outline: true,
+          outlineColor: Cesium.Color.fromCssColorString(hub.color).withAlpha(0.40),
+          outlineWidth: 1.0,
+          heightReference: Cesium.HeightReference.NONE,
+        },
+      });
     });
 
     // ── AGENT 7: Global Radar Sweep (rotating scan arc) ───────────────────────
@@ -863,18 +930,27 @@ export default function CesiumGlobeContent({
         const anim = nodeAnimData[i];
         if (!anim) continue;
 
-        const pulse = 0.75 + 0.25 * Math.sin(time * (1.5 + anim.tier * 0.5) + anim.phase);
+        // Each node uses its own period for fully asynchronous breathing
+        const freq  = anim.period ? (Math.PI * 2) / anim.period : (1.5 + anim.tier * 0.5);
+        const pulse = 0.70 + 0.30 * Math.sin(time * freq + anim.phase);
+
         if (anim.tier === 3) {
-          // AI Hub — white core, emerald ring
-          pt.pixelSize = anim.baseSize * pulse;
+          // Major AI Hub — white core, strong emerald outline
+          pt.pixelSize = anim.baseSize * (0.85 + 0.15 * pulse);
+          pt.color     = Cesium.Color.WHITE.withAlpha(0.92 * pulse);
         } else if (anim.tier === 2) {
-          // City node — emerald pulsing
+          // City node — emerald breathing
           pt.pixelSize = anim.baseSize * pulse;
-          pt.color     = Cesium.Color.fromCssColorString(C.emerald).withAlpha(0.85 * pulse);
+          pt.color     = Cesium.Color.fromCssColorString(C.emerald).withAlpha(0.82 * pulse);
+        } else if (anim.tier === 1) {
+          // Telemetry station — slow cyan blink
+          pt.pixelSize = anim.baseSize * pulse;
+          pt.color     = Cesium.Color.fromCssColorString(C.iceBlue).withAlpha(0.62 * pulse);
         } else {
-          // Telemetry station — cyan blinking
-          pt.pixelSize = anim.baseSize * pulse;
-          pt.color     = Cesium.Color.fromCssColorString(C.iceBlue).withAlpha(0.65 * pulse);
+          // Route relay node (tier 0) — very small, faint cyan pulse
+          // Uses its own unique period so it never pulses with neighbors
+          pt.pixelSize = anim.baseSize * (0.60 + 0.40 * pulse);
+          pt.color     = Cesium.Color.fromCssColorString(C.cyan).withAlpha(0.55 * pulse);
         }
       }
 
