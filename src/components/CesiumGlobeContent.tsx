@@ -278,42 +278,72 @@ export default function CesiumGlobeContent({
     // Globe base
     if (viewer.scene.globe) {
       viewer.scene.globe.baseColor = Cesium.Color.fromCssColorString('#000508');
-      viewer.scene.globe.showGroundAtmosphere = true;
+      // CRITICAL: showGroundAtmosphere=false eliminates the pink/magenta/orange terminator
+      viewer.scene.globe.showGroundAtmosphere = false;
       viewer.scene.globe.enableLighting = true;
-      viewer.scene.globe.atmosphereLightIntensity = 40.0;
-      viewer.scene.globe.atmosphereHueShift = 0.48;
-      viewer.scene.globe.atmosphereSaturationShift = 1.0;
-      viewer.scene.globe.atmosphereBrightnessShift = 0.45;
+      // All shifts at 0 — no hue warping that causes warm/pink tones
+      viewer.scene.globe.atmosphereLightIntensity = 4.0;
+      viewer.scene.globe.atmosphereHueShift = 0.0;
+      viewer.scene.globe.atmosphereSaturationShift = 0.0;
+      viewer.scene.globe.atmosphereBrightnessShift = 0.0;
     }
 
-    // Cyber light source
+    // Cyber light: very dim so day side stays DARK (not beige/orange)
+    // The globe should look like a dark digital sphere, not a natural planet
     viewer.scene.light = new Cesium.DirectionalLight({
       direction: new Cesium.Cartesian3(-0.55, -0.18, -0.82),
-      color: Cesium.Color.fromCssColorString('#00E5FF'),
-      intensity: 6.0,
+      color: Cesium.Color.fromCssColorString('#001A14'), // Dark teal — no warm tones
+      intensity: 1.5, // Low: keeps day side dark
     });
-    viewer.scene.ambientColor = new Cesium.Color(0.0, 0.05, 0.03, 1.0);
+    viewer.scene.ambientColor = new Cesium.Color(0.0, 0.02, 0.015, 1.0);
 
-    // Holographic atmosphere limb — large translucent cyan shell
+    // ── Holographic atmospheric rim — multiple shells for volumetric depth
+    // Outermost: wide cyan halo
     viewer.entities.add({
       position: Cesium.Cartesian3.ZERO,
       ellipsoid: {
-        radii: new Cesium.Cartesian3(6378137 + 120000, 6378137 + 120000, 6378137 + 120000),
-        material: Cesium.Color.fromCssColorString(C.cyan).withAlpha(0.025),
-        outline: false,
-        fill: true,
+        radii: new Cesium.Cartesian3(6378137 + 180000, 6378137 + 180000, 6378137 + 180000),
+        material: Cesium.Color.fromCssColorString(C.cyan).withAlpha(0.018),
+        fill: true, outline: false,
         shadows: Cesium.ShadowMode.DISABLED,
       },
     });
-
-    // Inner atmosphere glow
+    // Mid: brighter cyan band
     viewer.entities.add({
       position: Cesium.Cartesian3.ZERO,
       ellipsoid: {
-        radii: new Cesium.Cartesian3(6378137 + 55000, 6378137 + 55000, 6378137 + 55000),
-        material: Cesium.Color.fromCssColorString(C.emerald).withAlpha(0.018),
-        fill: true,
-        outline: false,
+        radii: new Cesium.Cartesian3(6378137 + 90000, 6378137 + 90000, 6378137 + 90000),
+        material: Cesium.Color.fromCssColorString(C.cyan).withAlpha(0.042),
+        fill: true, outline: false,
+        shadows: Cesium.ShadowMode.DISABLED,
+      },
+    });
+    // Inner: emerald data-layer haze right above surface
+    viewer.entities.add({
+      position: Cesium.Cartesian3.ZERO,
+      ellipsoid: {
+        radii: new Cesium.Cartesian3(6378137 + 38000, 6378137 + 38000, 6378137 + 38000),
+        material: Cesium.Color.fromCssColorString(C.emerald).withAlpha(0.028),
+        fill: true, outline: false,
+        shadows: Cesium.ShadowMode.DISABLED,
+      },
+    });
+    // Pulse shell — animated breathing glow
+    viewer.entities.add({
+      position: Cesium.Cartesian3.ZERO,
+      ellipsoid: {
+        radii: new Cesium.CallbackProperty(() => {
+          const pulse = 1.0 + 0.003 * Math.sin(timeRef.current * 0.8);
+          const r = (6378137 + 65000) * pulse;
+          return new Cesium.Cartesian3(r, r, r);
+        }, false),
+        material: new Cesium.ColorMaterialProperty(
+          new Cesium.CallbackProperty(() =>
+            Cesium.Color.fromCssColorString(C.cyan).withAlpha(
+              0.020 + 0.012 * Math.sin(timeRef.current * 0.8)
+            ), false)
+        ),
+        fill: true, outline: false,
         shadows: Cesium.ShadowMode.DISABLED,
       },
     });
@@ -369,13 +399,14 @@ export default function CesiumGlobeContent({
       if (viewer.isDestroyed() || !isCyber) return;
       viewer.dataSources.add(ds);
 
-      // Style continent outlines
+      // Style continent outlines — OPAQUE dark fill to unify the cyber earth look
       ds.entities.values.forEach((e: any) => {
         if (e.polygon) {
           e.polygon.outline = true;
-          e.polygon.outlineColor = Cesium.Color.fromCssColorString(C.emerald).withAlpha(0.90);
-          e.polygon.outlineWidth = 3.0;
-          e.polygon.material = Cesium.Color.fromCssColorString(C.spaceBg).withAlpha(0.30);
+          e.polygon.outlineColor = Cesium.Color.fromCssColorString(C.emerald).withAlpha(0.95);
+          e.polygon.outlineWidth = 3.5;
+          // Solid dark fill: eliminates any natural terrain color showing through
+          e.polygon.material = Cesium.Color.fromCssColorString('#000810').withAlpha(0.96);
         }
       });
 
@@ -409,9 +440,9 @@ export default function CesiumGlobeContent({
       const imgData = ctx.getImageData(0, 0, W, H).data;
       const landCoords: { lat: number; lon: number }[] = [];
 
-      // AGENT 1: Dense dot matrix — sample every 1.5px for maximum density
-      for (let y = 0; y < H; y += 2) {
-        for (let x = 0; x < W; x += 2) {
+      // AGENT 1: Dense dot matrix — sample every 1px for 4x more density
+      for (let y = 0; y < H; y += 1) {
+        for (let x = 0; x < W; x += 1) {
           const idx = (y * W + x) * 4;
           const isLand = imgData[idx] > 120;
           const lon = (x / W) * 360 - 180;
@@ -426,7 +457,7 @@ export default function CesiumGlobeContent({
             });
             dotAnimData.push({ phase: Math.random() * Math.PI * 2, isLand: true });
             (pt as any)._animIdx = dotAnimData.length - 1;
-          } else if (Math.random() < 0.12) {
+          } else if (Math.random() < 0.06) {
             dotCollection.add({
               position: Cesium.Cartesian3.fromDegrees(lon, lat, 200),
               color: Cesium.Color.fromCssColorString(C.iceBlue).withAlpha(0.08),
@@ -755,7 +786,7 @@ export default function CesiumGlobeContent({
     });
 
     // ── AGENT 2 + 4: Unified Animation Loop ───────────────────────────────────
-    // All point-level animations handled in a single postRender for performance
+    let frameCount = 0;
     const animate = () => {
       if (viewer.isDestroyed() || !isCyber) return;
 
@@ -763,50 +794,53 @@ export default function CesiumGlobeContent({
       if (!lightDir) return;
 
       const time = timeRef.current;
+      frameCount++;
 
-      // Dot matrix: day/night-responsive
-      const numDots = dotCollection.length;
-      for (let i = 0; i < numDots; i++) {
-        const pt   = dotCollection.get(i);
-        if (!pt) continue;
-        const anim = dotAnimData[i];
-        if (!anim) continue;
+      // Only update dot matrix every 3rd frame (100k+ dots: performance)
+      if (frameCount % 3 === 0) {
+        const numDots = dotCollection.length;
+        for (let i = 0; i < numDots; i++) {
+          const pt   = dotCollection.get(i);
+          if (!pt) continue;
+          const anim = dotAnimData[i];
+          if (!anim) continue;
 
-        const pos    = pt.position;
-        const normal = Cesium.Cartesian3.normalize(pos, new Cesium.Cartesian3());
-        const dot    = Cesium.Cartesian3.dot(normal, lightDir);
-        const tw     = 0.80 + 0.20 * Math.sin(time * 3.0 + anim.phase);
+          const pos    = pt.position;
+          const normal = Cesium.Cartesian3.normalize(pos, new Cesium.Cartesian3());
+          const dot    = Cesium.Cartesian3.dot(normal, lightDir);
+          const tw     = 0.80 + 0.20 * Math.sin(time * 3.0 + anim.phase);
 
-        if (anim.isLand) {
-          if (dot < -0.1) {
-            // Day side land
-            pt.color    = Cesium.Color.fromCssColorString(C.cyan).withAlpha(0.15 * tw);
-            pt.pixelSize = 1.3;
-          } else if (dot > 0.1) {
-            // Night side land — glowing emerald nodes
-            pt.color    = Cesium.Color.fromCssColorString(C.emerald).withAlpha(0.80 * tw);
-            pt.pixelSize = 2.8;
+          if (anim.isLand) {
+            if (dot < -0.1) {
+              // Day side land — dim cyan digital mesh
+              pt.color    = Cesium.Color.fromCssColorString(C.iceBlue).withAlpha(0.18 * tw);
+              pt.pixelSize = 1.4;
+            } else if (dot > 0.1) {
+              // Night side land — glowing emerald AI nodes
+              pt.color    = Cesium.Color.fromCssColorString(C.emerald).withAlpha(0.82 * tw);
+              pt.pixelSize = 2.8;
+            } else {
+              // Terminator: lerp ONLY between cyan colors — no pink
+              const f = (dot + 0.1) / 0.2;
+              pt.color    = Cesium.Color.lerp(
+                Cesium.Color.fromCssColorString(C.iceBlue).withAlpha(0.18),
+                Cesium.Color.fromCssColorString(C.emerald).withAlpha(0.82),
+                f, new Cesium.Color()
+              );
+              pt.pixelSize = 1.4 + 1.4 * f;
+            }
           } else {
-            const f = (dot + 0.1) / 0.2;
-            pt.color    = Cesium.Color.lerp(
-              Cesium.Color.fromCssColorString(C.cyan).withAlpha(0.15),
-              Cesium.Color.fromCssColorString(C.emerald).withAlpha(0.80),
-              f, new Cesium.Color()
-            );
-            pt.pixelSize = 1.3 + 1.5 * f;
-          }
-        } else {
-          // Ocean points
-          if (dot > 0.05) {
-            pt.color    = Cesium.Color.fromCssColorString(C.iceBlue).withAlpha(0.30 * tw);
-            pt.pixelSize = 1.2;
-          } else {
-            pt.color    = Cesium.Color.fromCssColorString(C.spaceBg).withAlpha(0.06);
-            pt.pixelSize = 0.8;
+            // Ocean points: always dim iceblue
+            if (dot > 0.05) {
+              pt.color    = Cesium.Color.fromCssColorString(C.iceBlue).withAlpha(0.22 * tw);
+              pt.pixelSize = 1.0;
+            } else {
+              pt.color    = Cesium.Color.fromCssColorString(C.spaceBg).withAlpha(0.05);
+              pt.pixelSize = 0.7;
+            }
           }
         }
-      }
-
+      } // end dot frame-skip
       // City lights: bright on night side
       const numCL = cityLightCol.length;
       for (let i = 0; i < numCL; i++) {
