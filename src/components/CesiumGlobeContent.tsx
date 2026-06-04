@@ -723,9 +723,7 @@ export default function CesiumGlobeContent({
                 return trailPts;
               }, false),
               width: 1.0,
-              material: new Cesium.PolylineFadeAppearance
-                ? Cesium.Color.fromCssColorString(color).withAlpha(0.35)
-                : Cesium.Color.fromCssColorString(color).withAlpha(0.25),
+              material: Cesium.Color.fromCssColorString(color).withAlpha(0.30),
             },
           });
         }
