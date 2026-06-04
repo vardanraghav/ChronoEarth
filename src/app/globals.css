@@ -16,9 +16,9 @@
   --text-mid:   rgba(255, 255, 255, 0.55);
   --text-lo:    rgba(255, 255, 255, 0.25);
   
-  --font-sans:  'Space Grotesk', 'Inter', system-ui, -apple-system, sans-serif;
-  --font-serif: 'Lora', Georgia, serif;
-  --font-display: 'Playfair Display', serif;
+  --font-sans:  'Inter', system-ui, -apple-system, sans-serif;
+  --font-serif: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-display: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 /* ═══════════════════════════════════════════════════════════
