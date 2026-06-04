@@ -17,12 +17,12 @@ export default function Timeline({ activeYear, setActiveYear, earthMode = 'reali
   const fillPct   = (activeIdx / (years.length - 1)) * 100;
   const isCyber   = earthMode === 'cyber';
 
-  const accent       = isCyber ? '#00f0ff' : 'rgba(255,255,255,0.70)';
-  const accentFill   = isCyber ? 'rgba(0,240,255,0.50)' : 'rgba(255,255,255,0.35)';
+  const accent       = isCyber ? '#00F5B0' : 'rgba(255,255,255,0.70)';
+  const accentFill   = isCyber ? 'rgba(0, 245, 176, 0.50)' : 'rgba(255,255,255,0.35)';
   const trackColor   = isCyber ? 'rgba(0,240,255,0.08)' : 'rgba(255,255,255,0.08)';
-  const yearActive   = isCyber ? '#00f0ff'              : 'rgba(255,255,255,0.75)';
+  const yearActive   = isCyber ? '#00F5B0'              : 'rgba(255,255,255,0.75)';
   const yearInactive = isCyber ? 'rgba(0,240,255,0.20)' : 'rgba(255,255,255,0.20)';
-  const yearHovered  = isCyber ? 'rgba(0,240,255,0.50)' : 'rgba(255,255,255,0.50)';
+  const yearHovered  = isCyber ? 'rgba(0, 245, 176, 0.50)' : 'rgba(255,255,255,0.50)';
 
   return (
     <div
@@ -30,8 +30,8 @@ export default function Timeline({ activeYear, setActiveYear, earthMode = 'reali
       style={{
         padding:    '0 40px 28px',
         background: isCyber
-          ? 'linear-gradient(to top, rgba(0,8,20,0.75) 0%, rgba(0,8,20,0.20) 70%, transparent 100%)'
-          : 'linear-gradient(to top, rgba(3,5,10,0.72) 0%, rgba(3,5,10,0.20) 70%, transparent 100%)',
+          ? 'linear-gradient(to top, rgba(2, 8, 15, 0.75) 0%, rgba(2, 8, 15, 0.20) 70%, transparent 100%)'
+          : 'linear-gradient(to top, rgba(2, 8, 15, 0.72) 0%, rgba(2, 8, 15, 0.20) 70%, transparent 100%)',
         transition: 'background 1.5s ease',
         animation:  'fade-up 1s 0.8s cubic-bezier(0.22,1,0.36,1) both',
       }}
@@ -45,7 +45,7 @@ export default function Timeline({ activeYear, setActiveYear, earthMode = 'reali
           width: `${fillPct}%`,
           background: accentFill,
           transition: 'width 0.7s cubic-bezier(0.22,1,0.36,1)',
-          boxShadow: isCyber ? `0 0 6px rgba(0,240,255,0.60)` : 'none',
+          boxShadow: isCyber ? `0 0 6px rgba(0, 245, 176, 0.60)` : 'none',
         }} />
 
         {/* Year markers */}
@@ -82,7 +82,7 @@ export default function Timeline({ activeYear, setActiveYear, earthMode = 'reali
                   fontSize: '8px', fontWeight: isActive ? 300 : 200, letterSpacing: '0.12em',
                   color: isActive ? yearActive : (isHov ? yearHovered : yearInactive),
                   transition: 'color 0.3s ease', userSelect: 'none',
-                  textShadow: isActive && isCyber ? `0 0 8px rgba(0,240,255,0.70)` : 'none',
+                  textShadow: isActive && isCyber ? `0 0 8px rgba(0, 245, 176, 0.70)` : 'none',
                 }}>
                   {year}
                 </span>

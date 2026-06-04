@@ -9,13 +9,13 @@ import { getExtendedCityData, getCitySlug } from '@/data/citiesExtendedData';
 import { PREDICTIONS, Comment } from '@/data/predictionsData';
 
 const C = {
-  bg: '#020611',
-  panel: '#051522',
-  primary: '#00f5d4',
-  secondary: '#00d9ff',
-  accent: '#8a7dff',
-  white: '#ffffff',
-  border: 'rgba(0, 245, 212, 0.15)',
+  bg: '#02060A',
+  panel: '#040B12',
+  primary: '#00F5B0',
+  secondary: '#00D98F',
+  accent: '#FFFFFF',
+  white: '#F5F7FA',
+  border: 'rgba(0, 245, 176, 0.15)',
 };
 
 interface Params {
@@ -179,9 +179,9 @@ export default function CityDetailPage({ params }: { params: Promise<Params> }) 
 
   if (!city || !cityExtended) {
     return (
-      <main className="h-screen w-screen bg-[#020611] flex flex-col items-center justify-center text-white gap-4 font-mono">
+      <main className="h-screen w-screen bg-[#02060A] flex flex-col items-center justify-center text-white gap-4 font-mono">
         <div>[ERROR // CITY ARCHIVE ACCESS CORRUPTED]</div>
-        <Link href="/" className="text-[#00f5d4] hover:underline">[← RETURN TO MAIN GRID]</Link>
+        <Link href="/" className="text-[#00F5B0] hover:underline">[← RETURN TO MAIN GRID]</Link>
       </main>
     );
   }
@@ -253,7 +253,7 @@ export default function CityDetailPage({ params }: { params: Promise<Params> }) 
   };
 
   const panelStyle: React.CSSProperties = {
-    background: 'rgba(3, 5, 10, 0.55)',
+    background: 'rgba(2, 8, 15, 0.75)',
     backdropFilter: 'blur(24px)',
     border: '1px solid rgba(255, 255, 255, 0.05)',
     borderRadius: '4px',
@@ -265,9 +265,9 @@ export default function CityDetailPage({ params }: { params: Promise<Params> }) 
   const cornerAccent = null;
 
   return (
-    <main className="h-screen w-screen overflow-y-auto bg-[#020611] text-[#e2e8f0] relative custom-scrollbar">
+    <main className="h-screen w-screen overflow-y-auto bg-[#02060A] text-[#e2e8f0] relative custom-scrollbar">
       <BackgroundEffects earthMode="cyber" />
-      <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-[rgba(2,6,17,0.9)] to-transparent pointer-events-none z-10" />
+      <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-[rgba(2, 8, 15, 0.9)] to-transparent pointer-events-none z-10" />
 
       <Navbar earthMode="cyber" />
 
@@ -289,13 +289,13 @@ export default function CityDetailPage({ params }: { params: Promise<Params> }) 
               loading="lazy"
               className="w-full h-full object-cover filter brightness-[0.65] contrast-[1.02] grayscale-[10%]" 
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#020611] via-transparent to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#02060A] via-transparent to-transparent" />
             
             {/* Header Content overlay */}
             <div className="absolute bottom-8 left-8 right-8 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
               <div className="flex flex-col gap-2">
                 <span className="text-[9px] font-sans-editorial text-white/40 tracking-[0.25em] uppercase font-medium">METROPOLITAN BRIEFING REPORT</span>
-                <h1 className="text-4xl md:text-5xl font-display font-light text-white tracking-wide">
+                <h1 className="text-4xl md:text-[#FFFFFF]xl font-display font-light text-white tracking-wide">
                   {city.name}
                 </h1>
                 <div className="text-[9.5px] font-sans-editorial text-white/50 tracking-widest uppercase">

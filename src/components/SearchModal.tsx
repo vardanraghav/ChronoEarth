@@ -13,15 +13,15 @@ interface SearchModalProps {
 }
 
 const C = {
-  emerald: '#00FF88',
-  cyan:    '#00E5FF',
-  iceBlue: '#00C8FF',
-  white:   '#FFFFFF',
-  bg:      'rgba(0,8,20,0.92)',
-  border:  'rgba(0,229,255,0.22)',
-  primary: '#00f5d4',
-  secondary: '#00d9ff',
-  accent: '#8a7dff',
+  emerald: '#00F5B0',
+  cyan: '#00D98F',
+  iceBlue: '#00D98F',
+  white: '#F5F7FA',
+  bg:      'rgba(2, 8, 15, 0.92)',
+  border: 'rgba(0, 245, 176, 0.15)',
+  primary: '#00F5B0',
+  secondary: '#00D98F',
+  accent: '#FFFFFF',
 };
 
 export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchModalProps) {
@@ -90,12 +90,12 @@ export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchMo
     projectMatches.length > 0;
 
   const panelStyle: React.CSSProperties = {
-    background: 'rgba(5, 21, 34, 0.95)',
+    background: 'rgba(2, 8, 15, 0.95)',
     backdropFilter: 'blur(24px)',
-    border: `1px solid rgba(0, 245, 212, 0.25)`,
+    border: `1px solid rgba(0, 245, 176, 0.25)`,
     borderRadius: '2px',
     padding: '20px',
-    boxShadow: '0 0 40px rgba(0,245,212,0.15), inset 0 0 20px rgba(0,245,212,0.04)',
+    boxShadow: '0 0 40px rgba(0,245,176,0.08), inset 0 0 20px rgba(0,245,176,0.02)',
     position: 'relative',
     width: '100%',
     maxWidth: '560px',
@@ -121,7 +121,7 @@ export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchMo
       style={{
         position: 'fixed', 
         inset: 0, 
-        background: 'rgba(2, 6, 17, 0.75)',
+        background: 'rgba(2, 8, 15, 0.75)',
         backdropFilter: 'blur(12px)', 
         zIndex: 9999, 
         display: 'flex',
@@ -165,14 +165,14 @@ export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchMo
             style={{
               width: '100%', 
               padding: '12px 14px', 
-              background: '#020611',
+              background: '#02060A',
               border: `1px solid ${C.primary}40`, 
               outline: 'none', 
               color: '#fff',
               fontFamily: 'monospace', 
               fontSize: 11, 
               borderRadius: 2,
-              boxShadow: '0 0 14px rgba(0, 245, 212, 0.05)'
+              boxShadow: '0 0 14px rgba(0, 245, 176, 0.03)'
             }}
           />
           <span style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', fontSize: 11 }}>🔍</span>
@@ -203,7 +203,7 @@ export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchMo
               {/* Cities matches */}
               {cityMatches.length > 0 && (
                 <div>
-                  <div style={{ fontSize: 7, color: 'rgba(0,245,212,0.5)', letterSpacing: '0.15em', marginBottom: 6, fontFamily: 'monospace' }}>🏙️ CITIES MATCHED</div>
+                  <div style={{ fontSize: 7, color: 'rgba(0, 245, 176, 0.5)', letterSpacing: '0.15em', marginBottom: 6, fontFamily: 'monospace' }}>🏙️ CITIES MATCHED</div>
                   {cityMatches.map(c => (
                     <div key={c.name}
                       onClick={() => {
@@ -216,7 +216,7 @@ export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchMo
                       style={{
                         padding: '10px 12px', 
                         background: 'rgba(255,255,255,0.01)', 
-                        border: '1px solid rgba(0, 245, 212, 0.08)',
+                        border: '1px solid rgba(0, 245, 176, 0.08)',
                         display: 'flex', 
                         justifyContent: 'space-between', 
                         alignItems: 'center', 
@@ -226,7 +226,7 @@ export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchMo
                         transition: 'all 0.2s ease',
                       }}
                       onMouseEnter={e => e.currentTarget.style.borderColor = C.primary}
-                      onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(0, 245, 212, 0.08)'}
+                      onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(0, 245, 176, 0.08)'}
                     >
                       <span style={{ fontSize: 9.5, color: '#fff', fontWeight: 500 }}>{c.name}, {c.country}</span>
                       <span style={{ fontSize: 7, color: C.secondary, letterSpacing: '0.1em', fontFamily: 'monospace' }}>[LOCATE ON GLOBE]</span>
@@ -238,7 +238,7 @@ export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchMo
               {/* Predictions matches */}
               {predMatches.length > 0 && (
                 <div>
-                  <div style={{ fontSize: 7, color: 'rgba(0,245,212,0.5)', letterSpacing: '0.15em', marginBottom: 6, fontFamily: 'monospace' }}>🔮 GLOBAL FORECAST PREDICTIONS</div>
+                  <div style={{ fontSize: 7, color: 'rgba(0, 245, 176, 0.5)', letterSpacing: '0.15em', marginBottom: 6, fontFamily: 'monospace' }}>🔮 GLOBAL FORECAST PREDICTIONS</div>
                   {predMatches.map(p => (
                     <div key={p.id}
                       onClick={() => {
@@ -248,7 +248,7 @@ export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchMo
                       style={{
                         padding: '10px 12px', 
                         background: 'rgba(255,255,255,0.01)', 
-                        border: '1px solid rgba(0, 245, 212, 0.08)',
+                        border: '1px solid rgba(0, 245, 176, 0.08)',
                         display: 'flex', 
                         flexDirection: 'column', 
                         gap: 4, 
@@ -258,7 +258,7 @@ export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchMo
                         transition: 'all 0.2s ease',
                       }}
                       onMouseEnter={e => e.currentTarget.style.borderColor = C.primary}
-                      onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(0, 245, 212, 0.08)'}
+                      onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(0, 245, 176, 0.08)'}
                     >
                       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <span style={{ fontSize: 9.5, color: '#fff', fontWeight: 500 }}>{p.title}</span>
@@ -273,7 +273,7 @@ export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchMo
               {/* Project Matches (Landmarks & Projects) */}
               {projectMatches.length > 0 && (
                 <div>
-                  <div style={{ fontSize: 7, color: 'rgba(0,245,212,0.5)', letterSpacing: '0.15em', marginBottom: 6, fontFamily: 'monospace' }}>🚧 PROJECTS & LANDMARKS</div>
+                  <div style={{ fontSize: 7, color: 'rgba(0, 245, 176, 0.5)', letterSpacing: '0.15em', marginBottom: 6, fontFamily: 'monospace' }}>🚧 PROJECTS & LANDMARKS</div>
                   {projectMatches.map((proj, idx) => (
                     <div key={idx}
                       onClick={() => {
@@ -283,7 +283,7 @@ export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchMo
                       style={{
                         padding: '10px 12px', 
                         background: 'rgba(255,255,255,0.01)', 
-                        border: '1px solid rgba(0, 245, 212, 0.08)',
+                        border: '1px solid rgba(0, 245, 176, 0.08)',
                         display: 'flex', 
                         flexDirection: 'column', 
                         gap: 4, 
@@ -293,7 +293,7 @@ export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchMo
                         transition: 'all 0.2s ease',
                       }}
                       onMouseEnter={e => e.currentTarget.style.borderColor = C.primary}
-                      onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(0, 245, 212, 0.08)'}
+                      onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(0, 245, 176, 0.08)'}
                     >
                       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <span style={{ fontSize: 9.5, color: '#fff', fontWeight: 500 }}>{proj.name}</span>
@@ -308,7 +308,7 @@ export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchMo
               {/* Technologies Matches */}
               {techMatches.length > 0 && (
                 <div>
-                  <div style={{ fontSize: 7, color: 'rgba(0,245,212,0.5)', letterSpacing: '0.15em', marginBottom: 6, fontFamily: 'monospace' }}>⚡ FUTURE TECH & KNOWLEDGE</div>
+                  <div style={{ fontSize: 7, color: 'rgba(0, 245, 176, 0.5)', letterSpacing: '0.15em', marginBottom: 6, fontFamily: 'monospace' }}>⚡ FUTURE TECH & KNOWLEDGE</div>
                   {techMatches.map(t => (
                     <div key={t.id}
                       onClick={() => {
@@ -318,7 +318,7 @@ export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchMo
                       style={{
                         padding: '10px 12px', 
                         background: 'rgba(255,255,255,0.01)', 
-                        border: '1px solid rgba(0, 245, 212, 0.08)',
+                        border: '1px solid rgba(0, 245, 176, 0.08)',
                         display: 'flex', 
                         flexDirection: 'column', 
                         gap: 4, 
@@ -328,7 +328,7 @@ export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchMo
                         transition: 'all 0.2s ease',
                       }}
                       onMouseEnter={e => e.currentTarget.style.borderColor = C.primary}
-                      onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(0, 245, 212, 0.08)'}
+                      onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(0, 245, 176, 0.08)'}
                     >
                       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <span style={{ fontSize: 9.5, color: '#fff', fontWeight: 500 }}>{t.title}</span>
@@ -343,7 +343,7 @@ export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchMo
               {/* People Matches (Futurologists & Architects) */}
               {(futurologistMatches.length > 0 || architectMatches.length > 0) && (
                 <div>
-                  <div style={{ fontSize: 7, color: 'rgba(0,245,212,0.5)', letterSpacing: '0.15em', marginBottom: 6, fontFamily: 'monospace' }}>👤 RESEARCHERS & ARCHITECTS</div>
+                  <div style={{ fontSize: 7, color: 'rgba(0, 245, 176, 0.5)', letterSpacing: '0.15em', marginBottom: 6, fontFamily: 'monospace' }}>👤 RESEARCHERS & ARCHITECTS</div>
                   
                   {/* Futurologists */}
                   {futurologistMatches.map(f => (
@@ -355,7 +355,7 @@ export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchMo
                       style={{
                         padding: '10px 12px', 
                         background: 'rgba(255,255,255,0.01)', 
-                        border: '1px solid rgba(0, 245, 212, 0.08)',
+                        border: '1px solid rgba(0, 245, 176, 0.08)',
                         display: 'flex', 
                         justifyContent: 'space-between', 
                         alignItems: 'center', 
@@ -365,7 +365,7 @@ export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchMo
                         transition: 'all 0.2s ease',
                       }}
                       onMouseEnter={e => e.currentTarget.style.borderColor = C.primary}
-                      onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(0, 245, 212, 0.08)'}
+                      onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(0, 245, 176, 0.08)'}
                     >
                       <div>
                         <div style={{ fontSize: 9.5, color: '#fff', fontWeight: 500 }}>{f.name}</div>
@@ -385,7 +385,7 @@ export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchMo
                       style={{
                         padding: '10px 12px', 
                         background: 'rgba(255, 255, 255, 0.01)', 
-                        border: '1px solid rgba(0, 245, 212, 0.08)',
+                        border: '1px solid rgba(0, 245, 176, 0.08)',
                         display: 'flex', 
                         justifyContent: 'space-between', 
                         alignItems: 'center', 
@@ -395,7 +395,7 @@ export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchMo
                         transition: 'all 0.2s ease',
                       }}
                       onMouseEnter={e => e.currentTarget.style.borderColor = C.primary}
-                      onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(0, 245, 212, 0.08)'}
+                      onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(0, 245, 176, 0.08)'}
                     >
                       <div>
                         <div style={{ fontSize: 9.5, color: '#fff', fontWeight: 500 }}>{arch.name}</div>

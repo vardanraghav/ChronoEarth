@@ -49,7 +49,7 @@ function HomeContent() {
   }, [earthMode, transitioning]);
 
   return (
-    <main className="relative h-screen w-screen overflow-hidden" style={{ background: '#020608' }}>
+    <main className="relative h-screen w-screen overflow-hidden" style={{ background: '#02060A' }}>
 
       {/* ── Layer 0: Star field ─────────────────────────────────────────── */}
       <BackgroundEffects earthMode={earthMode} />
@@ -68,7 +68,7 @@ function HomeContent() {
       <div
         className="fixed inset-0 z-[90] pointer-events-none"
         style={{
-          background: '#020608',
+          background: '#02060A',
           opacity:    transitioning ? 1 : 0,
           transition: `opacity ${transitioning ? '0.3s' : '0.6s'} ease`,
         }}
@@ -106,7 +106,7 @@ function HomeContent() {
           display: 'flex',
           borderRadius: '2px',
           border: `1px solid ${isCyber ? 'rgba(0,229,255,0.25)' : 'rgba(255,255,255,0.10)'}`,
-          background:    isCyber ? 'rgba(0,8,20,0.82)' : 'rgba(2,4,8,0.70)',
+          background:    isCyber ? 'rgba(2, 8, 15, 0.75)' : 'rgba(2,4,8,0.70)',
           backdropFilter: 'blur(24px)',
           overflow: 'hidden',
           transition: 'border-color 0.6s ease, background 0.6s ease',
@@ -130,7 +130,7 @@ function HomeContent() {
                   ? (mode === 'cyber' ? 'rgba(0,229,255,0.12)' : 'rgba(255,255,255,0.08)')
                   : 'transparent',
                 color: isActive
-                  ? (mode === 'cyber' ? '#00E5FF' : 'rgba(255,255,255,0.90)')
+                  ? (mode === 'cyber' ? '#00F5B0' : 'rgba(255,255,255,0.90)')
                   : 'rgba(255,255,255,0.22)',
                 textShadow: isActive && mode === 'cyber'
                   ? '0 0 14px rgba(0,229,255,0.80)'
@@ -221,7 +221,7 @@ function HomeContent() {
 export default function Home() {
   return (
     <Suspense fallback={
-      <div className="h-screen w-screen bg-[#020608] flex items-center justify-center font-mono text-cyan-400 text-xs">
+      <div className="h-screen w-screen bg-[#02060A] flex items-center justify-center font-mono text-[#00F5B0] text-xs">
         CONNECTING TO ORBITAL CHRONO_GRID...
       </div>
     }>

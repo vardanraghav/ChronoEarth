@@ -4,17 +4,17 @@ import Navbar from '@/components/Navbar';
 import BackgroundEffects from '@/components/BackgroundEffects';
 
 const C = {
-  emerald: '#00FF88',
-  cyan:    '#00E5FF',
-  iceBlue: '#00C8FF',
-  white:   '#FFFFFF',
-  bg:      'rgba(0,6,15,0.85)',
-  border:  'rgba(0,229,255,0.15)',
+  emerald: '#00F5B0',
+  cyan: '#00D98F',
+  iceBlue: '#00D98F',
+  white: '#F5F7FA',
+  bg: 'rgba(2, 8, 15, 0.75)',
+  border: 'rgba(0, 245, 176, 0.15)',
 };
 
 export default function AboutPage() {
   const panelStyle: React.CSSProperties = {
-    background: 'rgba(3, 5, 10, 0.55)',
+    background: 'rgba(2, 8, 15, 0.75)',
     backdropFilter: 'blur(24px)',
     border: '1px solid rgba(255, 255, 255, 0.05)',
     borderRadius: '4px',
@@ -26,12 +26,12 @@ export default function AboutPage() {
   const cornerAccent = null;
 
   return (
-    <main className="h-screen w-screen overflow-y-auto bg-[#02050a] text-[#e2e8f0] relative custom-scrollbar">
+    <main className="h-screen w-screen overflow-y-auto bg-[#02060A] text-[#e2e8f0] relative custom-scrollbar">
       {/* Background Twinkling Stars */}
       <BackgroundEffects earthMode="cyber" />
 
       {/* Top Gradient Vignette */}
-      <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-[rgba(0,8,20,0.9)] to-transparent pointer-events-none z-10" />
+      <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-[rgba(2,8,15,0.95)] to-transparent pointer-events-none z-10" />
 
       {/* Navigation Header */}
       <Navbar earthMode="cyber" />
@@ -46,7 +46,7 @@ export default function AboutPage() {
               PROJECT SPECIFICATION BRIEF
             </span>
           </div>
-          <h1 className="text-4xl md:text-5xl font-display font-light text-white tracking-wide">
+          <h1 className="text-4xl md:text-[#FFFFFF]xl font-display font-light text-white tracking-wide">
             ChronoEarth Forecast Matrix
           </h1>
           <p className="text-sm font-serif text-white/60 max-w-2xl leading-relaxed">

@@ -7,12 +7,12 @@ import BackgroundEffects from '@/components/BackgroundEffects';
 import { PREDICTIONS, FUTUROLOGISTS, Comment } from '@/data/predictionsData';
 
 const C = {
-  emerald: '#00FF88',
-  cyan:    '#00E5FF',
-  iceBlue: '#00C8FF',
-  white:   '#FFFFFF',
-  bg:      'rgba(0,6,15,0.85)',
-  border:  'rgba(0,229,255,0.15)',
+  emerald: '#00F5B0',
+  cyan: '#00D98F',
+  iceBlue: '#00D98F',
+  white: '#F5F7FA',
+  bg: 'rgba(2, 8, 15, 0.75)',
+  border: 'rgba(0, 245, 176, 0.15)',
 };
 
 interface Params {
@@ -80,11 +80,11 @@ function CommentNode({ comment, onReply, onVote }: CommentNodeProps) {
   };
 
   return (
-    <div className="border-l border-cyan-950/60 pl-4 mt-4 flex flex-col gap-2 relative">
+    <div className="border-l border-[#00F5B0]/60 pl-4 mt-4 flex flex-col gap-2 relative">
       {/* Visual node line connector dot */}
-      <div className="absolute -left-[3px] top-1.5 w-1.5 h-1.5 rounded-full bg-cyan-950 border border-cyan-500/40" />
+      <div className="absolute -left-[3px] top-1.5 w-1.5 h-1.5 rounded-full bg-[#040B12] border border-[#00F5B0]/40" />
       
-      <div className="flex justify-between items-center text-[9px] font-mono text-cyan-400">
+      <div className="flex justify-between items-center text-[9px] font-mono text-[#00F5B0]">
         <span className="font-semibold">{comment.author}</span>
         <span className="text-slate-500">{new Date(comment.timestamp).toLocaleDateString()}</span>
       </div>
@@ -102,32 +102,32 @@ function CommentNode({ comment, onReply, onVote }: CommentNodeProps) {
         </button>
         <button 
           onClick={() => setReplyOpen(!replyOpen)} 
-          className="text-cyan-400 hover:underline transition-all"
+          className="text-[#00F5B0] hover:underline transition-all"
         >
           {replyOpen ? '[CLOSE]' : '[REPLY]'}
         </button>
       </div>
 
       {replyOpen && (
-        <form onSubmit={submitReply} className="mt-2 flex flex-col gap-2 p-3 bg-cyan-950/10 border border-cyan-950/40 rounded">
+        <form onSubmit={submitReply} className="mt-2 flex flex-col gap-2 p-3 bg-[#00F5B0]/5 border border-[#00F5B0]/40 rounded">
           <input
             type="text"
             placeholder="Enter Identity Alias..."
             value={replyAuthor}
             onChange={e => setReplyAuthor(e.target.value)}
-            className="bg-transparent border-b border-cyan-950 text-xs text-white outline-none focus:border-cyan-500 py-1 font-mono"
+            className="bg-transparent border-b border-[#00F5B0]/15 text-xs text-white outline-none focus:border-[#00F5B0] py-1 font-mono"
             required
           />
           <textarea
             placeholder="Synthesize reply content..."
             value={replyContent}
             onChange={e => setReplyContent(e.target.value)}
-            className="bg-transparent border border-cyan-950 text-xs text-slate-300 p-2 outline-none focus:border-cyan-500 rounded min-h-[60px] font-sans"
+            className="bg-transparent border border-[#00F5B0]/15 text-xs text-slate-300 p-2 outline-none focus:border-[#00F5B0] rounded min-h-[60px] font-sans"
             required
           />
           <div className="flex gap-2 justify-end">
             <button type="button" onClick={() => setReplyOpen(false)} className="text-[9px] font-mono text-slate-500 uppercase px-2 hover:text-white">Cancel</button>
-            <button type="submit" className="text-[9px] font-mono text-[#00E5FF] uppercase font-bold px-2 hover:underline">Transmit</button>
+            <button type="submit" className="text-[9px] font-mono text-[#00F5B0] uppercase font-bold px-2 hover:underline">Transmit</button>
           </div>
         </form>
       )}
@@ -220,9 +220,9 @@ export default function PredictionDetailPage({ params }: { params: Promise<Param
 
   if (!p) {
     return (
-      <main className="h-screen w-screen bg-[#02050a] flex flex-col items-center justify-center text-white gap-4 font-mono">
+      <main className="h-screen w-screen bg-[#02060A] flex flex-col items-center justify-center text-white gap-4 font-mono">
         <div>[ERROR // TIMELINE CORE ARCHIVE LINK CORRUPTED]</div>
-        <Link href="/predictions" className="text-[#00E5FF] hover:underline">[← RETURN TO EXPLORER]</Link>
+        <Link href="/predictions" className="text-[#00F5B0] hover:underline">[← RETURN TO EXPLORER]</Link>
       </main>
     );
   }
@@ -385,17 +385,17 @@ Generated via ChronoEarth forecast engine.`;
   );
 
   return (
-    <main className="h-screen w-screen overflow-y-auto bg-[#02050a] text-[#e2e8f0] relative custom-scrollbar">
+    <main className="h-screen w-screen overflow-y-auto bg-[#02060A] text-[#e2e8f0] relative custom-scrollbar">
       <BackgroundEffects earthMode="cyber" />
       
-      <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-[rgba(0,8,20,0.9)] to-transparent pointer-events-none z-10" />
+      <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-[rgba(2,8,15,0.95)] to-transparent pointer-events-none z-10" />
 
       <Navbar earthMode="cyber" />
 
       <div className="max-w-6xl mx-auto px-6 pt-32 pb-24 relative z-20 flex flex-col gap-8">
         
         {/* Navigation Breadcrumb */}
-        <div className="flex items-center gap-2 font-mono text-[9px] text-cyan-500">
+        <div className="flex items-center gap-2 font-mono text-[9px] text-[#00F5B0]">
           <Link href="/predictions" className="hover:text-white transition-colors">FORECASTS DIRECTORY</Link>
           <span>/</span>
           <span className="text-slate-400">{p.title.toUpperCase()}</span>
@@ -409,26 +409,26 @@ Generated via ChronoEarth forecast engine.`;
             <div style={panelStyle} className="flex flex-col gap-6">
               {cornerAccent}
 
-              <div className="flex flex-col gap-1 border-b border-cyan-950 pb-4">
-                <span className="text-[7px] font-mono text-cyan-500">FORECAST ID: {p.id.toUpperCase()}</span>
+              <div className="flex flex-col gap-1 border-b border-[#00F5B0]/15 pb-4">
+                <span className="text-[7px] font-mono text-[#00F5B0]">FORECAST ID: {p.id.toUpperCase()}</span>
                 <h2 className="text-lg font-bold text-white uppercase tracking-wider">Metrics Matrix</h2>
               </div>
 
               {/* Gauges */}
-              <div className="flex justify-around items-center py-2 border-b border-cyan-950/60">
+              <div className="flex justify-around items-center py-2 border-b border-[#00F5B0]/60">
                 <CircularGauge value={p.confidenceScore} color={C.cyan} label="Confidence Score" />
                 <CircularGauge value={82} color={C.emerald} label="Planetary Stability" />
               </div>
 
               {/* Stats Lists */}
-              <div className="flex flex-col gap-3 font-mono text-xs border-b border-cyan-950/60 pb-4">
+              <div className="flex flex-col gap-3 font-mono text-xs border-b border-[#00F5B0]/60 pb-4">
                 <div className="flex justify-between">
                   <span className="text-slate-500 text-[10px]">GEOLOCATION KEY</span>
-                  <span className="text-[#00E5FF] font-semibold">{p.city.toUpperCase()}</span>
+                  <span className="text-[#00F5B0] font-semibold">{p.city.toUpperCase()}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-500 text-[10px]">TARGET CHRONO-YEAR</span>
-                  <span className="text-[#00FF88] font-bold">{p.year} FORECAST</span>
+                  <span className="text-[#00F5B0] font-bold">{p.year} FORECAST</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-500 text-[10px]">UPVOTES REGISTERED</span>
@@ -440,11 +440,11 @@ Generated via ChronoEarth forecast engine.`;
               <div className="flex flex-col gap-3">
                 <span className="text-[8px] font-mono tracking-wider text-slate-500 uppercase">SIMULATED DATA TRENDS</span>
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="p-2 bg-cyan-950/15 border border-cyan-950/40 rounded">
+                  <div className="p-2 bg-[#00F5B0]/5 border border-[#00F5B0]/40 rounded">
                     <span className="text-[7px] text-slate-400 font-mono block mb-1">STRENGTH VARIATION</span>
                     <MiniSparkline color={C.cyan} />
                   </div>
-                  <div className="p-2 bg-cyan-950/15 border border-cyan-950/40 rounded">
+                  <div className="p-2 bg-[#00F5B0]/5 border border-[#00F5B0]/40 rounded">
                     <span className="text-[7px] text-slate-400 font-mono block mb-1">NETWORK ACCURACY</span>
                     <MiniSparkline color={C.emerald} />
                   </div>
@@ -455,13 +455,13 @@ Generated via ChronoEarth forecast engine.`;
               <div className="flex flex-col gap-2 mt-2">
                 
                 {/* Voting Box */}
-                <div className="flex border border-cyan-950 rounded overflow-hidden">
+                <div className="flex border border-[#00F5B0]/15 rounded overflow-hidden">
                   <button
                     onClick={() => triggerVote('up')}
                     className={`flex-1 py-2 font-mono text-[9px] tracking-widest uppercase transition-all ${
                       hasVoted === 'up'
-                        ? 'bg-emerald-950 text-emerald-400 border-r border-cyan-950'
-                        : 'bg-cyan-950/10 hover:bg-cyan-950/30 text-slate-400 border-r border-cyan-950'
+                        ? 'bg-[#040B12] text-emerald-400 border-r border-[#00F5B0]/15'
+                        : 'bg-[#00F5B0]/5 hover:bg-[#00F5B0]/10 text-slate-400 border-r border-[#00F5B0]/15'
                     }`}
                   >
                     ▲ VOTE PROBABLE
@@ -471,7 +471,7 @@ Generated via ChronoEarth forecast engine.`;
                     className={`flex-1 py-2 font-mono text-[9px] tracking-widest uppercase transition-all ${
                       hasVoted === 'down'
                         ? 'bg-rose-950/65 text-rose-400'
-                        : 'bg-cyan-950/10 hover:bg-cyan-950/30 text-slate-400'
+                        : 'bg-[#00F5B0]/5 hover:bg-[#00F5B0]/10 text-slate-400'
                     }`}
                   >
                     ▼ VOTE IMPROBABLE
@@ -483,8 +483,8 @@ Generated via ChronoEarth forecast engine.`;
                   onClick={toggleSave}
                   className={`w-full py-2 font-mono text-[9px] tracking-widest uppercase border rounded transition-all duration-200 ${
                     isSaved
-                      ? 'bg-cyan-950/30 border-[#00E5FF] text-[#00E5FF] font-bold shadow-[0_0_8px_rgba(0,229,255,0.15)]'
-                      : 'bg-transparent border-cyan-950 text-slate-400 hover:border-cyan-500/35 hover:text-white'
+                      ? 'bg-[#00F5B0]/10 border-[#00F5B0] text-[#00F5B0] font-bold shadow-none'
+                      : 'bg-transparent border-[#00F5B0]/15 text-slate-400 hover:border-[#00F5B0]/35 hover:text-white'
                   }`}
                 >
                   {isSaved ? '🔖 TIMELINE PATH SAVED' : '🔖 SAVE FOR MONITORING'}
@@ -493,7 +493,7 @@ Generated via ChronoEarth forecast engine.`;
                 {/* Share Link */}
                 <button
                   onClick={triggerShare}
-                  className="w-full py-2 font-mono text-[9px] tracking-widest uppercase bg-cyan-950/30 border border-[#00C8FF]/20 hover:border-[#00C8FF]/50 text-cyan-400 rounded transition-all duration-200"
+                  className="w-full py-2 font-mono text-[9px] tracking-widest uppercase bg-[#00F5B0]/10 border border-[#00D98F]/20 hover:border-[#00D98F]/50 text-[#00F5B0] rounded transition-all duration-200"
                 >
                   🔗 {shareText}
                 </button>
@@ -501,7 +501,7 @@ Generated via ChronoEarth forecast engine.`;
                 {/* Download Report */}
                 <button
                   onClick={triggerExport}
-                  className="w-full py-2 font-mono text-[9px] tracking-widest uppercase bg-gradient-to-r from-cyan-400/80 to-[#00FF88]/80 text-[#000] border-none font-bold rounded shadow-[0_0_12px_rgba(0,229,255,0.15)] hover:opacity-90 transition-all duration-200"
+                  className="w-full py-2 font-mono text-[9px] tracking-widest uppercase bg-gradient-to-r from-cyan-400/80 to-[#00F5B0]/80 text-[#000] border-none font-bold rounded shadow-none hover:opacity-90 transition-all duration-200"
                 >
                   ⚡ EXPORT INTEL REPORT (.TXT)
                 </button>
@@ -519,8 +519,8 @@ Generated via ChronoEarth forecast engine.`;
               {cornerAccent}
 
               <div className="flex justify-between items-center text-[10px] font-mono">
-                <span className="px-2 py-0.5 bg-cyan-950 text-[#00E5FF] border border-cyan-500/20 uppercase tracking-wider rounded-sm">{p.category}</span>
-                <span className="text-[#00FF88] uppercase tracking-widest">{p.year} TIMELINE SHARD</span>
+                <span className="px-2 py-0.5 bg-[#040B12] text-[#00F5B0] border border-[#00F5B0]/20 uppercase tracking-wider rounded-sm">{p.category}</span>
+                <span className="text-[#00F5B0] uppercase tracking-widest">{p.year} TIMELINE SHARD</span>
               </div>
 
               <div>
@@ -535,24 +535,24 @@ Generated via ChronoEarth forecast engine.`;
                     <img 
                       src={authorObj.avatar} 
                       alt={p.author} 
-                      className="w-8 h-8 rounded-full border border-cyan-500/30 object-cover shadow-[0_0_8px_rgba(0,229,255,0.15)] group-hover:scale-105 transition-transform"
+                      className="w-8 h-8 rounded-full border border-[#00F5B0]/30 object-cover shadow-none group-hover:scale-105 transition-transform"
                     />
                     <div>
-                      <span className="text-xs font-semibold text-white group-hover:text-[#00E5FF] transition-colors">{p.author}</span>
+                      <span className="text-xs font-semibold text-white group-hover:text-[#00F5B0] transition-colors">{p.author}</span>
                       <span className="text-[8px] font-mono text-slate-500 uppercase block">{authorObj.role}</span>
                     </div>
                   </Link>
                 )}
               </div>
 
-              <div className="border-t border-cyan-950/60 pt-6 text-sm leading-relaxed text-slate-300 font-sans whitespace-pre-wrap">
+              <div className="border-t border-[#00F5B0]/60 pt-6 text-sm leading-relaxed text-slate-300 font-sans whitespace-pre-wrap">
                 {p.description}
               </div>
 
               {/* Tags */}
-              <div className="flex flex-wrap gap-2 pt-2 border-t border-cyan-950/20">
+              <div className="flex flex-wrap gap-2 pt-2 border-t border-[#00F5B0]/20">
                 {p.tags.map(tag => (
-                  <span key={tag} className="px-2 py-1 bg-cyan-950/30 text-[9px] font-mono text-cyan-400 uppercase tracking-wider border border-cyan-500/10 rounded-full">
+                  <span key={tag} className="px-2 py-1 bg-[#00F5B0]/10 text-[9px] font-mono text-[#00F5B0] uppercase tracking-wider border border-[#00F5B0]/10 rounded-full">
                     #{tag.replace(/\s+/g, '')}
                   </span>
                 ))}
@@ -563,9 +563,9 @@ Generated via ChronoEarth forecast engine.`;
             <div style={panelStyle} className="flex flex-col gap-6">
               {cornerAccent}
               
-              <div className="flex justify-between items-center border-b border-cyan-950 pb-4">
+              <div className="flex justify-between items-center border-b border-[#00F5B0]/15 pb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-1.5 h-5 bg-[#00FF88] shadow-[0_0_8px_#00FF88]" />
+                  <div className="w-1.5 h-5 bg-[#00F5B0] shadow-[0_0_8px_#00F5B0]" />
                   <h3 className="text-lg font-light text-white uppercase tracking-wider">Planetary Consensus Thread</h3>
                 </div>
 
@@ -575,8 +575,8 @@ Generated via ChronoEarth forecast engine.`;
                     onClick={() => setSortMode('top')}
                     className={`px-2 py-1 font-mono text-[8px] uppercase border rounded transition-all ${
                       sortMode === 'top'
-                        ? 'bg-cyan-950 text-cyan-400 border-cyan-500/30'
-                        : 'bg-transparent border-cyan-950 text-slate-500 hover:text-slate-300'
+                        ? 'bg-[#040B12] text-[#00F5B0] border-[#00F5B0]/30'
+                        : 'bg-transparent border-[#00F5B0]/15 text-slate-500 hover:text-slate-300'
                     }`}
                   >
                     Top Ratings
@@ -585,8 +585,8 @@ Generated via ChronoEarth forecast engine.`;
                     onClick={() => setSortMode('newest')}
                     className={`px-2 py-1 font-mono text-[8px] uppercase border rounded transition-all ${
                       sortMode === 'newest'
-                        ? 'bg-cyan-950 text-cyan-400 border-cyan-500/30'
-                        : 'bg-transparent border-cyan-950 text-slate-500 hover:text-slate-300'
+                        ? 'bg-[#040B12] text-[#00F5B0] border-[#00F5B0]/30'
+                        : 'bg-transparent border-[#00F5B0]/15 text-slate-500 hover:text-slate-300'
                     }`}
                   >
                     Newest
@@ -595,33 +595,33 @@ Generated via ChronoEarth forecast engine.`;
               </div>
 
               {/* Top-Level Add Comment Form */}
-              <form onSubmit={handleAddTopComment} className="flex flex-col gap-3 p-4 bg-cyan-950/5 border border-cyan-950/50 rounded">
-                <span className="text-[8px] font-mono text-cyan-400/60 uppercase">Add Transmission Feedback</span>
+              <form onSubmit={handleAddTopComment} className="flex flex-col gap-3 p-4 bg-[#00F5B0]/5 border border-[#00F5B0]/50 rounded">
+                <span className="text-[8px] font-mono text-[#7A8694] uppercase">Add Transmission Feedback</span>
                 <input
                   type="text"
                   placeholder="Identity matrix / Username..."
                   value={newAuthor}
                   onChange={e => setNewAuthor(e.target.value)}
-                  className="bg-[#00050c]/60 border border-cyan-950 text-xs text-white px-3 py-2 outline-none focus:border-cyan-500 rounded font-mono"
+                  className="bg-[#00050c]/60 border border-[#00F5B0]/15 text-xs text-white px-3 py-2 outline-none focus:border-[#00F5B0] rounded font-mono"
                   required
                 />
                 <textarea
                   placeholder="Input detailed fourier analysis feedback or prediction critiques..."
                   value={newContent}
                   onChange={e => setNewContent(e.target.value)}
-                  className="bg-[#00050c]/60 border border-cyan-950 text-xs text-slate-300 p-3 outline-none focus:border-cyan-500 rounded min-h-[80px] font-sans"
+                  className="bg-[#00050c]/60 border border-[#00F5B0]/15 text-xs text-slate-300 p-3 outline-none focus:border-[#00F5B0] rounded min-h-[80px] font-sans"
                   required
                 />
                 <button
                   type="submit"
-                  className="self-end px-4 py-2 bg-cyan-950 text-cyan-400 border border-cyan-500/20 hover:bg-[#00E5FF] hover:text-[#000] hover:border-transparent font-mono text-[9px] tracking-widest uppercase rounded transition-all duration-300"
+                  className="self-end px-4 py-2 bg-[#040B12] text-[#00F5B0] border border-[#00F5B0]/20 hover:bg-[#00F5B0] hover:text-[#02060A] hover:border-transparent font-mono text-[9px] tracking-widest uppercase rounded transition-all duration-300"
                 >
                   TRANSMIT PROTOCOL FEEDBACK
                 </button>
               </form>
 
               {/* Comments Thread List */}
-              <div className="flex flex-col gap-6 mt-2 divide-y divide-cyan-950/30">
+              <div className="flex flex-col gap-6 mt-2 divide-y divide-[#00F5B0]/10">
                 {sortedComments.length === 0 ? (
                   <div className="text-center py-8 font-mono text-xs text-slate-500">
                     AWAITING INITIAL TRANSMISSIONS... BE THE FIRST TO COMMENT.

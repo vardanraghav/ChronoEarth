@@ -5,20 +5,74 @@
    DESIGN TOKENS
    ═══════════════════════════════════════════════════════════ */
 :root {
-  --bg:         #020611;
-  --panel:      #051522;
-  --primary:    #00f5d4;
-  --secondary:  #00d9ff;
-  --accent:     #8a7dff;
+  --bg:         #02060A;
+  --panel:      #040B12;
+  --primary:    #00F5B0;
+  --secondary:  #00D98F;
+  --accent:     #FFFFFF;
   
-  --line:       rgba(255, 255, 255, 0.05);
-  --text-hi:    rgba(255, 255, 255, 0.90);
-  --text-mid:   rgba(255, 255, 255, 0.55);
-  --text-lo:    rgba(255, 255, 255, 0.25);
+  --line:       rgba(0, 245, 176, 0.15);
+  --text-hi:    #F5F7FA;
+  --text-mid:   #7A8694;
+  --text-lo:    rgba(122, 134, 148, 0.25);
   
   --font-sans:  'Inter', system-ui, -apple-system, sans-serif;
   --font-serif: 'Inter', system-ui, -apple-system, sans-serif;
   --font-display: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+@theme {
+  --color-primary: #00F5B0;
+  --color-secondary: #00D98F;
+  --color-accent: #FFFFFF;
+  
+  --color-cyan-50: #e6fcf4;
+  --color-cyan-100: #bdf8e3;
+  --color-cyan-200: #8df3cf;
+  --color-cyan-300: #55ebb9;
+  --color-cyan-400: #00D98F;
+  --color-cyan-500: #00F5B0;
+  --color-cyan-600: #00d393;
+  --color-cyan-700: #00b078;
+  --color-cyan-800: #008c5e;
+  --color-cyan-900: #040B12;
+  --color-cyan-950: #02060A;
+  
+  --color-emerald-50: #e6fcf4;
+  --color-emerald-100: #bdf8e3;
+  --color-emerald-200: #8df3cf;
+  --color-emerald-300: #55ebb9;
+  --color-emerald-400: #00D98F;
+  --color-emerald-500: #00F5B0;
+  --color-emerald-600: #00d393;
+  --color-emerald-700: #00b078;
+  --color-emerald-800: #008c5e;
+  --color-emerald-900: #040B12;
+  --color-emerald-950: #02060A;
+
+  --color-blue-50: #e6fcf4;
+  --color-blue-100: #bdf8e3;
+  --color-blue-200: #8df3cf;
+  --color-blue-300: #55ebb9;
+  --color-blue-400: #00D98F;
+  --color-blue-500: #00F5B0;
+  --color-blue-600: #00d393;
+  --color-blue-700: #00b078;
+  --color-blue-800: #008c5e;
+  --color-blue-900: #040B12;
+  --color-blue-950: #02060A;
+
+  --color-purple-50: #e6fcf4;
+  --color-purple-100: #bdf8e3;
+  --color-purple-200: #8df3cf;
+  --color-purple-300: #55ebb9;
+  --color-purple-400: #00D98F;
+  --color-purple-500: #00F5B0;
+  --color-purple-600: #00d393;
+  --color-purple-700: #00b078;
+  --color-purple-800: #008c5e;
+  --color-purple-900: #040B12;
+  --color-purple-950: #02060A;
 }
 
 /* ═══════════════════════════════════════════════════════════

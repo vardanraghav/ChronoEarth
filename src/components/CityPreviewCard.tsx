@@ -12,11 +12,11 @@ interface CityPreviewCardProps {
 }
 
 const C = {
-  bg: 'rgba(5, 21, 34, 0.85)',
-  primary: '#00f5d4',
-  secondary: '#00d9ff',
-  accent: '#8a7dff',
-  white: '#ffffff',
+  bg: 'rgba(2, 8, 15, 0.75)',
+  primary: '#00F5B0',
+  secondary: '#00D98F',
+  accent: '#FFFFFF',
+  white: '#F5F7FA',
 };
 
 export default function CityPreviewCard({ city, onClose }: CityPreviewCardProps) {
@@ -71,7 +71,7 @@ export default function CityPreviewCard({ city, onClose }: CityPreviewCardProps)
         position: 'fixed',
         inset: 0,
         zIndex: 999,
-        background: 'rgba(2, 6, 17, 0.6)',
+        background: 'rgba(2, 8, 15, 0.6)',
         backdropFilter: 'blur(8px)',
         display: 'flex',
         alignItems: 'center',
@@ -84,7 +84,7 @@ export default function CityPreviewCard({ city, onClose }: CityPreviewCardProps)
         onClick={e => e.stopPropagation()}
         style={{
           width: '400px',
-          background: 'rgba(5, 21, 34, 0.85)',
+          background: 'rgba(2, 8, 15, 0.75)',
           backdropFilter: 'blur(32px)',
           border: '1px solid rgba(255, 255, 255, 0.06)',
           boxShadow: '0 20px 50px rgba(0, 0, 0, 0.4)',
@@ -104,7 +104,7 @@ export default function CityPreviewCard({ city, onClose }: CityPreviewCardProps)
             loading="lazy"
             style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(0.8)' }} 
           />
-          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(0deg, rgba(5,21,34,0.95) 0%, transparent 70%)' }} />
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(0deg, rgba(2, 8, 15, 0.95) 0%, transparent 70%)' }} />
           <div style={{ position: 'absolute', bottom: 12, left: 12 }}>
             <h2 className="font-display" style={{ fontSize: '20px', fontWeight: 450, color: C.white, letterSpacing: '0.02em', textTransform: 'uppercase', margin: 0 }}>
               {city.name}
@@ -173,9 +173,9 @@ export default function CityPreviewCard({ city, onClose }: CityPreviewCardProps)
           <button 
             onClick={handleOpenNow}
             style={{
-              flex: 1.4, padding: '8px 0', border: '1px solid #00f5d4',
-              background: '#00f5d4',
-              color: '#020611', fontSize: '8.5px', letterSpacing: '0.12em', fontWeight: 600,
+              flex: 1.4, padding: '8px 0', border: '1px solid #00F5B0',
+              background: '#00F5B0',
+              color: '#02060A', fontSize: '8.5px', letterSpacing: '0.12em', fontWeight: 600,
               cursor: 'pointer', fontFamily: 'Space Grotesk', transition: 'all 0.3s ease',
             }}
             onMouseEnter={e => { e.currentTarget.style.opacity = '0.9'; }}

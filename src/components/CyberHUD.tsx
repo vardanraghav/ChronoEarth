@@ -4,14 +4,14 @@ import { useEffect, useRef, useState } from 'react';
 import { CityData, citiesRawData, generateCityProjections } from '../data/citiesData';
 
 const C = {
-  emerald: '#00f5d4',
-  cyan:    '#00d9ff',
-  iceBlue: '#00d9ff',
-  accent:  '#8a7dff',
-  white:   '#FFFFFF',
-  bg:      'rgba(3, 8, 20, 0.75)',
-  border:  'rgba(0, 229, 255, 0.15)',
-  accentBg:'rgba(138, 125, 255, 0.06)',
+  emerald: '#00F5B0',
+  cyan: '#00D98F',
+  iceBlue: '#00D98F',
+  accent: '#FFFFFF',
+  white: '#F5F7FA',
+  bg: 'rgba(2, 8, 15, 0.75)',
+  border: 'rgba(0, 245, 176, 0.15)',
+  accentBg: 'rgba(0, 245, 176, 0.05)',
 };
 
 interface CyberHUDProps {
@@ -338,7 +338,7 @@ export default function CyberHUD({
                 Decentralized orbit tracks <span className="font-semibold text-white" style={{ color: C.accent }}>{satCount.toLocaleString()}</span> satellites.
               </p>
               <p>
-                Planetary system health remains within <span className="font-medium text-emerald-400" style={{ color: '#00f5d4' }}>optimal margins</span>.
+                Planetary system health remains within <span className="font-medium text-emerald-400" style={{ color: '#00F5B0' }}>optimal margins</span>.
               </p>
             </div>
 
@@ -375,7 +375,7 @@ export default function CyberHUD({
                 <div className="font-sans-editorial text-[9px] text-white/50 flex flex-col gap-1.5">
                   <div className="flex items-center gap-2"><span className="text-white">◉</span> Major Urban Hubs</div>
                   <div className="flex items-center gap-2"><span className="text-emerald-400" style={{ color: C.emerald }}>●</span> Regional Synced Nodes</div>
-                  <div className="flex items-center gap-2"><span className="text-cyan-400" style={{ color: C.cyan }}>◌</span> Climate Telemetry Points</div>
+                  <div className="flex items-center gap-2"><span className="text-[#00F5B0]" style={{ color: C.cyan }}>◌</span> Climate Telemetry Points</div>
                   <div className="flex items-center gap-2"><span className="text-cyan-300" style={{ color: C.cyan }}>—</span> Energy Pathways</div>
                 </div>
               </div>
@@ -522,7 +522,7 @@ export default function CyberHUD({
       {/* FLOATING HOLOGRAPHIC REPORT GENERATOR OVERLAY */}
       {(generatingReport || activeReport) && (
         <div style={{
-          position: 'fixed', inset: 0, background: 'rgba(2, 6, 17, 0.75)',
+          position: 'fixed', inset: 0, background: 'rgba(2, 8, 15, 0.75)',
           backdropFilter: 'blur(12px)', zIndex: 100, display: 'flex',
           alignItems: 'center', justifyContent: 'center', pointerEvents: 'auto'
         }}>

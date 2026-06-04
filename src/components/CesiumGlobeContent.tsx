@@ -18,11 +18,11 @@ declare const Cesium: any;
 
 // ─── STRICT COLOR PALETTE ───────────────────────────────────────────────────
 const C = {
-  emerald:  '#00FF88',
-  cyan:     '#00E5FF',
-  iceBlue:  '#00C8FF',
-  white:    '#FFFFFF',
-  spaceBg:  '#001018',
+  emerald: '#00F5B0',
+  cyan: '#00D98F',
+  iceBlue: '#00D98F',
+  white: '#FFFFFF',
+  spaceBg:  '#02060A',
   black:    '#000000',
 } as const;
 
@@ -46,14 +46,14 @@ const AI_HUBS: { name: string; lat: number; lon: number }[] = [
 ];
 
 const MAJOR_HUBS = [
-  { name: 'New York',   lat:  40.7128, lon:  -74.0060, color: '#00E5FF' },
-  { name: 'London',     lat:  51.5074, lon:   -0.1278, color: '#00C8FF' },
-  { name: 'Dubai',      lat:  25.2048, lon:   55.2708, color: '#00FF88' },
-  { name: 'Mumbai',     lat:  19.0760, lon:   72.8777, color: '#00FF88' },
-  { name: 'Singapore',  lat:   1.3521, lon:  103.8198, color: '#00FF88' },
-  { name: 'Tokyo',      lat:  35.6762, lon:  139.6503, color: '#00E5FF' },
-  { name: 'Seoul',      lat:  37.5665, lon:  126.9780, color: '#00E5FF' },
-  { name: 'Sydney',     lat: -33.8688, lon:  151.2093, color: '#00C8FF' },
+  { name: 'New York',   lat:  40.7128, lon:  -74.0060, color: '#00F5B0' },
+  { name: 'London',     lat:  51.5074, lon:   -0.1278, color: '#00D98F' },
+  { name: 'Dubai',      lat:  25.2048, lon:   55.2708, color: '#00F5B0' },
+  { name: 'Mumbai',     lat:  19.0760, lon:   72.8777, color: '#00F5B0' },
+  { name: 'Singapore',  lat:   1.3521, lon:  103.8198, color: '#00F5B0' },
+  { name: 'Tokyo',      lat:  35.6762, lon:  139.6503, color: '#00F5B0' },
+  { name: 'Seoul',      lat:  37.5665, lon:  126.9780, color: '#00F5B0' },
+  { name: 'Sydney',     lat: -33.8688, lon:  151.2093, color: '#00D98F' },
 ];
 
 // ─── GEODESIC HIGHWAYS ──────────────────────────────────────────────────────
@@ -298,7 +298,7 @@ export default function CesiumGlobeContent({
 
     // Set black/very dark base globe
     if (viewer.scene.globe) {
-      viewer.scene.globe.baseColor = Cesium.Color.fromCssColorString('#000205'); // deep dark space-blue
+      viewer.scene.globe.baseColor = Cesium.Color.fromCssColorString('#02060A'); // deep dark space-blue
       viewer.scene.globe.showGroundAtmosphere = false; // removes pink terminator
       viewer.scene.globe.enableLighting = true;
       viewer.scene.globe.atmosphereLightIntensity = 0.0; // disable default atmosphere lighting to use our shells
@@ -307,10 +307,10 @@ export default function CesiumGlobeContent({
     // Set dark space ambient and directional lights
     viewer.scene.light = new Cesium.DirectionalLight({
       direction: new Cesium.Cartesian3(-0.55, -0.18, -0.82),
-      color: Cesium.Color.fromCssColorString('#001A14'), // Dark teal
+      color: Cesium.Color.fromCssColorString('#001A0E'), // Dark green
       intensity: 1.5, // breathing will animate this
     });
-    viewer.scene.ambientColor = new Cesium.Color(0.0, 0.02, 0.015, 1.0);
+    viewer.scene.ambientColor = new Cesium.Color(0.0, 0.02, 0.0, 1.0);
 
     // Volumetric Atmospheric Limb (4 layers + outer breathing layer)
     const atmosphereShells = [
@@ -423,13 +423,13 @@ export default function CesiumGlobeContent({
       if (viewer.isDestroyed() || !isCyber) return;
       viewer.dataSources.add(ds);
 
-      const neonColor = Cesium.Color.fromCssColorString('#00ffb3').withAlpha(0.85);
+      const neonColor = Cesium.Color.fromCssColorString('#00F5B0').withAlpha(0.85);
 
       ds.entities.values.forEach((e: any) => {
         if (e.polygon) {
           e.polygon.outline = false;
           // Dark space-blue solid continent fill
-          e.polygon.material = Cesium.Color.fromCssColorString('#00060c').withAlpha(0.96);
+          e.polygon.material = Cesium.Color.fromCssColorString('#040B12').withAlpha(0.96);
 
           // Add neon outline as polylines
           const hierarchy = e.polygon.hierarchy ? e.polygon.hierarchy.getValue() : null;
@@ -506,7 +506,7 @@ export default function CesiumGlobeContent({
             landCoords.push({ lat, lon });
             dotCollection.add({
               position: Cesium.Cartesian3.fromDegrees(lon, lat, 2000), // 2km
-              color: Cesium.Color.fromCssColorString('#00ffb3').withAlpha(0.20),
+              color: Cesium.Color.fromCssColorString('#00F5B0').withAlpha(0.20),
               pixelSize: 1.2,
             });
             dotAnimData.push({
@@ -546,7 +546,7 @@ export default function CesiumGlobeContent({
           isLandNode = imgData[idx] > 120;
         }
 
-        const colorStr = isLandNode ? '#00ffb3' : C.iceBlue;
+        const colorStr = isLandNode ? '#00F5B0' : C.iceBlue;
         const baseSize = isLandNode ? (1.5 + Math.random() * 2.0) : (1.0 + Math.random() * 1.0);
         const baseAlpha = isLandNode ? (0.45 + Math.random() * 0.35) : (0.15 + Math.random() * 0.15);
         const period = 1.8 + Math.random() * 3.5;
@@ -636,9 +636,9 @@ export default function CesiumGlobeContent({
       const isSel = activeCity?.name === city.name;
       const pt = mainNodeCollection.add({
         position: Cesium.Cartesian3.fromDegrees(city.lon, city.lat, 5000),
-        color: Cesium.Color.fromCssColorString(C.emerald),
+        color: Cesium.Color.WHITE,
         pixelSize: isSel ? 10 : 7,
-        outlineColor: Cesium.Color.fromCssColorString(C.cyan),
+        outlineColor: Cesium.Color.fromCssColorString(C.emerald),
         outlineWidth: 1.5,
         disableDepthTestDistance: Number.POSITIVE_INFINITY,
       });
@@ -647,7 +647,7 @@ export default function CesiumGlobeContent({
         period: 2.0 + Math.random() * 2.0,
         baseSize: isSel ? 10 : 7,
         tier: 2,
-        color: Cesium.Color.fromCssColorString(C.emerald),
+        color: Cesium.Color.WHITE,
       });
       (pt as any)._animIdx = mainNodeAnimData.length - 1;
       (pt as any)._cityRef = city;
@@ -808,9 +808,7 @@ export default function CesiumGlobeContent({
         polyline: {
           positions: ringPts,
           width: 0.8,
-          material: Cesium.Color.fromCssColorString(shell.color).withAlpha(
-            shIdx === 0 ? 0.08 : shIdx === 1 ? 0.06 : 0.05
-          ),
+          material: Cesium.Color.fromCssColorString(shell.color).withAlpha(0.20),
         },
       });
 
@@ -912,7 +910,7 @@ export default function CesiumGlobeContent({
 
           if (anim.isLand) {
             const alpha = 0.32 * lightFactor * tw * proximityGlow;
-            pt.color = Cesium.Color.fromCssColorString('#00ffb3').withAlpha(Math.min(0.95, alpha));
+            pt.color = Cesium.Color.fromCssColorString('#00F5B0').withAlpha(Math.min(0.95, alpha));
             pt.pixelSize = (1.2 + anim.hubProximity * 1.5) * (0.8 + 0.2 * tw);
           } else {
             const alpha = 0.05 * lightFactor * tw;
@@ -950,9 +948,9 @@ export default function CesiumGlobeContent({
           pt.pixelSize = anim.baseSize * (0.85 + 0.15 * pulse);
           pt.color = Cesium.Color.WHITE.withAlpha(0.95 * pulse);
         } else {
-          // Standard city: emerald pulsing
+          // Standard city: white core pulsing
           pt.pixelSize = anim.baseSize * (0.8 + 0.2 * pulse);
-          pt.color = anim.color.withAlpha(0.85 * pulse);
+          pt.color = Cesium.Color.WHITE.withAlpha(0.85 * pulse);
         }
       }
 
@@ -1083,7 +1081,7 @@ export default function CesiumGlobeContent({
           {isCyber ? (
             <div style={{
               padding: '8px 14px',
-              background: 'rgba(0,8,20,0.95)',
+              background: 'rgba(2, 8, 15, 0.95)',
               backdropFilter: 'blur(24px)',
               border: `1px solid ${C.cyan}55`,
               borderRadius: '2px',
@@ -1110,7 +1108,7 @@ export default function CesiumGlobeContent({
           ) : (
             <div style={{
               padding: '6px 10px',
-              background: 'rgba(3,5,10,0.85)',
+              background: 'rgba(2, 8, 15, 0.85)',
               backdropFilter: 'blur(12px)',
               border: '1px solid rgba(255,255,255,0.08)',
               borderRadius: '2px',
@@ -1128,7 +1126,7 @@ export default function CesiumGlobeContent({
 
       {/* Loading screen */}
       <div className={`absolute inset-0 flex flex-col items-center justify-center z-50 transition-opacity duration-1000 ${isGlobeReady ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
-        style={{ background: '#020608' }}>
+        style={{ background: '#02060A' }}>
         {isCyber ? (
           <>
             <div style={{

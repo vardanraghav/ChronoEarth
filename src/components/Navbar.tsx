@@ -43,8 +43,8 @@ export default function Navbar({
         style={{
           padding:    '22px 40px',
           background: isCyber
-            ? 'linear-gradient(180deg, rgba(0,8,20,0.85) 0%, transparent 100%)'
-            : 'linear-gradient(180deg, rgba(3,5,10,0.70) 0%, transparent 100%)',
+            ? 'linear-gradient(180deg, rgba(2, 8, 15, 0.85) 0%, transparent 100%)'
+            : 'linear-gradient(180deg, rgba(2, 8, 15, 0.70) 0%, transparent 100%)',
           transition: 'background 1.5s ease',
           animation:  'fade-in 1.2s ease forwards',
         }}
@@ -62,11 +62,11 @@ export default function Navbar({
           }}
         >
           <span style={{
-            color:      isCyber ? '#00f5d4' : 'rgba(255,255,255,0.95)',
+            color:      isCyber ? '#00F5B0' : 'rgba(255,255,255,0.95)',
             transition: 'all 0.6s ease',
           }}>CHRONO</span>
-          <span style={{ color: isCyber ? 'rgba(0,245,212,0.3)' : 'rgba(255,255,255,0.2)', fontSize: '6px', letterSpacing: 0 }}>·</span>
-          <span style={{ color: isCyber ? '#00d9ff' : 'rgba(255,255,255,0.6)', transition: 'color 0.6s ease' }}>EARTH</span>
+          <span style={{ color: isCyber ? 'rgba(0, 245, 176, 0.3)' : 'rgba(255,255,255,0.2)', fontSize: '6px', letterSpacing: 0 }}>·</span>
+          <span style={{ color: isCyber ? '#00D98F' : 'rgba(255,255,255,0.6)', transition: 'color 0.6s ease' }}>EARTH</span>
         </Link>
 
         {/* Desktop nav links */}
@@ -85,7 +85,7 @@ export default function Navbar({
                       fontSize: '8px', 
                       letterSpacing: '0.22em',
                       textTransform: 'uppercase',
-                      color: isActive ? '#00f5d4' : 'rgba(255,255,255,0.4)',
+                      color: isActive ? '#00F5B0' : 'rgba(255,255,255,0.4)',
                       transition: 'all 0.3s ease',
                       padding: '4px 0',
                       position: 'relative',
@@ -95,7 +95,7 @@ export default function Navbar({
                     {isActive && (
                       <div style={{
                         position: 'absolute', bottom: -2, left: 0, right: 0, height: 1.5,
-                        background: '#00f5d4', boxShadow: '0 1px 4px rgba(0, 245, 212, 0.4)'
+                        background: '#00F5B0', boxShadow: '0 1px 4px rgba(0, 245, 176, 0.4)'
                       }} />
                     )}
                   </Link>

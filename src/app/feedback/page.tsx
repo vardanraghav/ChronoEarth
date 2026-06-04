@@ -5,13 +5,13 @@ import Navbar from '@/components/Navbar';
 import BackgroundEffects from '@/components/BackgroundEffects';
 
 const C = {
-  bg: '#020611',
-  panel: '#051522',
-  primary: '#00f5d4',
-  secondary: '#00d9ff',
-  accent: '#8a7dff',
-  white: '#ffffff',
-  border: 'rgba(0, 245, 212, 0.15)',
+  bg: '#02060A',
+  panel: '#040B12',
+  primary: '#00F5B0',
+  secondary: '#00D98F',
+  accent: '#FFFFFF',
+  white: '#F5F7FA',
+  border: 'rgba(0, 245, 176, 0.15)',
 };
 
 interface FeedbackItem {
@@ -122,7 +122,7 @@ export default function FeedbackPage() {
   const sortedFeatures = [...PRESEEDED_FEATURES].sort((a, b) => getFeatureVotes(b) - getFeatureVotes(a));
 
   const panelStyle: React.CSSProperties = {
-    background: 'rgba(3, 5, 10, 0.55)',
+    background: 'rgba(2, 8, 15, 0.75)',
     backdropFilter: 'blur(24px)',
     border: '1px solid rgba(255, 255, 255, 0.05)',
     borderRadius: '4px',
@@ -134,9 +134,9 @@ export default function FeedbackPage() {
   const cornerAccent = null;
 
   return (
-    <main className="h-screen w-screen overflow-y-auto bg-[#020611] text-[#e2e8f0] relative custom-scrollbar">
+    <main className="h-screen w-screen overflow-y-auto bg-[#02060A] text-[#e2e8f0] relative custom-scrollbar">
       <BackgroundEffects earthMode="cyber" />
-      <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-[rgba(2,6,17,0.9)] to-transparent pointer-events-none z-10" />
+      <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-[rgba(2, 8, 15, 0.9)] to-transparent pointer-events-none z-10" />
 
       <Navbar earthMode="cyber" />
 
@@ -149,7 +149,7 @@ export default function FeedbackPage() {
               COMMUNITY LEDGER DEPLOYMENT
             </span>
           </div>
-          <h1 className="text-4xl md:text-5xl font-display font-light text-white tracking-wide">
+          <h1 className="text-4xl md:text-[#FFFFFF]xl font-display font-light text-white tracking-wide">
             Feedback & Intelligence Portal
           </h1>
           <p className="text-sm font-serif text-white/60 max-w-2xl leading-relaxed">

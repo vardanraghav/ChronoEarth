@@ -21,11 +21,10 @@ const REALISTIC_COLORS = [
   { color: '#ffb8a0', weight: 2  },
 ];
 
-// Cyber mode: strict palette only (cyan/iceblue/white — NO purple)
 const CYBER_COLORS = [
-  { color: '#00E5FF', weight: 28 }, { color: '#00FF88', weight: 12 },
-  { color: '#00C8FF', weight: 22 }, { color: '#80FFF0', weight: 14 },
-  { color: '#ffffff', weight: 18 }, { color: '#c0f8ff', weight: 6  },
+  { color: '#00F5B0', weight: 35 },
+  { color: '#00D98F', weight: 30 },
+  { color: '#ffffff', weight: 35 },
 ];
 
 function pickColor(palette: { color: string; weight: number }[]): string {
@@ -90,7 +89,7 @@ export default function BackgroundEffects({ earthMode = 'realistic' }: Backgroun
         {/* ── Base background ─────────────────────────────────────────── */}
         <div className="absolute inset-0" style={{
           background: isCyber
-            ? `radial-gradient(ellipse at 50% 50%, #040d1a 0%, #020810 45%, #010408 100%)`
+            ? `radial-gradient(ellipse at 50% 50%, #040B12 0%, #02060A 50%, #000000 100%)`
             : `radial-gradient(ellipse at 50% 50%, #07091a 0%, #050710 45%, #020308 100%)`,
           transition: 'background 1.5s ease',
         }} />
@@ -123,7 +122,7 @@ export default function BackgroundEffects({ earthMode = 'realistic' }: Backgroun
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" style={{
           width: '900px', height: '900px', borderRadius: '50%',
           background: isCyber
-            ? 'radial-gradient(circle, rgba(0,240,255,0.06) 0%, rgba(0,100,180,0.03) 50%, transparent 70%)'
+            ? 'radial-gradient(circle, rgba(0,245,176,0.06) 0%, rgba(0,217,143,0.02) 50%, transparent 70%)'
             : 'radial-gradient(circle, rgba(30,50,120,0.06) 0%, rgba(10,20,60,0.03) 50%, transparent 70%)',
           filter: 'blur(40px)',
           transition: 'background 1.5s ease',
@@ -135,9 +134,9 @@ export default function BackgroundEffects({ earthMode = 'realistic' }: Backgroun
             {/* Hex grid pattern */}
             <div className="absolute inset-0" style={{
               backgroundImage: `
-                linear-gradient(30deg,  rgba(0,240,255,0.025) 12%, transparent 12.5%, transparent 87%, rgba(0,240,255,0.025) 87.5%),
-                linear-gradient(150deg, rgba(0,240,255,0.025) 12%, transparent 12.5%, transparent 87%, rgba(0,240,255,0.025) 87.5%),
-                linear-gradient(60deg,  rgba(0,240,255,0.015) 25%, transparent 25.5%, transparent 75%, rgba(0,240,255,0.015) 75%)
+                linear-gradient(30deg,  rgba(0,245,176,0.02) 12%, transparent 12.5%, transparent 87%, rgba(0,245,176,0.02) 87.5%),
+                linear-gradient(150deg, rgba(0,245,176,0.02) 12%, transparent 12.5%, transparent 87%, rgba(0,245,176,0.02) 87.5%),
+                linear-gradient(60deg,  rgba(0,245,176,0.015) 25%, transparent 25.5%, transparent 75%, rgba(0,245,176,0.015) 75%)
               `,
               backgroundSize: '80px 140px',
               backgroundPosition: '0 0, 0 0, 40px 70px',
@@ -148,21 +147,21 @@ export default function BackgroundEffects({ earthMode = 'realistic' }: Backgroun
             {/* Scanline sweep */}
             <div style={{
               position: 'absolute', left: 0, right: 0, height: '1px',
-              background: 'linear-gradient(90deg, transparent, rgba(0,240,255,0.25), transparent)',
+              background: 'linear-gradient(90deg, transparent, rgba(0,245,176,0.15), transparent)',
               animation: 'scanline-sweep 12s ease-in-out infinite',
             }} />
 
             {/* Aurora glow top */}
             <div style={{
               position: 'absolute', top: 0, left: 0, right: 0, height: '200px',
-              background: 'linear-gradient(180deg, rgba(0,240,255,0.04) 0%, transparent 100%)',
+              background: 'linear-gradient(180deg, rgba(0,245,176,0.03) 0%, transparent 100%)',
               animation: 'cyber-pulse 4s ease-in-out infinite',
             }} />
 
             {/* Aurora glow bottom */}
             <div style={{
               position: 'absolute', bottom: 0, left: 0, right: 0, height: '150px',
-              background: 'linear-gradient(0deg, rgba(0,200,255,0.04) 0%, transparent 100%)',
+              background: 'linear-gradient(0deg, rgba(0,245,176,0.03) 0%, transparent 100%)',
               animation: 'cyber-pulse 6s ease-in-out infinite',
             }} />
           </>

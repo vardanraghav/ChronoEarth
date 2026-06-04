@@ -21,28 +21,28 @@ const categoryThemes: Record<
   { primary: string; secondary: string; glow: string; particleColor: string }
 > = {
   'Ocean Monitoring': {
-    primary: '#00f0ff',
+    primary: '#00F5B0',
     secondary: '#14b8a6',
     glow: 'rgba(0, 240, 255, 0.15)',
-    particleColor: '#00f0ff',
+    particleColor: '#00F5B0',
   },
   'Biodiversity': {
-    primary: '#10b981',
-    secondary: '#34d399',
+    primary: '#00F5B0',
+    secondary: '#00D98F',
     glow: 'rgba(16, 185, 129, 0.15)',
-    particleColor: '#10b981',
+    particleColor: '#00F5B0',
   },
   'Clean Energy': {
-    primary: '#8b5cf6',
+    primary: '#00F5B0',
     secondary: '#f97316',
     glow: 'rgba(139, 92, 246, 0.15)',
-    particleColor: '#8b5cf6',
+    particleColor: '#00F5B0',
   },
   'Satellite Network': {
-    primary: '#3b82f6',
-    secondary: '#00f0ff',
+    primary: '#FFFFFF',
+    secondary: '#00F5B0',
     glow: 'rgba(59, 130, 246, 0.15)',
-    particleColor: '#3b82f6',
+    particleColor: '#FFFFFF',
   },
 };
 

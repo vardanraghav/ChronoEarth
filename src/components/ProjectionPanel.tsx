@@ -162,13 +162,13 @@ export default function ProjectionPanel({ activeYear, activeCategory, activeCity
           fontWeight:   300,
           letterSpacing:'0.45em',
           textTransform:'uppercase',
-          color:        earthMode === 'cyber' ? 'rgba(0,240,255,0.60)' : statusColor,
+          color:        earthMode === 'cyber' ? 'rgba(0, 245, 176, 0.60)' : statusColor,
           marginBottom: '8px',
-          textShadow:   earthMode === 'cyber' ? '0 0 10px rgba(0,240,255,0.40)' : 'none',
+          textShadow:   earthMode === 'cyber' ? '0 0 10px rgba(0, 245, 176, 0.40)' : 'none',
         }}
       >
         {activeCity ? activeCity.name.toUpperCase() : activeCategory.toUpperCase()}
-        <span style={{ margin: '0 8px', color: earthMode === 'cyber' ? 'rgba(0,240,255,0.15)' : 'rgba(255,255,255,0.15)' }}>·</span>
+        <span style={{ margin: '0 8px', color: earthMode === 'cyber' ? 'rgba(0, 245, 176, 0.15)' : 'rgba(255,255,255,0.15)' }}>·</span>
         {content.status}
       </div>
 
@@ -178,7 +178,7 @@ export default function ProjectionPanel({ activeYear, activeCategory, activeCity
           fontSize:      '10px',
           fontWeight:    300,
           lineHeight:    1.7,
-          color:         earthMode === 'cyber' ? 'rgba(0,240,255,0.50)' : 'rgba(255,255,255,0.42)',
+          color:         earthMode === 'cyber' ? 'rgba(0, 245, 176, 0.50)' : 'rgba(255,255,255,0.42)',
           letterSpacing: '0.02em',
           transition:    'color 0.6s ease',
         }}
@@ -202,10 +202,10 @@ export default function ProjectionPanel({ activeYear, activeCategory, activeCity
           style={{
             position: 'absolute', top: 0, left: 0, height: '100%',
             width:    `${content.stability}%`,
-            background: earthMode === 'cyber' ? 'rgba(0,240,255,0.60)' : 'rgba(255,255,255,0.35)',
+            background: earthMode === 'cyber' ? 'rgba(0, 245, 176, 0.60)' : 'rgba(255,255,255,0.35)',
             transition: 'width 1.2s cubic-bezier(0.22, 1, 0.36, 1)',
             borderRadius: '1px',
-            boxShadow: earthMode === 'cyber' ? '0 0 6px rgba(0,240,255,0.70)' : 'none',
+            boxShadow: earthMode === 'cyber' ? '0 0 6px rgba(0, 245, 176, 0.70)' : 'none',
           }}
         />
       </div>
@@ -218,7 +218,7 @@ export default function ProjectionPanel({ activeYear, activeCategory, activeCity
           fontSize:      '7px',
           fontWeight:    300,
           letterSpacing: '0.25em',
-          color:         earthMode === 'cyber' ? 'rgba(0,240,255,0.25)' : 'rgba(255,255,255,0.18)',
+          color:         earthMode === 'cyber' ? 'rgba(0, 245, 176, 0.25)' : 'rgba(255,255,255,0.18)',
           textTransform: 'uppercase',
           transition:    'color 0.6s ease',
         }}
