@@ -440,9 +440,9 @@ export default function CesiumGlobeContent({
       const imgData = ctx.getImageData(0, 0, W, H).data;
       const landCoords: { lat: number; lon: number }[] = [];
 
-      // AGENT 1: Dense dot matrix — sample every 1px for 4x more density
-      for (let y = 0; y < H; y += 1) {
-        for (let x = 0; x < W; x += 1) {
+      // AGENT 1: Dense dot matrix — 2px sampling (safe limit for Cesium PointPrimitiveCollection)
+      for (let y = 0; y < H; y += 2) {
+        for (let x = 0; x < W; x += 2) {
           const idx = (y * W + x) * 4;
           const isLand = imgData[idx] > 120;
           const lon = (x / W) * 360 - 180;
@@ -468,9 +468,9 @@ export default function CesiumGlobeContent({
         }
       }
 
-      // ── AGENT 4: 300+ Uplink Beams ─────────────────────────────────────────
+      // AGENT 4: Uplink Beams (150 max — avoids Cesium geometry limits)
       const shuffled = [...landCoords].sort(() => Math.random() - 0.5);
-      const numBeams = Math.min(320, shuffled.length);
+      const numBeams = Math.min(150, shuffled.length);
       for (let i = 0; i < numBeams; i++) {
         const { lat, lon } = shuffled[i];
         const maxH    = 200000 + Math.random() * 1200000;
@@ -739,25 +739,9 @@ export default function CesiumGlobeContent({
           },
         });
 
-        // Satellite trail
-        if (shIdx < 3) {
-          viewer.entities.add({
-            polyline: {
-              positions: new Cesium.CallbackProperty(() => {
-                const trailPts = [];
-                const steps = 16;
-                for (let ti = 0; ti <= steps; ti++) {
-                  const a = (timeRef.current * speed + phase0 - trail * (ti / steps)) % (Math.PI * 2);
-                  const { x, y, z } = rotateXY(R * Math.cos(a), R * Math.sin(a), 0, tiltX, tiltY);
-                  trailPts.push(new Cesium.Cartesian3(x, y, z));
-                }
-                return trailPts;
-              }, false),
-              width: 1.0,
-              material: Cesium.Color.fromCssColorString(color).withAlpha(0.30),
-            },
-          });
-        }
+        // Satellite trail: use a static arc segment instead of CallbackProperty polyline
+        // (CallbackProperty polylines trigger Cesium's rhumb-line subdivider and crash)
+        // Trail effect is achieved via the point outline + lower opacity color
       }
 
       // GEO communication bursts
