@@ -615,8 +615,8 @@ export default function CesiumGlobeContent({
       const geo2 = new Cesium.EllipsoidGeodesic(sR2, eR2);
       nodePositions.forEach((frac, ni) => {
         const pt2   = geo2.interpolateUsingFraction(frac);
-        const h2    = Math.sin(frac * Math.PI) * hw.alt;
-        const pos3d = Cesium.Cartesian3.fromRadians(pt2.longitude, pt2.latitude, h2);
+        // Place relay nodes ON the surface (2000m) — not floating along the arc
+        const pos3d = Cesium.Cartesian3.fromRadians(pt2.longitude, pt2.latitude, 2000);
         // Unique prime-based pulse period so no two nodes pulse at the same time
         const pulsePhase  = (ni * 1.618 + hw.alt * 0.000003) % (Math.PI * 2);
         const pulsePeriod = 1.4 + ni * 0.85; // 1.4 / 2.25 / 3.1 / 3.95 seconds
@@ -693,7 +693,7 @@ export default function CesiumGlobeContent({
               ), false)
           ),
           outline: false,
-          heightReference: Cesium.HeightReference.NONE,
+          // NOTE: heightReference is NOT valid on ellipse graphics — removed
         },
       });
       // Inner bright core bloom
@@ -713,7 +713,7 @@ export default function CesiumGlobeContent({
           outline: true,
           outlineColor: Cesium.Color.fromCssColorString(hub.color).withAlpha(0.40),
           outlineWidth: 1.0,
-          heightReference: Cesium.HeightReference.NONE,
+          // NOTE: heightReference is NOT valid on ellipse graphics — removed
         },
       });
     });
