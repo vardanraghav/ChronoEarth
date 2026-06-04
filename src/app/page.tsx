@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useCallback, lazy, Suspense } from 'react';
+import { useState, useCallback, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Navbar            from '@/components/Navbar';
 import CesiumGlobe       from '@/components/CesiumGlobe';
 import DataPanel         from '@/components/DataPanel';
@@ -9,22 +10,34 @@ import Timeline          from '@/components/Timeline';
 import BackgroundEffects from '@/components/BackgroundEffects';
 import ProjectionPanel   from '@/components/ProjectionPanel';
 import CyberHUD          from '@/components/CyberHUD';
-import { CityData }      from '@/data/citiesData';
+import CityPreviewCard   from '@/components/CityPreviewCard';
+import { CityData, citiesRawData } from '@/data/citiesData';
 import { EarthMode }     from '@/components/CesiumGlobeContent';
 
 const DEFAULT_OVERLAYS = { climate: false, pollution: false, energy: true, satellite: false, ai: false };
 
-export default function Home() {
+function HomeContent() {
+  const searchParams = useSearchParams();
+  const cityParam = searchParams.get('city');
+
   const [activeYear,     setActiveYear]     = useState(2050);
   const [activeCategory, setActiveCategory] = useState('Ocean Monitoring');
   const [activeCity,     setActiveCity]     = useState<CityData | null>(null);
   const [overlays]                          = useState(DEFAULT_OVERLAYS);
-  const [earthMode,      setEarthMode]      = useState<EarthMode>('realistic');
+  const [earthMode,      setEarthMode]      = useState<EarthMode>('cyber'); // Default to Cyber mode for future theme
   const [transitioning,  setTransitioning]  = useState(false);
-  const [cyberTab,       setCyberTab]       = useState<'telemetry' | 'predictions' | 'kb' | 'reports' | 'saved'>('telemetry');
-  const [searchOpen,     setSearchOpen]     = useState(false);
 
   const isCyber = earthMode === 'cyber';
+
+  // Automatically locate and focus city if present in query params
+  useEffect(() => {
+    if (cityParam) {
+      const cityObj = citiesRawData.find(c => c.name.toLowerCase() === cityParam.toLowerCase());
+      if (cityObj) {
+        setActiveCity(cityObj as any);
+      }
+    }
+  }, [cityParam]);
 
   const switchMode = useCallback((mode: EarthMode) => {
     if (mode === earthMode || transitioning) return;
@@ -82,12 +95,7 @@ export default function Home() {
       />
 
       {/* ── Navbar ────────────────────────────────────────────────────── */}
-      <Navbar 
-        earthMode={earthMode} 
-        activeTab={cyberTab}
-        setActiveTab={setCyberTab}
-        onSearchClick={() => setSearchOpen(true)}
-      />
+      <Navbar earthMode={earthMode} setActiveCity={setActiveCity} />
 
       {/* ── Mode toggle ───────────────────────────────────────────────── */}
       <div
@@ -142,12 +150,16 @@ export default function Home() {
       {/* ── Cyber 2050: Full Command Center HUD ───────────────────────── */}
       {isCyber && !transitioning && (
         <CyberHUD 
-          activeTab={cyberTab}
-          setActiveTab={setCyberTab}
           activeCity={activeCity}
           setActiveCity={setActiveCity}
-          searchOpen={searchOpen}
-          setSearchOpen={setSearchOpen}
+        />
+      )}
+
+      {/* ── City Preview Card Overlay ─────────────────────────────────── */}
+      {isCyber && activeCity && (
+        <CityPreviewCard 
+          city={activeCity}
+          onClose={() => setActiveCity(null)}
         />
       )}
 
@@ -203,5 +215,17 @@ export default function Home() {
       )}
 
     </main>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={
+      <div className="h-screen w-screen bg-[#020608] flex items-center justify-center font-mono text-cyan-400 text-xs">
+        CONNECTING TO ORBITAL CHRONO_GRID...
+      </div>
+    }>
+      <HomeContent />
+    </Suspense>
   );
 }

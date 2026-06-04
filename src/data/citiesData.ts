@@ -227,6 +227,32 @@ export const citiesRawData: Omit<CityData, 'projections'>[] = [
       satellites: "Arctic logistics satellite guides. Northern route tracking systems.",
       biodiversity: "Taiga buffer corridors. Sub-zero urban biomes. Pine micro-parks."
     }
+  },
+  {
+    name: 'Tokyo',
+    country: 'Japan',
+    lat: 35.6762,
+    lon: 139.6503,
+    offsets: { temp: -0.2, tempRise: 0.7, seaLevel: 1.1, population: 0.037, popGrowth: 1.02 },
+    details: {
+      climate: "Heat dome shielding grids. Coastal seawall sensor matrix. Subterranean flood bypass network.",
+      energy: "Thorium reactor loops. Offshore deep-wind corridors. Kinetic path generation.",
+      satellites: "Congestion monitoring beacons. Autonomous flight navigation swarms.",
+      biodiversity: "Vertical garden towers. Tokyo bay re-oxygenation. Urban bird sanctuaries."
+    }
+  },
+  {
+    name: 'Singapore',
+    country: 'Asia',
+    lat: 1.3521,
+    lon: 103.8198,
+    offsets: { temp: 2.8, tempRise: 0.6, seaLevel: 1.6, population: 0.006, popGrowth: 1.05 },
+    details: {
+      climate: "Seawall salinity gates. Rain water super-collection loops. Local cooling vents.",
+      energy: "Tidal kinetic arrays. Floating solar reservoirs. Regional microgrids.",
+      satellites: "Maritime channel radars. Urban expansion mapping constellations.",
+      biodiversity: "Biophilic garden towers. Coral reef electric nurseries. Coastal mangroves."
+    }
   }
 ];
 

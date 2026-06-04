@@ -176,15 +176,27 @@ export default function CesiumGlobeContent({
     const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
     handler.setInputAction((click: any) => {
       const picked = viewer.scene.pick(click.position);
-      if (Cesium.defined(picked) && picked.id?.properties?.cityData) {
-        setActiveCity(picked.id.properties.cityData.getValue());
+      if (Cesium.defined(picked)) {
+        if (picked.id?.properties?.cityData) {
+          setActiveCity(picked.id.properties.cityData.getValue());
+        } else if (picked.primitive?._cityRef) {
+          setActiveCity(picked.primitive._cityRef);
+        }
       }
     }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
     handler.setInputAction((mv: any) => {
       const picked = viewer.scene.pick(mv.endPosition);
-      if (Cesium.defined(picked) && picked.id?.properties?.cityData) {
-        setHoveredCity(picked.id.properties.cityData.getValue());
-      } else { setHoveredCity(null); }
+      if (Cesium.defined(picked)) {
+        if (picked.id?.properties?.cityData) {
+          setHoveredCity(picked.id.properties.cityData.getValue());
+        } else if (picked.primitive?._cityRef) {
+          setHoveredCity(picked.primitive._cityRef);
+        } else {
+          setHoveredCity(null);
+        }
+      } else {
+        setHoveredCity(null);
+      }
     }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
 
     return () => {
@@ -606,8 +618,16 @@ export default function CesiumGlobeContent({
         tier: 3,
         color: Cesium.Color.fromCssColorString(hub.color),
       });
+      const fullCity = citiesRawData.find(c => c.name.toLowerCase() === hub.name.toLowerCase()) || {
+        name: hub.name,
+        country: 'Global',
+        lat: hub.lat,
+        lon: hub.lon,
+        offsets: { population: 10.0, popGrowth: 1.02, tempRise: 1.0 },
+        details: { climate: 'Operational adaptation.', energy: 'Nuclear fusion integration.', satellites: 'Stable bandwidth.' }
+      };
       (pt as any)._animIdx = mainNodeAnimData.length - 1;
-      (pt as any)._cityRef = hub;
+      (pt as any)._cityRef = fullCity;
     });
 
     // Populate normal city nodes (Tier 2)
