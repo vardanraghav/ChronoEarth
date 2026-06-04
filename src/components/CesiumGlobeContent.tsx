@@ -45,6 +45,17 @@ const AI_HUBS: { name: string; lat: number; lon: number }[] = [
   { name: 'Los Angeles',lat:  34.0522, lon: -118.2437 },
 ];
 
+const MAJOR_HUBS = [
+  { name: 'New York',   lat:  40.7128, lon:  -74.0060, color: '#00E5FF' },
+  { name: 'London',     lat:  51.5074, lon:   -0.1278, color: '#00C8FF' },
+  { name: 'Dubai',      lat:  25.2048, lon:   55.2708, color: '#00FF88' },
+  { name: 'Mumbai',     lat:  19.0760, lon:   72.8777, color: '#00FF88' },
+  { name: 'Singapore',  lat:   1.3521, lon:  103.8198, color: '#00FF88' },
+  { name: 'Tokyo',      lat:  35.6762, lon:  139.6503, color: '#00E5FF' },
+  { name: 'Seoul',      lat:  37.5665, lon:  126.9780, color: '#00E5FF' },
+  { name: 'Sydney',     lat: -33.8688, lon:  151.2093, color: '#00C8FF' },
+];
+
 // ─── GEODESIC HIGHWAYS ──────────────────────────────────────────────────────
 const HIGHWAYS = [
   { a: 'New York',   b: 'London',     alt: 500000 },
@@ -71,10 +82,9 @@ const HIGHWAYS = [
 
 // ─── ORBITAL SHELLS ──────────────────────────────────────────────────────────
 const ORBITAL_SHELLS = [
-  { name: 'LEO',   radius: 6378137 + 550000,   tiltX: 0.52, tiltY: 0.24, color: C.cyan,    sats: 30, speed: 0.07,  trailLen: 0.15 },
-  { name: 'MEO',   radius: 6378137 + 3500000,  tiltX: -0.62,tiltY: 0.45, color: C.iceBlue, sats: 20, speed: 0.035, trailLen: 0.08 },
-  { name: 'GEO',   radius: 6378137 + 12000000, tiltX: 0.0,  tiltY: 0.0,  color: C.emerald, sats: 12, speed: 0.012, trailLen: 0.05 },
-  { name: 'DEEP',  radius: 6378137 + 30000000, tiltX: 0.28, tiltY: 0.12, color: C.white,   sats: 5,  speed: 0.005, trailLen: 0.03 },
+  { name: 'LEO',   radius: 6378137 + 550000,   tiltX: 0.42, tiltY: 0.18, color: C.cyan,    sats: 12, speed: 0.045 },
+  { name: 'MEO',   radius: 6378137 + 3200000,  tiltX: -0.52,tiltY: 0.35, color: C.iceBlue, sats: 8,  speed: 0.022 },
+  { name: 'GEO',   radius: 6378137 + 10000000, tiltX: 0.0,  tiltY: 0.0,  color: C.emerald, sats: 5,  speed: 0.008 },
 ];
 
 // Helper: rotate a point by X then Y axis
@@ -274,160 +284,168 @@ export default function CesiumGlobeContent({
     //  CYBER 2050 MODE — PLANETARY AI OPERATING SYSTEM
     // ══════════════════════════════════════════════════════════════════════════
 
-    // ── AGENT 1: Planet Visual System ─────────────────────────────────────────
-    // Globe base
+    // Set black/very dark base globe
     if (viewer.scene.globe) {
-      viewer.scene.globe.baseColor = Cesium.Color.fromCssColorString('#000508');
-      // CRITICAL: showGroundAtmosphere=false eliminates the pink/magenta/orange terminator
-      viewer.scene.globe.showGroundAtmosphere = false;
+      viewer.scene.globe.baseColor = Cesium.Color.fromCssColorString('#000205'); // deep dark space-blue
+      viewer.scene.globe.showGroundAtmosphere = false; // removes pink terminator
       viewer.scene.globe.enableLighting = true;
-      // All shifts at 0 — no hue warping that causes warm/pink tones
-      viewer.scene.globe.atmosphereLightIntensity = 4.0;
-      viewer.scene.globe.atmosphereHueShift = 0.0;
-      viewer.scene.globe.atmosphereSaturationShift = 0.0;
-      viewer.scene.globe.atmosphereBrightnessShift = 0.0;
+      viewer.scene.globe.atmosphereLightIntensity = 0.0; // disable default atmosphere lighting to use our shells
     }
 
-    // Cyber light: very dim so day side stays DARK (not beige/orange)
-    // The globe should look like a dark digital sphere, not a natural planet
+    // Set dark space ambient and directional lights
     viewer.scene.light = new Cesium.DirectionalLight({
       direction: new Cesium.Cartesian3(-0.55, -0.18, -0.82),
-      color: Cesium.Color.fromCssColorString('#001A14'), // Dark teal — no warm tones
-      intensity: 1.5, // Low: keeps day side dark
+      color: Cesium.Color.fromCssColorString('#001A14'), // Dark teal
+      intensity: 1.5, // breathing will animate this
     });
     viewer.scene.ambientColor = new Cesium.Color(0.0, 0.02, 0.015, 1.0);
 
-    // ── Holographic atmospheric rim — multiple shells for volumetric depth
-    // Outermost: wide cyan halo
-    viewer.entities.add({
-      position: Cesium.Cartesian3.ZERO,
-      ellipsoid: {
-        radii: new Cesium.Cartesian3(6378137 + 180000, 6378137 + 180000, 6378137 + 180000),
-        material: Cesium.Color.fromCssColorString(C.cyan).withAlpha(0.018),
-        fill: true, outline: false,
-        shadows: Cesium.ShadowMode.DISABLED,
-      },
+    // Volumetric Atmospheric Limb (4 layers + outer breathing layer)
+    const atmosphereShells = [
+      { r: 6378137 + 180000, color: C.cyan, alpha: 0.015 },
+      { r: 6378137 + 110000, color: C.cyan, alpha: 0.035 },
+      { r: 6378137 + 60000,  color: C.iceBlue, alpha: 0.055 },
+      { r: 6378137 + 25000,  color: C.iceBlue, alpha: 0.085 },
+    ];
+    atmosphereShells.forEach((shell) => {
+      viewer.entities.add({
+        position: Cesium.Cartesian3.ZERO,
+        ellipsoid: {
+          radii: new Cesium.Cartesian3(shell.r, shell.r, shell.r),
+          material: Cesium.Color.fromCssColorString(shell.color).withAlpha(shell.alpha),
+          fill: true,
+          outline: false,
+        },
+      });
     });
-    // Mid: brighter cyan band
-    viewer.entities.add({
-      position: Cesium.Cartesian3.ZERO,
-      ellipsoid: {
-        radii: new Cesium.Cartesian3(6378137 + 90000, 6378137 + 90000, 6378137 + 90000),
-        material: Cesium.Color.fromCssColorString(C.cyan).withAlpha(0.042),
-        fill: true, outline: false,
-        shadows: Cesium.ShadowMode.DISABLED,
-      },
-    });
-    // Inner: emerald data-layer haze right above surface
-    viewer.entities.add({
-      position: Cesium.Cartesian3.ZERO,
-      ellipsoid: {
-        radii: new Cesium.Cartesian3(6378137 + 38000, 6378137 + 38000, 6378137 + 38000),
-        material: Cesium.Color.fromCssColorString(C.emerald).withAlpha(0.028),
-        fill: true, outline: false,
-        shadows: Cesium.ShadowMode.DISABLED,
-      },
-    });
-    // Pulse shell — animated breathing glow
+
+    // Breathing atmosphere shell
     viewer.entities.add({
       position: Cesium.Cartesian3.ZERO,
       ellipsoid: {
         radii: new Cesium.CallbackProperty(() => {
-          const pulse = 1.0 + 0.003 * Math.sin(timeRef.current * 0.8);
-          const r = (6378137 + 65000) * pulse;
+          const pulse = 1.0 + 0.0025 * Math.sin(timeRef.current * 0.6);
+          const r = (6378137 + 45000) * pulse;
           return new Cesium.Cartesian3(r, r, r);
         }, false),
         material: new Cesium.ColorMaterialProperty(
           new Cesium.CallbackProperty(() =>
             Cesium.Color.fromCssColorString(C.cyan).withAlpha(
-              0.020 + 0.012 * Math.sin(timeRef.current * 0.8)
+              0.03 + 0.02 * Math.sin(timeRef.current * 0.6)
             ), false)
         ),
-        fill: true, outline: false,
-        shadows: Cesium.ShadowMode.DISABLED,
+        fill: true,
+        outline: false,
       },
     });
 
-    // Grid wireframe base (GridImageryProvider)
-    viewer.imageryLayers.addImageryProvider(
-      new Cesium.GridImageryProvider({
-        color: Cesium.Color.fromCssColorString(C.emerald).withAlpha(0.10),
-        backgroundColor: Cesium.Color.fromCssColorString('#000508'),
-        cells: 72,
-        glowColor: Cesium.Color.fromCssColorString(C.cyan).withAlpha(0.04),
-        glowWidth: 5,
-      })
-    );
+    // Enable Depth & Bloom & Fog
+    if (viewer.scene.postProcessStages && viewer.scene.postProcessStages.bloom) {
+      viewer.scene.postProcessStages.bloom.enabled = true;
+      viewer.scene.postProcessStages.bloom.uniforms.glowOnly = false;
+      viewer.scene.postProcessStages.bloom.uniforms.contrast = 120.0;
+      viewer.scene.postProcessStages.bloom.uniforms.brightness = -0.25;
+      viewer.scene.postProcessStages.bloom.uniforms.delta = 1.0;
+      viewer.scene.postProcessStages.bloom.uniforms.sigma = 2.0;
+      viewer.scene.postProcessStages.bloom.uniforms.stepSize = 1.0;
+    }
+    if (viewer.scene.fog) {
+      viewer.scene.fog.enabled = true;
+      viewer.scene.fog.density = 2.5e-4;
+      viewer.scene.fog.screenSpaceLinearDiscardDistance = 1.0e8;
+    }
 
-    // Cyber clouds (translucent cyan-tinted)
-    viewer.entities.add({
-      position: Cesium.Cartesian3.ZERO,
-      orientation: new Cesium.CallbackProperty(() =>
-        Cesium.Quaternion.fromAxisAngle(Cesium.Cartesian3.UNIT_Z, timeRef.current * 0.003), false),
-      ellipsoid: {
-        radii: new Cesium.Cartesian3(6378137 + 17000, 6378137 + 17000, 6378137 + 17000),
-        material: new Cesium.ImageMaterialProperty({
-          image: 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_clouds_1024.png',
-          transparent: true,
-          color: Cesium.Color.fromCssColorString(C.cyan).withAlpha(0.15),
-        }),
-      },
-    });
+    // Primitive collections for high-performance rendering
+    const dotCollection        = viewer.scene.primitives.add(new Cesium.PointPrimitiveCollection());
+    const staticNodeCollection = viewer.scene.primitives.add(new Cesium.PointPrimitiveCollection());
+    const mainNodeCollection   = viewer.scene.primitives.add(new Cesium.PointPrimitiveCollection());
+    const beamCollection       = viewer.scene.primitives.add(new Cesium.PolylineCollection());
+    const scanRingCollection   = viewer.scene.primitives.add(new Cesium.PolylineCollection());
 
-    // ── AGENT 8: Performance — Use primitive collections ───────────────────────
-    const dotCollection    = viewer.scene.primitives.add(new Cesium.PointPrimitiveCollection());
-    const cityLightCol     = viewer.scene.primitives.add(new Cesium.PointPrimitiveCollection());
-    const nodeCollection   = viewer.scene.primitives.add(new Cesium.PointPrimitiveCollection());
-    const beamCollection   = viewer.scene.primitives.add(new Cesium.PolylineCollection());
-
-    // Animation data stores
-    type DotAnim = { phase: number; isLand: boolean };
-    type CityLightAnim = { phase: number };
+    // Structs for animation values
+    type DotAnim = {
+      phase: number;
+      isLand: boolean;
+      nx: number;
+      ny: number;
+      nz: number;
+      hubProximity: number;
+    };
+    type StaticNodeAnim = { phase: number; period: number; baseSize: number; color: any; baseAlpha: number };
+    type MainNodeAnim = { phase: number; period: number; baseSize: number; tier: number; color: any };
     type BeamAnim = { lat: number; lon: number; maxH: number; speed: number; phase: number; glow: any; core: any };
-    type NodeAnim = { phase: number; baseSize: number; tier: number; period?: number };
 
-    const dotAnimData: DotAnim[]      = [];
-    const cityLightData: CityLightAnim[] = [];
-    const beamAnimData: BeamAnim[]    = [];
-    const nodeAnimData: NodeAnim[]    = [];
+    const dotAnimData: DotAnim[] = [];
+    const staticNodeAnimData: StaticNodeAnim[] = [];
+    const mainNodeAnimData: MainNodeAnim[] = [];
+    const beamAnimData: BeamAnim[] = [];
 
-    // ── AGENT 1 + 2: Dense Dot-Matrix Surface (land + ocean) ─────────────────
+    // Helper: Draw high-precision neon outlines
+    function addHierarchyLines(v: any, hierarchy: any, color: any, height: number) {
+      if (!hierarchy) return;
+      const positions = hierarchy.positions;
+      if (positions && positions.length > 1) {
+        const adjustedPositions = positions.map((p: any) => {
+          const cart = Cesium.Cartographic.fromCartesian(p);
+          return Cesium.Cartesian3.fromRadians(cart.longitude, cart.latitude, height);
+        });
+        adjustedPositions.push(adjustedPositions[0]); // close the outline loop
+        v.entities.add({
+          polyline: {
+            positions: adjustedPositions,
+            width: 1.0, // clean thin lines
+            material: color,
+          }
+        });
+      }
+      if (hierarchy.holes) {
+        hierarchy.holes.forEach((hole: any) => addHierarchyLines(v, hole, color, height));
+      }
+    }
+
+    // Load land GeoJSON
     Cesium.GeoJsonDataSource.load(
       'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_land.geojson',
-      { stroke: Cesium.Color.fromCssColorString(C.emerald), fill: Cesium.Color.TRANSPARENT, strokeWidth: 3 }
+      { stroke: Cesium.Color.TRANSPARENT, fill: Cesium.Color.TRANSPARENT }
     ).then((ds: any) => {
       if (viewer.isDestroyed() || !isCyber) return;
       viewer.dataSources.add(ds);
 
-      // Style continent outlines — OPAQUE dark fill to unify the cyber earth look
+      const neonColor = Cesium.Color.fromCssColorString('#00ffb3').withAlpha(0.85);
+
       ds.entities.values.forEach((e: any) => {
         if (e.polygon) {
-          e.polygon.outline = true;
-          e.polygon.outlineColor = Cesium.Color.fromCssColorString(C.emerald).withAlpha(0.95);
-          e.polygon.outlineWidth = 3.5;
-          // Solid dark fill: eliminates any natural terrain color showing through
-          e.polygon.material = Cesium.Color.fromCssColorString('#000810').withAlpha(0.96);
+          e.polygon.outline = false;
+          // Dark space-blue solid continent fill
+          e.polygon.material = Cesium.Color.fromCssColorString('#00060c').withAlpha(0.96);
+
+          // Add neon outline as polylines
+          const hierarchy = e.polygon.hierarchy ? e.polygon.hierarchy.getValue() : null;
+          if (hierarchy) {
+            addHierarchyLines(viewer, hierarchy, neonColor, 4000); // float outlines at 4km
+          }
         }
       });
 
-      // Rasterize land mask to canvas (high density)
+      // Rasterize land mask to canvas for procedural mapping
       const W = 720, H = 360;
       const canvas = document.createElement('canvas');
       canvas.width = W; canvas.height = H;
       const ctx = canvas.getContext('2d')!;
       ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
       ctx.fillStyle = '#fff';
+
       ds.entities.values.forEach((e: any) => {
         if (e.polygon) {
           const draw = (hier: any) => {
             const pos = hier.positions;
             if (pos?.length > 0) {
               ctx.beginPath();
-              pos.forEach((p: any, i: number) => {
+              pos.forEach((p: any, idx: number) => {
                 const cg = Cesium.Cartographic.fromCartesian(p);
                 const x = ((Cesium.Math.toDegrees(cg.longitude) + 180) / 360) * W;
                 const y = ((90 - Cesium.Math.toDegrees(cg.latitude)) / 180) * H;
-                i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+                idx === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
               });
               ctx.closePath(); ctx.fill();
             }
@@ -440,7 +458,7 @@ export default function CesiumGlobeContent({
       const imgData = ctx.getImageData(0, 0, W, H).data;
       const landCoords: { lat: number; lon: number }[] = [];
 
-      // AGENT 1: Dense dot matrix — 2px sampling (safe limit for Cesium PointPrimitiveCollection)
+      // Generate dense wrap-around dot-matrix surface
       for (let y = 0; y < H; y += 2) {
         for (let x = 0; x < W; x += 2) {
           const idx = (y * W + x) * 4;
@@ -448,44 +466,113 @@ export default function CesiumGlobeContent({
           const lon = (x / W) * 360 - 180;
           const lat = 90 - (y / H) * 180;
 
+          const radLat = Cesium.Math.toRadians(lat);
+          const radLon = Cesium.Math.toRadians(lon);
+
+          // Precompute normal vectors
+          const cosLat = Math.cos(radLat);
+          const nx = cosLat * Math.cos(radLon);
+          const ny = cosLat * Math.sin(radLon);
+          const nz = Math.sin(radLat);
+
+          // Precompute proximity to the 8 Major Hubs
+          let hubProximity = 0.0;
+          MAJOR_HUBS.forEach((hub) => {
+            const hLat = Cesium.Math.toRadians(hub.lat);
+            const hLon = Cesium.Math.toRadians(hub.lon);
+            const dLon = hLon - radLon;
+            const cosAngle = Math.sin(radLat) * Math.sin(hLat) + Math.cos(radLat) * Math.cos(hLat) * Math.cos(dLon);
+            const angle = Math.acos(Math.max(-1.0, Math.min(1.0, cosAngle)));
+            const decay = 0.35; // ~20 degrees influence
+            if (angle < decay) {
+              const factor = 1.0 - angle / decay;
+              hubProximity += factor * factor; // quad curve for tighter bloom focus
+            }
+          });
+
           if (isLand) {
             landCoords.push({ lat, lon });
-            const pt = dotCollection.add({
-              position: Cesium.Cartesian3.fromDegrees(lon, lat, 200),
-              color: Cesium.Color.fromCssColorString(C.emerald).withAlpha(0.25),
-              pixelSize: 1.5,
-            });
-            dotAnimData.push({ phase: Math.random() * Math.PI * 2, isLand: true });
-            (pt as any)._animIdx = dotAnimData.length - 1;
-          } else if (Math.random() < 0.06) {
             dotCollection.add({
-              position: Cesium.Cartesian3.fromDegrees(lon, lat, 200),
-              color: Cesium.Color.fromCssColorString(C.iceBlue).withAlpha(0.08),
-              pixelSize: 1.0,
+              position: Cesium.Cartesian3.fromDegrees(lon, lat, 2000), // 2km
+              color: Cesium.Color.fromCssColorString('#00ffb3').withAlpha(0.20),
+              pixelSize: 1.2,
             });
-            dotAnimData.push({ phase: Math.random() * Math.PI * 2, isLand: false });
+            dotAnimData.push({
+              phase: Math.random() * Math.PI * 2,
+              isLand: true,
+              nx, ny, nz,
+              hubProximity,
+            });
+          } else if (Math.random() < 0.08) {
+            // Sparse ocean dots
+            dotCollection.add({
+              position: Cesium.Cartesian3.fromDegrees(lon, lat, 2000),
+              color: Cesium.Color.fromCssColorString(C.iceBlue).withAlpha(0.04),
+              pixelSize: 0.8,
+            });
+            dotAnimData.push({
+              phase: Math.random() * Math.PI * 2,
+              isLand: false,
+              nx, ny, nz,
+              hubProximity: 0.0,
+            });
           }
         }
       }
 
-      // AGENT 4: Uplink Beams (150 max — avoids Cesium geometry limits)
+      // Generate 2000 static global nodes
+      const numStaticNodes = 2000;
+      for (let i = 0; i < numStaticNodes; i++) {
+        const lat = (Math.random() - 0.5) * 140; // -70 to 70
+        const lon = (Math.random() - 0.5) * 360;
+
+        const cx = Math.floor(((lon + 180) / 360) * W);
+        const cy = Math.floor(((90 - lat) / 180) * H);
+        let isLandNode = false;
+        if (cx >= 0 && cx < W && cy >= 0 && cy < H) {
+          const idx = (cy * W + cx) * 4;
+          isLandNode = imgData[idx] > 120;
+        }
+
+        const colorStr = isLandNode ? '#00ffb3' : C.iceBlue;
+        const baseSize = isLandNode ? (1.5 + Math.random() * 2.0) : (1.0 + Math.random() * 1.0);
+        const baseAlpha = isLandNode ? (0.45 + Math.random() * 0.35) : (0.15 + Math.random() * 0.15);
+        const period = 1.8 + Math.random() * 3.5;
+        const phase = Math.random() * Math.PI * 2;
+
+        staticNodeCollection.add({
+          position: Cesium.Cartesian3.fromDegrees(lon, lat, 3500), // 3.5km float
+          color: Cesium.Color.fromCssColorString(colorStr).withAlpha(baseAlpha),
+          pixelSize: baseSize,
+        });
+
+        staticNodeAnimData.push({
+          phase,
+          period,
+          baseSize,
+          color: Cesium.Color.fromCssColorString(colorStr),
+          baseAlpha,
+        });
+      }
+
+      // Generate active uplink beams from land coordinates
       const shuffled = [...landCoords].sort(() => Math.random() - 0.5);
-      const numBeams = Math.min(150, shuffled.length);
+      const numBeams = Math.min(120, shuffled.length);
       for (let i = 0; i < numBeams; i++) {
         const { lat, lon } = shuffled[i];
-        const maxH    = 200000 + Math.random() * 1200000;
-        const speed   = 1.5 + Math.random() * 4.5;
-        const phase   = Math.random() * Math.PI * 2;
+        const maxH = 150000 + Math.random() * 1000000;
+        const speed = 1.2 + Math.random() * 3.8;
+        const phase = Math.random() * Math.PI * 2;
 
         const glow = beamCollection.add({
           positions: [
             Cesium.Cartesian3.fromDegrees(lon, lat, 0),
             Cesium.Cartesian3.fromDegrees(lon, lat, maxH),
           ],
-          width: 3.5,
+          width: 3.0,
           material: Cesium.Material.fromType('PolylineGlow', {
-            color: Cesium.Color.fromCssColorString(C.cyan).withAlpha(0.55),
-            glowPower: 0.35,
+            color: Cesium.Color.fromCssColorString(C.cyan).withAlpha(0.50),
+            glowPower: 0.30,
           }),
         });
         const core = beamCollection.add({
@@ -501,273 +588,197 @@ export default function CesiumGlobeContent({
 
     }).catch(() => {});
 
-    // ── AGENT 3: City Lights (dense clusters) ─────────────────────────────────
-    // 25 bright light points per city = massive density on night side
-    citiesRawData.forEach((city) => {
-      for (let k = 0; k < 25; k++) {
-        const dlat = (Math.random() - 0.5) * 2.5;
-        const dlon = (Math.random() - 0.5) * 2.5;
-        const pt = cityLightCol.add({
-          position: Cesium.Cartesian3.fromDegrees(city.lon + dlon, city.lat + dlat, 300),
-          color:    Cesium.Color.WHITE.withAlpha(0.0),
-          pixelSize: 0.0,
-        });
-        cityLightData.push({ phase: Math.random() * Math.PI * 2 });
-        (pt as any)._animIdx = cityLightData.length - 1;
-        (pt as any)._city = city;
-      }
-    });
-
-    // ── AGENT 3: Multi-tier Intelligence Nodes ────────────────────────────────
-    // Large AI hubs (tier 3)
-    AI_HUBS.forEach((hub) => {
+    // Setup 8 Major Hubs (Tier 3) and standard cities (Tier 2)
+    MAJOR_HUBS.forEach((hub) => {
       const isSel = activeCity?.name === hub.name;
-      const pt = nodeCollection.add({
-        position: Cesium.Cartesian3.fromDegrees(hub.lon, hub.lat, 800),
+      const pt = mainNodeCollection.add({
+        position: Cesium.Cartesian3.fromDegrees(hub.lon, hub.lat, 6000),
         color: Cesium.Color.WHITE,
-        pixelSize: isSel ? 16 : 12,
-        outlineColor: Cesium.Color.fromCssColorString(C.emerald),
+        pixelSize: isSel ? 18 : 14,
+        outlineColor: Cesium.Color.fromCssColorString(hub.color),
         outlineWidth: 2.5,
         disableDepthTestDistance: Number.POSITIVE_INFINITY,
       });
-      nodeAnimData.push({
+      mainNodeAnimData.push({
         phase: Math.random() * Math.PI * 2,
-        baseSize: isSel ? 16 : 12,
+        period: 1.4 + Math.random() * 1.2,
+        baseSize: isSel ? 18 : 14,
         tier: 3,
-        // Each hub gets its own prime-based period: 1.7, 2.1, 2.7, 3.1, 2.4, ...
-        period: 1.5 + Math.random() * 1.8,
+        color: Cesium.Color.fromCssColorString(hub.color),
       });
-      (pt as any)._animIdx = nodeAnimData.length - 1;
+      (pt as any)._animIdx = mainNodeAnimData.length - 1;
       (pt as any)._cityRef = hub;
     });
 
-    // Medium city nodes (tier 2)
+    // Populate normal city nodes (Tier 2)
     citiesRawData.forEach((city) => {
-      if (AI_HUBS.some(h => h.name === city.name)) return;
+      if (MAJOR_HUBS.some(h => h.name === city.name)) return;
       const isSel = activeCity?.name === city.name;
-      const pt = nodeCollection.add({
-        position: Cesium.Cartesian3.fromDegrees(city.lon, city.lat, 500),
+      const pt = mainNodeCollection.add({
+        position: Cesium.Cartesian3.fromDegrees(city.lon, city.lat, 5000),
         color: Cesium.Color.fromCssColorString(C.emerald),
         pixelSize: isSel ? 10 : 7,
         outlineColor: Cesium.Color.fromCssColorString(C.cyan),
         outlineWidth: 1.5,
         disableDepthTestDistance: Number.POSITIVE_INFINITY,
       });
-      nodeAnimData.push({
+      mainNodeAnimData.push({
         phase: Math.random() * Math.PI * 2,
+        period: 2.0 + Math.random() * 2.0,
         baseSize: isSel ? 10 : 7,
         tier: 2,
-        period: 1.8 + Math.random() * 2.2,
+        color: Cesium.Color.fromCssColorString(C.emerald),
       });
-      (pt as any)._animIdx = nodeAnimData.length - 1;
+      (pt as any)._animIdx = mainNodeAnimData.length - 1;
       (pt as any)._cityRef = city;
     });
 
-    // Small telemetry stations (tier 1) — randomly distributed
-    const telemetryCoords = [
-      { lat: 60.0, lon: -100 }, { lat: 55.0, lon: 80 }, { lat: -15.0, lon: 30 },
-      { lat: 0.0,  lon: -60 },  { lat: 45.0, lon: 120}, { lat: -30.0, lon: -65 },
-      { lat: 20.0, lon: -20 },  { lat: 35.0, lon: 100}, { lat: -45.0, lon: 170 },
-      { lat: 70.0, lon:  30 },  { lat: 10.0, lon: 50 }, { lat: -20.0, lon: -40 },
-      { lat: 50.0, lon: -80 },  { lat: 25.0, lon: 85 }, { lat: -5.0,  lon: 115 },
-      { lat: 65.0, lon: 160 },  { lat: -55.0, lon: -65 }, { lat: 30.0, lon: 45 },
-      { lat: 15.0, lon: -90 },  { lat: 40.0, lon: 65 },
-    ];
-    telemetryCoords.forEach(({ lat, lon }) => {
-      const pt = nodeCollection.add({
-        position: Cesium.Cartesian3.fromDegrees(lon, lat, 300),
-        color: Cesium.Color.fromCssColorString(C.iceBlue).withAlpha(0.75),
-        pixelSize: 4,
-        outlineColor: Cesium.Color.fromCssColorString(C.cyan).withAlpha(0.40),
-        outlineWidth: 1.0,
-        disableDepthTestDistance: Number.POSITIVE_INFINITY,
-      });
-      nodeAnimData.push({
-        phase: Math.random() * Math.PI * 2,
-        baseSize: 4,
-        tier: 1,
-        period: 2.2 + Math.random() * 3.0,
-      });
-      (pt as any)._animIdx = nodeAnimData.length - 1;
-    });
-
-    // ── AGENT 5: Geodesic Highways + Packet Flow ──────────────────────────────
-    HIGHWAYS.forEach((hw) => {
-      const ca = hubCoord(hw.a);
-      const cb = hubCoord(hw.b);
-      if (!ca || !cb) return;
-
-      // Highway glow line (entities — needed for CallbackProperty)
-      // Highway: ultra-thin, almost invisible — supports network visually, never dominates
-      viewer.entities.add({
-        polyline: {
-          positions: geodesicArc(ca, cb, hw.alt),
-          width: 0.8,
-          material: Cesium.Color.fromCssColorString(C.emerald).withAlpha(0.18),
-        },
-      });
-
-      // Static breathing nodes along the route (replace moving packets)
-      // Each node has its own unique async pulse period — they never pulse together
-      const nodePositions = [0.20, 0.40, 0.60, 0.80]; // fixed fractions along route
-      const sR2 = Cesium.Cartographic.fromDegrees(ca!.lon, ca!.lat);
-      const eR2 = Cesium.Cartographic.fromDegrees(cb!.lon, cb!.lat);
-      const geo2 = new Cesium.EllipsoidGeodesic(sR2, eR2);
-      nodePositions.forEach((frac, ni) => {
-        const pt2   = geo2.interpolateUsingFraction(frac);
-        // Place relay nodes ON the surface (2000m) — not floating along the arc
-        const pos3d = Cesium.Cartesian3.fromRadians(pt2.longitude, pt2.latitude, 2000);
-        // Unique prime-based pulse period so no two nodes pulse at the same time
-        const pulsePhase  = (ni * 1.618 + hw.alt * 0.000003) % (Math.PI * 2);
-        const pulsePeriod = 1.4 + ni * 0.85; // 1.4 / 2.25 / 3.1 / 3.95 seconds
-
-        const routeNode = nodeCollection.add({
-          position: pos3d,
-          color: Cesium.Color.fromCssColorString(C.cyan).withAlpha(0.70),
-          pixelSize: 4,
-          outlineColor: Cesium.Color.fromCssColorString(C.emerald).withAlpha(0.50),
-          outlineWidth: 1.0,
-          disableDepthTestDistance: Number.POSITIVE_INFINITY,
-        });
-        nodeAnimData.push({ phase: pulsePhase, baseSize: 4, tier: 0, period: pulsePeriod });
-        (routeNode as any)._animIdx = nodeAnimData.length - 1;
-      });
-    });
-
-    // ── AGENT 7: Hub Concentric Scan Rings ────────────────────────────────────
-    AI_HUBS.slice(0, 10).forEach((hub) => {
-      // 3 rings per hub, offset phases
-      for (let ring = 0; ring < 3; ring++) {
-        const ringOffset = ring / 3;
+    // 8 Major Hub expansions (expanding rings + bloom)
+    MAJOR_HUBS.forEach((hub, hi) => {
+      // Concentric expanding ring wave pulses
+      for (let rIdx = 0; rIdx < 3; rIdx++) {
+        const ringOffset = rIdx / 3;
         viewer.entities.add({
           position: Cesium.Cartesian3.fromDegrees(hub.lon, hub.lat, 5000),
           ellipse: {
             semiMajorAxis: new Cesium.CallbackProperty(() => {
-              const age = ((timeRef.current * 0.4) + ringOffset) % 1.0;
-              return 300000 * age;
+              const age = ((timeRef.current * 0.45) + ringOffset) % 1.0;
+              return 350000 * age;
             }, false),
             semiMinorAxis: new Cesium.CallbackProperty(() => {
-              const age = ((timeRef.current * 0.4) + ringOffset) % 1.0;
-              return 300000 * age;
+              const age = ((timeRef.current * 0.45) + ringOffset) % 1.0;
+              return 350000 * age;
             }, false),
             material: new Cesium.ColorMaterialProperty(
               new Cesium.CallbackProperty(() => {
-                const age = ((timeRef.current * 0.4) + ringOffset) % 1.0;
-                return Cesium.Color.fromCssColorString(C.emerald).withAlpha(0.30 * (1.0 - age));
+                const age = ((timeRef.current * 0.45) + ringOffset) % 1.0;
+                return Cesium.Color.fromCssColorString(hub.color).withAlpha(0.20 * (1.0 - age));
               }, false)
             ),
             outline: true,
             outlineColor: new Cesium.CallbackProperty(() => {
-              const age = ((timeRef.current * 0.4) + ringOffset) % 1.0;
-              return Cesium.Color.fromCssColorString(C.cyan).withAlpha(0.55 * (1.0 - age));
+              const age = ((timeRef.current * 0.45) + ringOffset) % 1.0;
+              return Cesium.Color.fromCssColorString(hub.color).withAlpha(0.45 * (1.0 - age));
             }, false),
-            outlineWidth: 1.5,
+            outlineWidth: 1.0,
           },
         });
       }
-    });
 
-    // ── MAJOR HUB BLOOM — 6 primary hubs emit strong environmental light ───────
-    const BLOOM_HUBS = [
-      { name: 'Tokyo',    lat: 35.6762, lon: 139.6503, r: 420000, color: C.cyan   },
-      { name: 'Seoul',    lat: 37.5665, lon: 126.9780, r: 380000, color: C.cyan   },
-      { name: 'Singapore',lat:  1.3521, lon: 103.8198, r: 360000, color: C.emerald},
-      { name: 'Dubai',    lat: 25.2048, lon:  55.2708, r: 340000, color: C.emerald},
-      { name: 'London',   lat: 51.5074, lon:  -0.1278, r: 400000, color: C.iceBlue},
-      { name: 'New York', lat: 40.7128, lon: -74.0060, r: 420000, color: C.iceBlue},
-    ];
-    BLOOM_HUBS.forEach((hub, hi) => {
-      const bloomPhase = hi * 1.047; // 60° offset each hub
-      // Outer wide bloom
+      // Volumetric bloom glow layers
+      const bloomPhase = hi * 0.785;
       viewer.entities.add({
-        position: Cesium.Cartesian3.fromDegrees(hub.lon, hub.lat, 12000),
+        position: Cesium.Cartesian3.fromDegrees(hub.lon, hub.lat, 10000),
         ellipse: {
           semiMajorAxis: new Cesium.CallbackProperty(() =>
-            hub.r * (1.0 + 0.06 * Math.sin(timeRef.current * (0.55 + hi * 0.07) + bloomPhase)), false),
+            450000 * (1.0 + 0.08 * Math.sin(timeRef.current * 0.7 + bloomPhase)), false),
           semiMinorAxis: new Cesium.CallbackProperty(() =>
-            hub.r * (1.0 + 0.06 * Math.sin(timeRef.current * (0.55 + hi * 0.07) + bloomPhase)), false),
+            450000 * (1.0 + 0.08 * Math.sin(timeRef.current * 0.7 + bloomPhase)), false),
           material: new Cesium.ColorMaterialProperty(
             new Cesium.CallbackProperty(() =>
               Cesium.Color.fromCssColorString(hub.color).withAlpha(
-                0.055 + 0.035 * Math.sin(timeRef.current * (0.55 + hi * 0.07) + bloomPhase)
+                0.06 + 0.03 * Math.sin(timeRef.current * 0.7 + bloomPhase)
               ), false)
           ),
           outline: false,
-          // NOTE: heightReference is NOT valid on ellipse graphics — removed
         },
       });
-      // Inner bright core bloom
+
       viewer.entities.add({
         position: Cesium.Cartesian3.fromDegrees(hub.lon, hub.lat, 8000),
         ellipse: {
           semiMajorAxis: new Cesium.CallbackProperty(() =>
-            hub.r * 0.30 * (1.0 + 0.10 * Math.sin(timeRef.current * (0.80 + hi * 0.09) + bloomPhase)), false),
+            150000 * (1.0 + 0.12 * Math.sin(timeRef.current * 1.1 + bloomPhase)), false),
           semiMinorAxis: new Cesium.CallbackProperty(() =>
-            hub.r * 0.30 * (1.0 + 0.10 * Math.sin(timeRef.current * (0.80 + hi * 0.09) + bloomPhase)), false),
+            150000 * (1.0 + 0.12 * Math.sin(timeRef.current * 1.1 + bloomPhase)), false),
           material: new Cesium.ColorMaterialProperty(
             new Cesium.CallbackProperty(() =>
               Cesium.Color.fromCssColorString(hub.color).withAlpha(
-                0.12 + 0.07 * Math.sin(timeRef.current * (0.80 + hi * 0.09) + bloomPhase)
+                0.16 + 0.08 * Math.sin(timeRef.current * 1.1 + bloomPhase)
               ), false)
           ),
           outline: true,
-          outlineColor: Cesium.Color.fromCssColorString(hub.color).withAlpha(0.40),
+          outlineColor: Cesium.Color.fromCssColorString(hub.color).withAlpha(0.35),
           outlineWidth: 1.0,
-          // NOTE: heightReference is NOT valid on ellipse graphics — removed
         },
       });
     });
 
-    // ── AGENT 7: Global Radar Sweep (rotating scan arc) ───────────────────────
-    // Rotating scan arc from Beijing and New York hubs
-    const sweepHubs = [
-      { lat: 39.9042, lon: 116.4074 },
-      { lat: 40.7128, lon: -74.0060 },
-      { lat: 1.3521,  lon: 103.8198 },
-    ];
-    sweepHubs.forEach((sh) => {
+    // Thin Geodesic Highways with travelling sub-pulses
+    HIGHWAYS.forEach((hw, hwIdx) => {
+      const ca = hubCoord(hw.a);
+      const cb = hubCoord(hw.b);
+      if (!ca || !cb) return;
+
+      const arcPoints = geodesicArc(ca, cb, hw.alt);
+
+      // Base route line
       viewer.entities.add({
-        position: Cesium.Cartesian3.fromDegrees(sh.lon, sh.lat, 0),
-        ellipse: {
-          semiMajorAxis: new Cesium.CallbackProperty(() => {
-            return 1800000 + 200000 * Math.sin(timeRef.current * 0.7);
-          }, false),
-          semiMinorAxis: new Cesium.CallbackProperty(() => {
-            return 1800000 + 200000 * Math.sin(timeRef.current * 0.7);
-          }, false),
-          material: Cesium.Color.TRANSPARENT,
-          outline: true,
-          outlineColor: new Cesium.CallbackProperty(() => {
-            return Cesium.Color.fromCssColorString(C.cyan).withAlpha(
-              0.08 + 0.05 * Math.sin(timeRef.current * 1.4)
-            );
-          }, false),
-          outlineWidth: 1.0,
+        polyline: {
+          positions: arcPoints,
+          width: 0.6,
+          material: Cesium.Color.fromCssColorString(C.emerald).withAlpha(0.08),
         },
       });
 
-      // Rotating sector wedge
+      // Staggered travelling pulse segment
+      const N = arcPoints.length;
+      const pulsePositions = new Cesium.CallbackProperty(() => {
+        const period = 6.0;
+        const travelTime = 1.4;
+        const offset = hwIdx * 0.45;
+        const cycleTime = (timeRef.current + offset) % period;
+
+        if (cycleTime > travelTime) {
+          return [];
+        }
+
+        const progress = cycleTime / travelTime;
+        const centerIdx = Math.floor(progress * (N - 1));
+        const start = Math.max(0, centerIdx - 2);
+        const end = Math.min(N - 1, centerIdx + 2);
+        return arcPoints.slice(start, end + 1);
+      }, false);
+
       viewer.entities.add({
-        position: Cesium.Cartesian3.fromDegrees(sh.lon, sh.lat, 0),
-        ellipse: {
-          semiMajorAxis: 1600000,
-          semiMinorAxis: 1600000,
-          startAngle: new Cesium.CallbackProperty(() =>
-            Cesium.Math.toRadians((timeRef.current * 25) % 360), false),
-          stopAngle: new Cesium.CallbackProperty(() =>
-            Cesium.Math.toRadians((timeRef.current * 25 + 60) % 360), false),
-          material: Cesium.Color.fromCssColorString(C.emerald).withAlpha(0.04),
-          outline: false,
+        polyline: {
+          positions: pulsePositions,
+          width: 1.2,
+          material: Cesium.Color.fromCssColorString(C.cyan).withAlpha(0.60),
         },
       });
     });
 
-    // ── AGENT 6: Orbital Infrastructure ──────────────────────────────────────
+    // Segmented Rotating Holographic Global Scanning Rings
+    const scanRing1Segments: any[] = [];
+    const scanRing2Segments: any[] = [];
+    for (let i = 0; i < 3; i++) {
+      scanRing1Segments.push(
+        scanRingCollection.add({
+          width: 1.0,
+          material: Cesium.Material.fromType('Color', {
+            color: Cesium.Color.fromCssColorString(C.cyan).withAlpha(0.12)
+          })
+        })
+      );
+    }
+    for (let i = 0; i < 4; i++) {
+      scanRing2Segments.push(
+        scanRingCollection.add({
+          width: 0.8,
+          material: Cesium.Material.fromType('Color', {
+            color: Cesium.Color.fromCssColorString(C.emerald).withAlpha(0.08)
+          })
+        })
+      );
+    }
+
+    // Streamlined Orbital Infrastructure
     ORBITAL_SHELLS.forEach((shell, shIdx) => {
       const R = shell.radius;
       const { tiltX, tiltY } = shell;
 
-      // Orbital ring track
+      // Orbit ring tracks
       const ringPts = Array.from({ length: 181 }, (_, i) => {
         const a = (i / 180) * Math.PI * 2;
         const { x, y, z } = rotateXY(R * Math.cos(a), R * Math.sin(a), 0, tiltX, tiltY);
@@ -776,21 +787,19 @@ export default function CesiumGlobeContent({
       viewer.entities.add({
         polyline: {
           positions: ringPts,
-          width: shIdx === 0 ? 1.5 : 1.0,
+          width: 0.8,
           material: Cesium.Color.fromCssColorString(shell.color).withAlpha(
-            shIdx === 0 ? 0.22 : shIdx === 1 ? 0.16 : 0.12
+            shIdx === 0 ? 0.08 : shIdx === 1 ? 0.06 : 0.05
           ),
         },
       });
 
-      // Satellite swarms
+      // Satellites
       for (let s = 0; s < shell.sats; s++) {
         const phase0 = (s / shell.sats) * Math.PI * 2;
-        const speed  = shell.speed;
-        const color  = shell.color;
-        const trail  = shell.trailLen;
+        const speed = shell.speed;
+        const color = shell.color;
 
-        // Satellite point
         viewer.entities.add({
           position: new Cesium.CallbackProperty(() => {
             const a = (timeRef.current * speed + phase0) % (Math.PI * 2);
@@ -798,45 +807,17 @@ export default function CesiumGlobeContent({
             return new Cesium.Cartesian3(x, y, z);
           }, false),
           point: {
-            pixelSize: shIdx === 0 ? 5 : shIdx === 1 ? 4 : shIdx === 2 ? 5 : 3,
+            pixelSize: 3,
             color: Cesium.Color.WHITE,
             outlineColor: Cesium.Color.fromCssColorString(color),
-            outlineWidth: 1.5,
+            outlineWidth: 1.0,
             disableDepthTestDistance: Number.POSITIVE_INFINITY,
           },
         });
-
-        // Satellite trail: use a static arc segment instead of CallbackProperty polyline
-        // (CallbackProperty polylines trigger Cesium's rhumb-line subdivider and crash)
-        // Trail effect is achieved via the point outline + lower opacity color
-      }
-
-      // GEO communication bursts
-      if (shIdx === 2) {
-        for (let s = 0; s < shell.sats; s++) {
-          const phase0 = (s / shell.sats) * Math.PI * 2;
-          viewer.entities.add({
-            position: new Cesium.CallbackProperty(() => {
-              const a = (timeRef.current * shell.speed + phase0) % (Math.PI * 2);
-              const { x, y, z } = rotateXY(R * Math.cos(a), R * Math.sin(a), 0, tiltX, tiltY);
-              return new Cesium.Cartesian3(x, y, z);
-            }, false),
-            ellipse: {
-              semiMajorAxis: new Cesium.CallbackProperty(() =>
-                280000 + 50000 * Math.sin(timeRef.current * 2.0 + phase0), false),
-              semiMinorAxis: new Cesium.CallbackProperty(() =>
-                280000 + 50000 * Math.sin(timeRef.current * 2.0 + phase0), false),
-              material: Cesium.Color.fromCssColorString(shell.color).withAlpha(0.06),
-              outline: true,
-              outlineColor: Cesium.Color.fromCssColorString(shell.color).withAlpha(0.35),
-              outlineWidth: 1.0,
-            },
-          });
-        }
       }
     });
 
-    // ── AGENT 2 + 4: Unified Animation Loop ───────────────────────────────────
+    // Unified Performance Animation Loop
     let frameCount = 0;
     const animate = () => {
       if (viewer.isDestroyed() || !isCyber) return;
@@ -847,123 +828,124 @@ export default function CesiumGlobeContent({
       const time = timeRef.current;
       frameCount++;
 
-      // Only update dot matrix every 3rd frame (100k+ dots: performance)
+      // Subtle breathing planet effect
+      const pulseBreathe = Math.sin(time * 0.8);
+      if (viewer.scene.light) {
+        viewer.scene.light.intensity = 1.35 + 0.15 * pulseBreathe;
+      }
+
+      // Update rotating scanning rings
+      // Ring 1 (Inner, tilted, rotating clockwise)
+      const R1 = 6378137 + 850000;
+      const tilt1X = 0.35, tilt1Y = 0.15;
+      const rot1 = time * 0.06;
+      const segs1 = 3;
+      const ptsPerSeg = 30;
+      for (let s = 0; s < segs1; s++) {
+        if (!scanRing1Segments[s]) continue;
+        const startAngle = rot1 + (s / segs1) * Math.PI * 2;
+        const endAngle = startAngle + (Math.PI * 2 / segs1) * 0.40;
+        const pts = [];
+        for (let i = 0; i <= ptsPerSeg; i++) {
+          const a = startAngle + (i / ptsPerSeg) * (endAngle - startAngle);
+          const { x, y, z } = rotateXY(R1 * Math.cos(a), R1 * Math.sin(a), 0, tilt1X, tilt1Y);
+          pts.push(new Cesium.Cartesian3(x, y, z));
+        }
+        scanRing1Segments[s].positions = pts;
+      }
+
+      // Ring 2 (Outer, opposite tilt, rotating counter-clockwise)
+      const R2 = 6378137 + 1450000;
+      const tilt2X = -0.25, tilt2Y = 0.35;
+      const rot2 = -time * 0.04;
+      const segs2 = 4;
+      for (let s = 0; s < segs2; s++) {
+        if (!scanRing2Segments[s]) continue;
+        const startAngle = rot2 + (s / segs2) * Math.PI * 2;
+        const endAngle = startAngle + (Math.PI * 2 / segs2) * 0.35;
+        const pts = [];
+        for (let i = 0; i <= ptsPerSeg; i++) {
+          const a = startAngle + (i / ptsPerSeg) * (endAngle - startAngle);
+          const { x, y, z } = rotateXY(R2 * Math.cos(a), R2 * Math.sin(a), 0, tilt2X, tilt2Y);
+          pts.push(new Cesium.Cartesian3(x, y, z));
+        }
+        scanRing2Segments[s].positions = pts;
+      }
+
+      // Update dot-matrix grid (every 3rd frame for performance)
       if (frameCount % 3 === 0) {
         const numDots = dotCollection.length;
         for (let i = 0; i < numDots; i++) {
-          const pt   = dotCollection.get(i);
+          const pt = dotCollection.get(i);
           if (!pt) continue;
           const anim = dotAnimData[i];
           if (!anim) continue;
 
-          const pos    = pt.position;
-          const normal = Cesium.Cartesian3.normalize(pos, new Cesium.Cartesian3());
-          const dot    = Cesium.Cartesian3.dot(normal, lightDir);
-          const tw     = 0.80 + 0.20 * Math.sin(time * 3.0 + anim.phase);
+          // Compute fast dot product using precalculated normals
+          const dot = anim.nx * lightDir.x + anim.ny * lightDir.y + anim.nz * lightDir.z;
+
+          // Day side is dot < 0, Night side is dot > 0.
+          // We fade smoothly towards the night side.
+          const lightFactor = Math.max(0.04, Math.min(1.0, (-dot + 0.45) / 0.90));
+          const tw = 0.75 + 0.25 * Math.sin(time * 2.5 + anim.phase);
+          const proximityGlow = 1.0 + anim.hubProximity * 2.5;
 
           if (anim.isLand) {
-            if (dot < -0.1) {
-              // Day side land — dim cyan digital mesh
-              pt.color    = Cesium.Color.fromCssColorString(C.iceBlue).withAlpha(0.18 * tw);
-              pt.pixelSize = 1.4;
-            } else if (dot > 0.1) {
-              // Night side land — glowing emerald AI nodes
-              pt.color    = Cesium.Color.fromCssColorString(C.emerald).withAlpha(0.82 * tw);
-              pt.pixelSize = 2.8;
-            } else {
-              // Terminator: lerp ONLY between cyan colors — no pink
-              const f = (dot + 0.1) / 0.2;
-              pt.color    = Cesium.Color.lerp(
-                Cesium.Color.fromCssColorString(C.iceBlue).withAlpha(0.18),
-                Cesium.Color.fromCssColorString(C.emerald).withAlpha(0.82),
-                f, new Cesium.Color()
-              );
-              pt.pixelSize = 1.4 + 1.4 * f;
-            }
+            const alpha = 0.32 * lightFactor * tw * proximityGlow;
+            pt.color = Cesium.Color.fromCssColorString('#00ffb3').withAlpha(Math.min(0.95, alpha));
+            pt.pixelSize = (1.2 + anim.hubProximity * 1.5) * (0.8 + 0.2 * tw);
           } else {
-            // Ocean points: always dim iceblue
-            if (dot > 0.05) {
-              pt.color    = Cesium.Color.fromCssColorString(C.iceBlue).withAlpha(0.22 * tw);
-              pt.pixelSize = 1.0;
-            } else {
-              pt.color    = Cesium.Color.fromCssColorString(C.spaceBg).withAlpha(0.05);
-              pt.pixelSize = 0.7;
-            }
+            const alpha = 0.05 * lightFactor * tw;
+            pt.color = Cesium.Color.fromCssColorString(C.iceBlue).withAlpha(Math.min(0.25, alpha));
+            pt.pixelSize = 0.8 * (0.8 + 0.2 * tw);
           }
         }
-      } // end dot frame-skip
-      // City lights: bright on night side
-      const numCL = cityLightCol.length;
-      for (let i = 0; i < numCL; i++) {
-        const pt   = cityLightCol.get(i);
-        if (!pt) continue;
-        const anim = cityLightData[i];
-        if (!anim) continue;
-
-        const pos    = pt.position;
-        const normal = Cesium.Cartesian3.normalize(pos, new Cesium.Cartesian3());
-        const dot    = Cesium.Cartesian3.dot(normal, lightDir);
-        const pulse  = 0.70 + 0.30 * Math.sin(time * 5.0 + anim.phase);
-
-        if (dot > 0.05) {
-          // Night side — brilliant city lights
-          const brightness = (dot > 0.4 ? 1.0 : dot / 0.4) * pulse;
-          pt.color    = Cesium.Color.WHITE.withAlpha(0.88 * brightness);
-          pt.pixelSize = 2.5 + 2.0 * pulse;
-        } else if (dot > -0.05) {
-          // Terminator transition
-          const f = (dot + 0.05) / 0.10;
-          pt.color    = Cesium.Color.WHITE.withAlpha(0.88 * f * pulse);
-          pt.pixelSize = (2.5 + 2.0 * pulse) * f;
-        } else {
-          // Day side — dim/off
-          pt.color    = Cesium.Color.fromCssColorString(C.iceBlue).withAlpha(0.06);
-          pt.pixelSize = 1.0;
-        }
       }
 
-      // Intelligence nodes: independent pulsing
-      const numNodes = nodeCollection.length;
-      for (let i = 0; i < numNodes; i++) {
-        const pt   = nodeCollection.get(i);
+      // Update 2000 static network nodes (pulsing independently)
+      const numStatic = staticNodeCollection.length;
+      for (let i = 0; i < numStatic; i++) {
+        const pt = staticNodeCollection.get(i);
         if (!pt) continue;
-        const anim = nodeAnimData[i];
+        const anim = staticNodeAnimData[i];
         if (!anim) continue;
 
-        // Each node uses its own period for fully asynchronous breathing
-        const freq  = anim.period ? (Math.PI * 2) / anim.period : (1.5 + anim.tier * 0.5);
-        const pulse = 0.70 + 0.30 * Math.sin(time * freq + anim.phase);
+        const pulse = 0.40 + 0.60 * Math.sin(time * ((Math.PI * 2) / anim.period) + anim.phase);
+        pt.pixelSize = anim.baseSize * (0.8 + 0.4 * pulse);
+        pt.color = anim.color.withAlpha(anim.baseAlpha * pulse);
+      }
+
+      // Update main nodes (Tier 3 hubs & Tier 2 cities)
+      const numMain = mainNodeCollection.length;
+      for (let i = 0; i < numMain; i++) {
+        const pt = mainNodeCollection.get(i);
+        if (!pt) continue;
+        const anim = mainNodeAnimData[i];
+        if (!anim) continue;
+
+        const pulse = 0.70 + 0.30 * Math.sin(time * ((Math.PI * 2) / anim.period) + anim.phase);
 
         if (anim.tier === 3) {
-          // Major AI Hub — white core, strong emerald outline
+          // Major Hub: bright core, glowing outline
           pt.pixelSize = anim.baseSize * (0.85 + 0.15 * pulse);
-          pt.color     = Cesium.Color.WHITE.withAlpha(0.92 * pulse);
-        } else if (anim.tier === 2) {
-          // City node — emerald breathing
-          pt.pixelSize = anim.baseSize * pulse;
-          pt.color     = Cesium.Color.fromCssColorString(C.emerald).withAlpha(0.82 * pulse);
-        } else if (anim.tier === 1) {
-          // Telemetry station — slow cyan blink
-          pt.pixelSize = anim.baseSize * pulse;
-          pt.color     = Cesium.Color.fromCssColorString(C.iceBlue).withAlpha(0.62 * pulse);
+          pt.color = Cesium.Color.WHITE.withAlpha(0.95 * pulse);
         } else {
-          // Route relay node (tier 0) — very small, faint cyan pulse
-          // Uses its own unique period so it never pulses with neighbors
-          pt.pixelSize = anim.baseSize * (0.60 + 0.40 * pulse);
-          pt.color     = Cesium.Color.fromCssColorString(C.cyan).withAlpha(0.55 * pulse);
+          // Standard city: emerald pulsing
+          pt.pixelSize = anim.baseSize * (0.8 + 0.2 * pulse);
+          pt.color = anim.color.withAlpha(0.85 * pulse);
         }
       }
 
-      // Uplink beams: flickering height + intensity
+      // Update active uplink beams (height and flicker)
       const numBeams = beamAnimData.length;
       for (let i = 0; i < numBeams; i++) {
         const b = beamAnimData[i];
-        const pos    = Cesium.Cartesian3.fromDegrees(b.lon, b.lat, 0);
+        const pos = Cesium.Cartesian3.fromDegrees(b.lon, b.lat, 0);
         const normal = Cesium.Cartesian3.normalize(pos, new Cesium.Cartesian3());
-        const dot    = Cesium.Cartesian3.dot(normal, lightDir);
+        const dot = Cesium.Cartesian3.dot(normal, lightDir);
         const flicker = Math.sin(time * b.speed * 3.5 + b.phase);
-        const hFactor = 0.75 + 0.25 * flicker;
-        const curH   = b.maxH * hFactor;
+        const hFactor = 0.80 + 0.20 * flicker;
+        const curH = b.maxH * hFactor;
 
         b.glow.positions = [
           Cesium.Cartesian3.fromDegrees(b.lon, b.lat, 0),
@@ -971,16 +953,14 @@ export default function CesiumGlobeContent({
         ];
         b.core.positions = b.glow.positions;
 
-        if (dot > -0.15) {
-          // Night/terminator side — active beams
-          const intensity = Math.min(1.0, (dot + 0.15) / 0.40);
-          const gw = (5.0 + 3.5 * Math.abs(flicker)) * intensity;
+        if (dot > -0.20) {
+          const intensity = Math.min(1.0, (dot + 0.20) / 0.45);
+          const gw = (4.0 + 3.0 * Math.abs(flicker)) * intensity;
           b.glow.width = gw;
-          b.core.width = (1.2 + 0.6 * Math.abs(flicker)) * intensity;
-          b.glow.material.uniforms.color = Cesium.Color.fromCssColorString(C.cyan).withAlpha(0.65 * intensity);
+          b.core.width = (1.2 + 0.5 * Math.abs(flicker)) * intensity;
+          b.glow.material.uniforms.color = Cesium.Color.fromCssColorString(C.cyan).withAlpha(0.60 * intensity);
           b.core.material.uniforms.color = Cesium.Color.WHITE.withAlpha(0.90 * intensity);
         } else {
-          // Day side — inactive
           b.glow.width = 0; b.core.width = 0;
           b.glow.material.uniforms.color = Cesium.Color.TRANSPARENT;
           b.core.material.uniforms.color = Cesium.Color.TRANSPARENT;
