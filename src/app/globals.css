@@ -1,20 +1,22 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600&family=Playfair+Display:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Space+Grotesk:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Space+Grotesk:wght@300;400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
+@source "../**/*.{ts,tsx,js,jsx}";
+
 
 /* ═══════════════════════════════════════════════════════════
    DESIGN TOKENS
    ═══════════════════════════════════════════════════════════ */
 :root {
   --bg:         #02060A;
-  --panel:      #040B12;
+  --panel:      #06111D; /* slightly brighter space-blue panel */
   --primary:    #00F5B0;
   --secondary:  #00D98F;
   --accent:     #FFFFFF;
   
-  --line:       rgba(0, 245, 176, 0.15);
-  --text-hi:    #F5F7FA;
-  --text-mid:   #7A8694;
-  --text-lo:    rgba(122, 134, 148, 0.25);
+  --line:       rgba(0, 245, 176, 0.22); /* brighter border lines */
+  --text-hi:    #F5F5F5;
+  --text-mid:   #A8B3BC; /* slightly brighter text for contrast */
+  --text-lo:    rgba(122, 134, 148, 0.35);
   
   --font-sans:  'Inter', system-ui, -apple-system, sans-serif;
   --font-serif: 'Inter', system-ui, -apple-system, sans-serif;
@@ -78,21 +80,60 @@
 /* ═══════════════════════════════════════════════════════════
    BASE RESET
    ═══════════════════════════════════════════════════════════ */
-*, *::before, *::after {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+@layer base {
+  *, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    background: var(--bg);
+    color: #E2E8F0;
+    font-family: "Inter", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body, html, button, input, textarea, select {
+    font-family: "Inter", sans-serif;
+  }
+
+  h1 {
+    font-family: "Inter", sans-serif;
+    font-size: clamp(3.0rem, 5.3vw, 4.0rem); /* +10% */
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    color: #F5F5F5;
+    text-shadow: 0 0 15px rgba(245, 245, 245, 0.15);
+  }
+
+  h2 {
+    font-family: "Inter", sans-serif;
+    font-size: 1.9rem; /* +10% */
+    font-weight: 700;
+    color: #F5F5F5;
+  }
+
+  h3 {
+    font-family: "Inter", sans-serif;
+    font-size: 1.485rem; /* +10% */
+    font-weight: 700;
+    color: #F5F5F5;
+  }
+
+  p, li {
+    font-family: "Inter", sans-serif;
+    font-size: 1.2rem; /* +9% */
+    font-weight: 500;
+    line-height: 1.8;
+    color: #CBD5E1;
+  }
 }
 
-html, body {
-  height: 100%;
-  overflow: hidden;
-  background: var(--bg);
-  color: var(--text-hi);
-  font-family: var(--font-sans);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
 
 /* ═══════════════════════════════════════════════════════════
    KEYFRAME ANIMATIONS
@@ -193,8 +234,8 @@ html, body {
    (preserve full-screen globe rendering)
    ═══════════════════════════════════════════════════════════ */
 .cesium-viewer {
-  width: 100vw !important;
-  height: 100vh !important;
+  width: 100% !important;
+  height: 100% !important;
   position: absolute !important;
   top: 0 !important;
   left: 0 !important;
@@ -215,7 +256,7 @@ html, body {
    PREMIUM 2050.EARTH CARD TIERS & CONTAINERS
    ═══════════════════════════════════════════════════════════ */
 .content-container {
-  max-width: 1280px !important;
+  max-width: 1100px !important;
   margin-left: auto !important;
   margin-right: auto !important;
   width: 100% !important;
@@ -223,25 +264,79 @@ html, body {
   padding-right: 24px;
 }
 
-.editorial-title {
-  font-size: clamp(1.8rem, 3.5vw, 3.2rem) !important;
-  font-weight: 300 !important;
-  letter-spacing: -0.03em !important;
-  line-height: 1.05 !important;
-  text-transform: uppercase;
+.reading-container {
+  max-width: 900px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  width: 100% !important;
+  padding-left: 24px;
+  padding-right: 24px;
 }
 
-.editorial-subtitle {
-  max-width: 800px !important;
-  opacity: 0.7 !important;
-  line-height: 1.7 !important;
-  font-size: 0.95rem !important;
+.hero-title {
+  font-size: clamp(3.17rem, 6.2vw, 5.28rem) !important; /* +10% */
+  font-weight: 900 !important;
+  letter-spacing: -0.04em !important;
+  line-height: 1.05 !important;
+  color: #F5F5F5 !important;
+  text-shadow: 0 0 20px rgba(245, 245, 245, 0.2) !important;
+}
+
+.page-title, .editorial-title {
+  font-size: clamp(2.97rem, 5.28vw, 3.96rem) !important; /* +10% */
+  font-weight: 800 !important;
+  letter-spacing: -0.03em !important;
+  line-height: 1.1 !important;
+  text-shadow: 0 0 15px rgba(245, 245, 245, 0.15) !important;
+  margin-bottom: 24px !important;
+  text-transform: none !important;
+  color: #F5F5F5 !important;
+}
+
+.section-title {
+  font-size: 1.98rem !important; /* +10% */
+  font-weight: 700 !important;
+  margin-bottom: 12px !important;
+  text-shadow: none !important;
+  letter-spacing: normal !important;
+  color: #F5F5F5 !important;
+}
+
+.card-title {
+  font-size: 1.485rem !important; /* +10% */
+  font-weight: 700 !important;
+  text-shadow: none !important;
+  letter-spacing: normal !important;
+  color: #F5F5F5 !important;
+}
+
+.metadata-text {
+  font-size: 1.1rem !important; /* +5% */
+  font-weight: 500 !important;
+  color: #A8B3BC !important;
+  text-shadow: none !important;
+  letter-spacing: normal !important;
+}
+
+.body-text, .editorial-subtitle {
+  font-size: 1.2rem !important; /* +9% */
+  font-weight: 500 !important;
+  line-height: 1.8 !important;
+  color: #E2E8F0 !important;
+  letter-spacing: normal !important;
+}
+
+.nav-link {
+  font-size: 15px !important; /* +8% */
+  font-weight: 400 !important;
+  letter-spacing: normal !important;
+  text-transform: none !important;
 }
 
 .card-tier-1 {
   background: rgba(4, 11, 18, 0.85);
-  border: 1px solid rgba(0, 245, 176, 0.25);
-  box-shadow: 0 4px 30px rgba(0, 245, 176, 0.02);
+  border: 1px solid rgba(0, 245, 176, 0.15);
+  box-shadow: 0 4px 30px rgba(0, 245, 176, 0.01);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   padding: 32px !important;
@@ -251,13 +346,13 @@ html, body {
 }
 .card-tier-1:hover {
   transform: translateY(-4px);
-  border-color: rgba(0, 245, 176, 0.50);
-  box-shadow: 0 10px 40px rgba(0, 245, 176, 0.08);
+  border-color: rgba(0, 245, 176, 0.30);
+  box-shadow: 0 10px 40px rgba(0, 245, 176, 0.04);
 }
 
 .card-tier-2 {
   background: rgba(4, 11, 18, 0.70);
-  border: 1px solid rgba(0, 245, 176, 0.12);
+  border: 1px solid rgba(0, 245, 176, 0.08);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
@@ -268,13 +363,13 @@ html, body {
 }
 .card-tier-2:hover {
   transform: translateY(-4px);
-  border-color: rgba(0, 245, 176, 0.35);
-  box-shadow: 0 8px 30px rgba(0, 245, 176, 0.05);
+  border-color: rgba(0, 245, 176, 0.18);
+  box-shadow: 0 8px 30px rgba(0, 245, 176, 0.03);
 }
 
 .card-tier-3 {
   background: rgba(2, 8, 15, 0.40);
-  border: 1px solid rgba(0, 245, 176, 0.05);
+  border: 1px solid rgba(0, 245, 176, 0.03);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   padding: 16px !important;
@@ -283,5 +378,110 @@ html, body {
   max-width: 100%;
 }
 .card-tier-3:hover {
-  border-color: rgba(0, 245, 176, 0.20);
+  border-color: rgba(0, 245, 176, 0.10);
 }
+
+/* Hide Next.js Development Portal (Dev indicators) */
+nextjs-portal {
+  display: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PREMIUM REDESIGN ADDITIONS
+   ═══════════════════════════════════════════════════════════ */
+
+/* Glassmorphism panel with ultra-thin glowing border */
+.premium-glass {
+  background: rgba(7, 18, 30, 0.88) !important; /* slightly brighter for panel visibility */
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+  border: 1px solid rgba(0, 245, 176, 0.22) !important; /* +15% border opacity */
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.65), inset 0 0 0 1px rgba(255, 255, 255, 0.03) !important;
+}
+
+/* Text glow */
+.glow-primary {
+  text-shadow: 0 0 12px rgba(0, 245, 176, 0.65), 0 0 4px rgba(0, 245, 176, 0.35) !important; /* +15% glow strength */
+}
+
+/* Border & box shadow glow */
+.glow-border {
+  border-color: #00F5B0 !important;
+  box-shadow: 0 0 18px rgba(0, 245, 176, 0.32), inset 0 0 18px rgba(0, 245, 176, 0.08) !important; /* +15% glow strength */
+}
+
+/* Timeline dot pulsing effect */
+.timeline-dot-pulse {
+  position: relative;
+}
+.timeline-dot-pulse::after {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: -6px;
+  right: -6px;
+  bottom: -6px;
+  border: 1px solid #00F5B0;
+  border-radius: 50%;
+  animation: pulse-ring 2s cubic-bezier(0.215, 0.610, 0.355, 1) infinite;
+  pointer-events: none;
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.9); opacity: 1; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+
+/* Custom scrollbars */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+  display: block;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(2, 6, 10, 0.3);
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0, 245, 176, 0.2);
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 245, 176, 0.4);
+}
+
+/* scaled FutureChat text classes */
+.chat-username {
+  font-size: 13.5px !important; /* +8% */
+}
+.chat-message-body {
+  font-size: 13px !important; /* +8% */
+  line-height: 1.75 !important;
+}
+.chat-timestamp {
+  font-size: 10px !important;
+}
+.chat-role {
+  font-size: 9px !important;
+}
+
+/* Global Typography Adjustments (+8% / +10% / +5% Scale) */
+nav a, nav button {
+  font-size: 13px !important; /* Navigation labels +8% */
+}
+.whats-hot-panel-card h4 {
+  font-size: 14.5px !important; /* Cards heading +8% */
+}
+.whats-hot-panel-card p {
+  font-size: 13px !important; /* Cards text +8% */
+}
+.whats-hot-panel-card span {
+  font-size: 10.5px !important; /* Metadata +5% */
+}
+.card-tier-1 p, .card-tier-2 p, .card-tier-3 p {
+  font-size: 13px !important; /* Cards text +8% */
+}
+.card-tier-1 span, .card-tier-2 span, .card-tier-3 span {
+  font-size: 10.5px !important; /* Metadata +5% */
+}
+
+

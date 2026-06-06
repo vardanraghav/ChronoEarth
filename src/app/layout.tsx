@@ -44,6 +44,14 @@ export default function RootLayout({
     >
       <head>
         <link rel="stylesheet" href="/cesium/Widgets/widgets.css" />
+        <style>{`
+          nextjs-portal {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+          }
+        `}</style>
       </head>
       <body className="h-full overflow-hidden bg-[#060918] text-[#e8ecf4]">
         <Script src="/cesium/Cesium.js" strategy="beforeInteractive" />

@@ -425,7 +425,7 @@ export default function CyberHUD({
               <div className="flex flex-col gap-2 mt-auto">
                 <button
                   onClick={() => toggleBookmarkCity(activeCity.name)}
-                  className={`w-full py-1.5 text-[8.5px] tracking-widest border transition-all duration-300 font-sans-editorial ${
+                  className={`w-full py-1.5 text-[12px] tracking-normal border transition-all duration-300 font-sans-editorial ${
                     bookmarkedCities.includes(activeCity.name)
                       ? 'bg-white/10 border-white/20 text-white'
                       : 'bg-transparent border-white/10 hover:border-white hover:bg-white hover:text-black text-white'
@@ -436,7 +436,7 @@ export default function CyberHUD({
 
                 <button
                   onClick={() => startReportGeneration(activeCity.name, 2050)}
-                  className="w-full py-1.5 text-[8.5px] tracking-widest border border-white/10 hover:border-white hover:bg-white hover:text-black bg-transparent text-white transition-all duration-300 font-sans-editorial"
+                  className="w-full py-1.5 text-[12px] tracking-normal border border-white/10 hover:border-white hover:bg-white hover:text-black bg-transparent text-white transition-all duration-300 font-sans-editorial"
                 >
                   Generate forecast report
                 </button>
@@ -531,7 +531,7 @@ export default function CyberHUD({
           <div style={{ ...panelStyle, width: '560px', height: '460px', display: 'flex', flexDirection: 'column', gap: 16 }}>
             {cornerAccent}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: 10 }}>
-              <span className="font-sans-editorial text-[10px] text-white/50 tracking-[0.2em] font-light">
+              <span className="font-sans-editorial text-[10px] text-white/50 tracking-normal font-light">
                 ChronoEarth futures commission // Matrix engine
               </span>
               <button 
@@ -539,7 +539,7 @@ export default function CyberHUD({
                   setGeneratingReport(false);
                   setActiveReport(null);
                 }} 
-                className="font-sans-editorial text-[9px] text-red-400 hover:text-red-300 tracking-widest bg-transparent border-none cursor-pointer"
+                className="font-sans-editorial text-[9px] text-red-400 hover:text-red-300 tracking-normal bg-transparent border-none cursor-pointer"
               >
                 [✕ Close]
               </button>
@@ -547,7 +547,7 @@ export default function CyberHUD({
 
             <div className="custom-scrollbar" style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
               {!activeReport && reportLog.map((logLine, idx) => (
-                <div key={idx} className="font-sans-editorial text-[9px] text-white/40 tracking-wider">
+                <div key={idx} className="font-sans-editorial text-[9px] text-white/40 tracking-normal">
                   {logLine}
                 </div>
               ))}
@@ -563,13 +563,13 @@ export default function CyberHUD({
               <div style={{ display: 'flex', gap: 12, borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 14 }}>
                 <button
                   onClick={saveGeneratedReport}
-                  className="flex-1 py-2 text-[9px] tracking-widest border border-white/10 hover:border-white hover:bg-white hover:text-black bg-transparent text-white transition-all duration-300 font-sans-editorial"
+                  className="flex-1 py-2 text-[9px] tracking-normal border border-white/10 hover:border-white hover:bg-white hover:text-black bg-transparent text-white transition-all duration-300 font-sans-editorial"
                 >
                   Save brief
                 </button>
                 <button
                   onClick={() => downloadReport(activeReport)}
-                  className="flex-1 py-2 text-[9px] tracking-widest border border-white/10 hover:border-white hover:bg-white hover:text-black bg-transparent text-white transition-all duration-300 font-sans-editorial"
+                  className="flex-1 py-2 text-[9px] tracking-normal border border-white/10 hover:border-white hover:bg-white hover:text-black bg-transparent text-white transition-all duration-300 font-sans-editorial"
                 >
                   Download brief
                 </button>

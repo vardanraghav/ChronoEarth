@@ -40,7 +40,7 @@ export const CITIES_EXTENDED_DATA: Record<string, ExtendedCityData> = {
       { name: "Tokyo Bay Algal Oxygenator", desc: "Autonomous bio-barges releasing engineered oxygen-producing microalgae into coastal channels." }
     ]
   },
-  'delhi': {
+  'new-delhi': {
     image: 'https://images.unsplash.com/photo-1587474260584-136574528ed5?w=800&auto=format&fit=crop&q=60',
     famousPlaces: [
       { name: "Yamuna Bio-Dike", desc: "An active ecological barrier reclaiming marshlands and filtering heavy metal runoffs." },
@@ -54,6 +54,46 @@ export const CITIES_EXTENDED_DATA: Record<string, ExtendedCityData> = {
     futureProjects: [
       { name: "Neighborhood Fuel Cell Loop", desc: "Decentralized green hydrogen fuel networks backing up grid hyper-generators." },
       { name: "Urban Forest Belt System", desc: "Dense corridors of genetically adapted trees filtering atmospheric smog particles." }
+    ]
+  },
+  'mumbai': {
+    image: 'https://images.unsplash.com/photo-1566552881560-0be862a7c445?w=800&auto=format&fit=crop&q=60',
+    famousPlaces: [
+      { name: "Mumbai Tide gates", desc: "Smart tidal floodgates with automated closures powered by sea-level AI scanners." },
+      { name: "Offshore Wind Array Hub", desc: "Floating wind farms beaming power to South Mumbai substations." },
+      { name: "Coastal Mangrove Nursery", desc: "Restored mangrove networks absorbing storm surges." }
+    ],
+    notablePeople: [
+      { name: "Karan Mehta", role: "Seawall Project Lead", specialty: "Coastal Defense Dynamics", avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=60", contribution: "Designed Mumbai's marine salinity barrier network." }
+    ],
+    futureProjects: [
+      { name: "Tidal Kinetic Arrays", desc: "Baseload generators converting ocean currents to electricity." }
+    ]
+  },
+  'bengaluru': {
+    image: 'https://images.unsplash.com/photo-1596176530529-78163a4f7af2?w=800&auto=format&fit=crop&q=60',
+    famousPlaces: [
+      { name: "Hanging Sky Gardens", desc: "Lush botanical skyways linking high-tech skyscrapers." },
+      { name: "Silicon Microgrids Central", desc: "Autonomous grid managers routing localized perovskite solar arrays." }
+    ],
+    notablePeople: [
+      { name: "Priya Rao", role: "Eco-Corridor Director", specialty: "Urban Rewilding", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=60", contribution: "Designed Bengaluru's microclimatic pocket reserves." }
+    ],
+    futureProjects: [
+      { name: "Rainwater Hyper-harvesting Grid", desc: "Decentralized aquifer recharge nodes recovering 95% of rainfall." }
+    ]
+  },
+  'seoul': {
+    image: 'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=800&auto=format&fit=crop&q=60',
+    famousPlaces: [
+      { name: "Cheonggyecheon Cyber Canal", desc: "Bio-remediating smart water channels cooling downtown core sectors." },
+      { name: "Seoul Quantum Nexus", desc: "Central quantum core directing transit guidelines and maglev grids." }
+    ],
+    notablePeople: [
+      { name: "Ji-Won Park", role: "Smart Pavement Architect", specialty: "Kinetic Road Capture", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=60", contribution: "Engineered localized pressure energy capture roadways." }
+    ],
+    futureProjects: [
+      { name: "Thorium District Feeders", desc: "Next-gen zero-emission nuclear loops powering municipal apartments." }
     ]
   },
   'london': {
@@ -104,6 +144,32 @@ export const CITIES_EXTENDED_DATA: Record<string, ExtendedCityData> = {
       { name: "Hyperloop Navigation Beacons", desc: "High-frequency orbital transmitters tracking pod arrays passing at Mach 2.5." }
     ]
   },
+  'nairobi': {
+    image: 'https://images.unsplash.com/photo-1589196728045-f9168925434d?w=800&auto=format&fit=crop&q=60',
+    famousPlaces: [
+      { name: "Savanna Reforestation Belt", desc: "Dense corridors of drought-resistant trees stabilizing regional soils." },
+      { name: "Nairobi Geothermal Core", desc: "Clean power grids utilizing heat from the Rift Valley." }
+    ],
+    notablePeople: [
+      { name: "Wanjiku Njoroge", role: "Wildlife Tech Director", specialty: "Sensor Networks", avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=60", contribution: "Integrated wildlife monitoring radio meshes with orbital tracking networks." }
+    ],
+    futureProjects: [
+      { name: "Arid Land Water Recharge Wells", desc: "Hydrological systems recovering rainfall for agricultural fields." }
+    ]
+  },
+  'paris': {
+    image: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800&auto=format&fit=crop&q=60',
+    famousPlaces: [
+      { name: "Seine Flood Lock System", desc: "Smart bypass gates preventing river overflow during high-tide storms." },
+      { name: "Eiffel Solar Tower", desc: "Upgraded solar panels and micro-wind harvesting loops embedded in the historic tower." }
+    ],
+    notablePeople: [
+      { name: "Chloe Dupont", role: "Urban Canopy Architect", specialty: "Biophilic Plazas", avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=60", contribution: "Implemented climate-adaptive forest corridors across historical streets." }
+    ],
+    futureProjects: [
+      { name: "District Geothermal Grid", desc: "Deep hot-water loops warming residential complexes with zero emissions." }
+    ]
+  },
   'new-york': {
     image: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=800&auto=format&fit=crop&q=60',
     famousPlaces: [
@@ -118,6 +184,58 @@ export const CITIES_EXTENDED_DATA: Record<string, ExtendedCityData> = {
     futureProjects: [
       { name: "Atlantic Wind Array Hub", desc: "Floating deep-water wind arrays beaming power to Brooklyn substations." },
       { name: "East River Oyster Bio-Dikes", desc: "Restored oyster grids filtering water pollutants and absorbing tidal waves." }
+    ]
+  },
+  'los-angeles': {
+    image: 'https://images.unsplash.com/photo-1422490980249-0ab1d7228f2d?w=800&auto=format&fit=crop&q=60',
+    famousPlaces: [
+      { name: "LA Seawall Defense", desc: "Automated coastal barriers protecting Santa Monica beaches." },
+      { name: "Mojave Solar Pipeline", desc: "High-capacity lines beaming desert solar power to municipal grids." }
+    ],
+    notablePeople: [
+      { name: "Mark Davis", role: "Wildfire Telemetry Coordinator", specialty: "Sensor Arrays", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=60", contribution: "Deployed thermal drone networks across the southern mountain regions." }
+    ],
+    futureProjects: [
+      { name: "Coastal Desalination loops", desc: "Solar-thermal powered water processing stations." }
+    ]
+  },
+  'sydney': {
+    image: 'https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?w=800&auto=format&fit=crop&q=60',
+    famousPlaces: [
+      { name: "Sydney Harbor Seawalls", desc: "Smart tidal barriers regulating water entry to the inner harbor." },
+      { name: "Botany Bay Wave Array", desc: "Wave kinetic dynamos feeding clean energy to local grids." }
+    ],
+    notablePeople: [
+      { name: "Isla Johnston", role: "Marine Ecologist", specialty: "Reef Restoration", avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&auto=format&fit=crop&q=60", contribution: "Pioneered self-healing concrete reef blocks inside Sydney harbor." }
+    ],
+    futureProjects: [
+      { name: "Coastal Mangrove Canal Channels", desc: "Ecological storm surge mitigation networks." }
+    ]
+  },
+  'sao-paulo': {
+    image: 'https://images.unsplash.com/photo-1543087903-1ac2ec7aa8c5?w=800&auto=format&fit=crop&q=60',
+    famousPlaces: [
+      { name: "Sao Paulo Rainwater Basins", desc: "Decentralized collection tanks preventing metropolitan floods." },
+      { name: "Biomass Loop Central", desc: "Waste conversion facilities generating clean neighborhood power." }
+    ],
+    notablePeople: [
+      { name: "Mateo Silva", role: "Urban Forestry Coordinator", specialty: "Micro-Forestry", avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150&auto=format&fit=crop&q=60", contribution: "Created the biophilic pocket forest mapping systems." }
+    ],
+    futureProjects: [
+      { name: "Rooftop Vegetation Grids", desc: "Carbon scrubbing rooftop plantings across downtown sectors." }
+    ]
+  },
+  'toronto': {
+    image: 'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=800&auto=format&fit=crop&q=60',
+    famousPlaces: [
+      { name: "Ontario Deep Heat Loop", desc: "Geothermal district grids warming housing complexes during sub-zero months." },
+      { name: "Great Lakes Freight Terminal", desc: "Autonomous logistics dock coordinating clean waterway freight." }
+    ],
+    notablePeople: [
+      { name: "Dr. Helen Vance", role: "Geothermal Engineer", specialty: "Closed-loop Heating", avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=60", contribution: "Integrated lake-cooling loops with district energy stations." }
+    ],
+    futureProjects: [
+      { name: "Ravine Eco-Corridor Systems", desc: "Wilderness conservation pathways spanning the metropolitan area." }
     ]
   }
 };

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { citiesRawData } from '../data/citiesData';
 import { PREDICTIONS, KB_ARTICLES, FUTUROLOGISTS } from '../data/predictionsData';
@@ -12,21 +12,11 @@ interface SearchModalProps {
   setActiveCity?: (city: any) => void;
 }
 
-const C = {
-  emerald: '#00F5B0',
-  cyan: '#00D98F',
-  iceBlue: '#00D98F',
-  white: '#F5F7FA',
-  bg:      'rgba(2, 8, 15, 0.92)',
-  border: 'rgba(0, 245, 176, 0.15)',
-  primary: '#00F5B0',
-  secondary: '#00D98F',
-  accent: '#FFFFFF',
-};
-
 export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchModalProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const router = useRouter();
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -34,15 +24,28 @@ export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchMo
     };
     if (isOpen) {
       window.addEventListener('keydown', handleKeyDown);
+      // Auto-focus input on mount
+      setTimeout(() => inputRef.current?.focus(), 100);
     }
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
+
+  // Simulate a quick cognitive query analysis when user types
+  useEffect(() => {
+    if (searchQuery) {
+      setIsAnalyzing(true);
+      const timer = setTimeout(() => setIsAnalyzing(false), 200);
+      return () => clearTimeout(timer);
+    } else {
+      setIsAnalyzing(false);
+    }
+  }, [searchQuery]);
 
   if (!isOpen) return null;
 
   const q = searchQuery.toLowerCase().trim();
 
-  // Index matches
+  // Search Match Categories
   const cityMatches = q ? citiesRawData.filter(c => c.name.toLowerCase().includes(q) || c.country.toLowerCase().includes(q)) : [];
   const techMatches = q ? KB_ARTICLES.filter(t => t.title.toLowerCase().includes(q) || t.shortDesc.toLowerCase().includes(q)) : [];
   const predMatches = q ? PREDICTIONS.filter(p => p.title.toLowerCase().includes(q) || p.description.toLowerCase().includes(q)) : [];
@@ -62,7 +65,7 @@ export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchMo
     });
   }
 
-  // Match Famous Places & Future Projects (Projects)
+  // Match Famous Places & Future Projects
   const projectMatches: { name: string; desc: string; type: 'Landmark' | 'Project'; citySlug: string; cityName: string }[] = [];
   if (q) {
     Object.entries(CITIES_EXTENDED_DATA).forEach(([citySlug, data]) => {
@@ -89,197 +92,280 @@ export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchMo
     architectMatches.length > 0 ||
     projectMatches.length > 0;
 
-  const panelStyle: React.CSSProperties = {
-    background: 'rgba(2, 8, 15, 0.95)',
-    backdropFilter: 'blur(24px)',
-    border: `1px solid rgba(0, 245, 176, 0.25)`,
-    borderRadius: '2px',
-    padding: '20px',
-    boxShadow: '0 0 40px rgba(0,245,176,0.08), inset 0 0 20px rgba(0,245,176,0.02)',
-    position: 'relative',
-    width: '100%',
-    maxWidth: '560px',
-    maxHeight: '80vh',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 14,
-    pointerEvents: 'auto',
-    animation: 'fade-up 0.3s ease-out'
+  const totalResultsCount = 
+    cityMatches.length + 
+    techMatches.length + 
+    predMatches.length + 
+    futurologistMatches.length +
+    architectMatches.length +
+    projectMatches.length;
+
+  const promptSuggestions = [
+    { text: 'What happens if AGI arrives in 2040?', query: 'AGI' },
+    { text: 'India semiconductor industry in 2050', query: 'semiconductor' },
+    { text: 'Future of fusion energy', query: 'fusion' },
+    { text: 'How will floating cities scale?', query: 'floating' }
+  ];
+
+  const handlePromptClick = (queryVal: string) => {
+    setSearchQuery(queryVal);
+    inputRef.current?.focus();
   };
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md pointer-events-auto"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md pointer-events-auto"
       onClick={onClose}
     >
       <div 
-        className="card-tier-2 w-full max-w-[500px] p-6 max-h-[75vh] flex flex-col gap-4 relative animate-fade-up"
+        className="premium-glass w-full max-w-[660px] p-6 max-h-[85vh] flex flex-col gap-6 relative rounded-xl animate-fade-up font-mono"
         onClick={e => e.stopPropagation()}
+        style={{
+          boxShadow: '0 24px 64px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(0, 245, 176, 0.15), inset 0 0 20px rgba(0, 245, 176, 0.02)',
+          backgroundColor: 'rgba(2, 6, 10, 0.92)'
+        }}
       >
-        <div className="flex justify-between items-center border-b border-[#00F5B0]/15 pb-2">
-          <span className="text-[10px] font-mono tracking-widest text-[#7A8694] uppercase font-bold">
-            Search Archive
-          </span>
+        {/* Terminal Shell Header */}
+        <div className="flex justify-between items-center border-b border-[#00F5B0]/20 pb-3 text-[10px] text-[#7A8694]">
+          <div className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#00F5B0] animate-pulse" />
+            <span className="text-[#00F5B0] uppercase tracking-wider font-semibold">CHRONO_OS v4.82 // COGNITIVE CORE</span>
+          </div>
           <button 
             onClick={onClose} 
-            className="bg-transparent border-none text-[#7A8694] hover:text-white cursor-pointer text-[10px] font-mono uppercase"
+            className="bg-transparent border-none text-[#7A8694] hover:text-white cursor-pointer tracking-wider transition-colors"
           >
-            [Close]
+            [ESC // CLOSE]
           </button>
         </div>
 
-        <div className="relative">
-          <input
-            type="text"
-            autoFocus
-            placeholder="Type keywords, cities, predictions, technologies..."
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            className="w-full bg-transparent border-b border-[#00F5B0]/15 outline-none py-2 text-sm text-white font-light tracking-wide transition-colors focus:border-[#00F5B0]"
-          />
+        {/* AI prompt Search Bar */}
+        <div className="flex flex-col gap-1.5">
+          <div className="relative flex items-center bg-black/40 border border-white/5 focus-within:border-[#00F5B0]/40 rounded px-4 py-3 transition-all">
+            <span className="text-[#00F5B0] mr-2 font-bold select-none">chrono_os:~$ &gt;</span>
+            <input
+              ref={inputRef}
+              type="text"
+              placeholder="Query matrix parameters..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="w-full bg-transparent border-none outline-none text-xs text-white placeholder-white/20 font-mono tracking-wide"
+            />
+            {searchQuery && (
+              <button 
+                onClick={() => setSearchQuery('')}
+                className="absolute right-4 text-[10px] text-[#7A8694] hover:text-white cursor-pointer bg-transparent border-none"
+              >
+                [RESET]
+              </button>
+            )}
+          </div>
+          <div className="flex justify-between items-center px-1 text-[9px] text-[#7A8694]">
+            <span>Status: {isAnalyzing ? 'Analyzing cognitive tensors...' : 'Terminal ready'}</span>
+            {searchQuery && <span>Matches: {totalResultsCount} nodes</span>}
+          </div>
         </div>
 
-        {/* Results container */}
-        <div className="custom-scrollbar flex-1 overflow-y-auto flex flex-col gap-4 pr-1">
+        {/* Dynamic Display Area */}
+        <div className="custom-scrollbar flex-1 overflow-y-auto flex flex-col gap-5 pr-1 min-h-[200px]">
           {q.length === 0 ? (
-            <div className="py-8 text-center text-[10px] text-[#7A8694] tracking-widest font-mono">
-              AWAITING SCAN CRITERIA... ENTER QUERY TO INDEX MEMORY SHARDS.
+            /* AI prompt Suggestions */
+            <div className="flex flex-col gap-4 py-2">
+              <span className="text-[10px] text-[#7A8694] uppercase tracking-wider font-semibold border-b border-white/5 pb-2">
+                Executive Prompt Signals
+              </span>
+              <div className="flex flex-col gap-2">
+                {promptSuggestions.map((p, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => handlePromptClick(p.query)}
+                    className="group text-left px-4 py-3 bg-white/2 hover:bg-[#00F5B0]/5 border border-white/5 hover:border-[#00F5B0]/20 rounded transition-all duration-300 font-mono cursor-pointer flex justify-between items-center text-xs text-white/80"
+                  >
+                    <span className="group-hover:text-white transition-colors">&gt; "{p.text}"</span>
+                    <span className="text-[#7A8694] group-hover:text-[#00F5B0] text-[9px] font-semibold tracking-wider font-mono">
+                      [EXECUTE PROMPT]
+                    </span>
+                  </button>
+                ))}
+              </div>
+              <p className="text-[10px] text-[#7A8694] leading-relaxed mt-4 font-mono font-light">
+                * Terminal searches full planetary index files including 2030/2040/2050 timeline targets, cities data records, knowledge sheets, and strategic vulnerability indexes.
+              </p>
+            </div>
+          ) : isAnalyzing ? (
+            /* Simulated Loading State */
+            <div className="py-20 flex flex-col items-center justify-center gap-3 text-[#00F5B0] text-xs">
+              <div className="w-8 h-8 rounded-full border border-t-[#00F5B0] border-[#00F5B0]/15 animate-spin" />
+              <span>ALIGNING QUANTUM COGNITIVE TENSORS...</span>
             </div>
           ) : !hasResults ? (
-            <div className="py-8 text-center text-[10px] text-[#00F5B0] tracking-wider font-mono">
-              NO ARCHIVES COMPILED MATCHING PROTOCOL.
+            <div className="py-16 text-center text-xs text-[#FF0055] font-mono font-light border border-white/5 bg-black/20 rounded">
+              &gt; ERROR: NO INTEL CHANNELS CORRESPONDING TO VECTOR "{q.toUpperCase()}"
             </div>
           ) : (
-            <>
-              {/* Cities matches */}
-              {cityMatches.length > 0 && (
-                <div>
-                  <div className="text-[9px] text-[#7A8694] tracking-widest mb-1.5 font-mono uppercase font-bold">🏙️ Cities</div>
-                  {cityMatches.map(c => (
-                    <div key={c.name}
-                      onClick={() => {
-                        onClose();
-                        if (setActiveCity) {
-                          setActiveCity(c);
-                        }
-                        router.push(`/?city=${encodeURIComponent(c.name)}`);
-                      }}
-                      className="py-2 px-1 bg-transparent hover:bg-white/5 border-b border-[#00F5B0]/10 flex justify-between items-center cursor-pointer transition-all"
-                    >
-                      <span className="text-xs text-white font-light">{c.name}, {c.country}</span>
-                      <span className="text-[8px] text-[#00D98F] font-mono uppercase tracking-wider">[Locate]</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Predictions matches */}
+            /* Dossier Results Grid */
+            <div className="flex flex-col gap-5">
+              
+              {/* Predictions Shards */}
               {predMatches.length > 0 && (
-                <div>
-                  <div className="text-[9px] text-[#7A8694] tracking-widest mb-1.5 font-mono uppercase font-bold">🔮 Predictions</div>
+                <div className="flex flex-col gap-2">
+                  <span className="text-[10px] text-[#7A8694] uppercase tracking-wider font-semibold">
+                    Dossier // Forecast Shards ({predMatches.length})
+                  </span>
                   {predMatches.map(p => (
-                    <div key={p.id}
+                    <div 
+                      key={p.id}
                       onClick={() => {
                         onClose();
                         router.push(`/predictions/${p.slug}`);
                       }}
-                      className="py-2.5 px-1 bg-transparent hover:bg-white/5 border-b border-[#00F5B0]/10 flex flex-col gap-1 cursor-pointer transition-all"
+                      className="group p-4 bg-black/20 hover:bg-[#00F5B0]/5 border border-white/5 hover:border-[#00F5B0]/25 rounded flex flex-col gap-2 cursor-pointer transition-all duration-300"
                     >
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs text-white font-medium truncate pr-2">{p.title}</span>
-                        <span className="text-[8px] text-[#00D98F] font-mono uppercase shrink-0">[{p.year}]</span>
+                      <div className="flex justify-between items-center text-[9px]">
+                        <span className="text-[#00F5B0] font-semibold uppercase">{p.category} // {p.city.toUpperCase()}</span>
+                        <span className="text-white/40">{p.year} FORECAST</span>
                       </div>
-                      <span className="text-[10px] text-[#7A8694] line-clamp-1">{p.description}</span>
+                      <h4 className="text-xs font-semibold text-white group-hover:text-[#00F5B0] transition-colors leading-snug tracking-wide m-0">
+                        {p.title}
+                      </h4>
+                      <p className="text-[10px] text-[#7A8694] leading-relaxed line-clamp-2 m-0 font-light">
+                        {p.description}
+                      </p>
                     </div>
                   ))}
                 </div>
               )}
 
-              {/* Project Matches */}
+              {/* Cities Nodes */}
+              {cityMatches.length > 0 && (
+                <div className="flex flex-col gap-2">
+                  <span className="text-[10px] text-[#7A8694] uppercase tracking-wider font-semibold">
+                    Dossier // City Nodes ({cityMatches.length})
+                  </span>
+                  {cityMatches.map(c => (
+                    <div 
+                      key={c.name}
+                      onClick={() => {
+                        onClose();
+                        router.push(`/dashboard?city=${encodeURIComponent(c.name)}`);
+                      }}
+                      className="group p-3 bg-black/20 hover:bg-[#0A84FF]/5 border border-white/5 hover:border-[#0A84FF]/25 rounded flex justify-between items-center cursor-pointer transition-all duration-300"
+                    >
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-xs text-white font-semibold">{c.name}</span>
+                        <span className="text-[9px] text-[#7A8694] uppercase tracking-wider">{c.country}</span>
+                      </div>
+                      <span className="text-[9px] text-[#0A84FF] font-semibold tracking-wider">[LOCATE GLOBE]</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Project Shards */}
               {projectMatches.length > 0 && (
-                <div>
-                  <div className="text-[9px] text-[#7A8694] tracking-widest mb-1.5 font-mono uppercase font-bold">🚧 Projects</div>
+                <div className="flex flex-col gap-2">
+                  <span className="text-[10px] text-[#7A8694] uppercase tracking-wider font-semibold">
+                    Dossier // Project Systems ({projectMatches.length})
+                  </span>
                   {projectMatches.map((proj, idx) => (
-                    <div key={idx}
+                    <div 
+                      key={idx}
                       onClick={() => {
                         onClose();
                         router.push(`/city/${proj.citySlug}`);
                       }}
-                      className="py-2.5 px-1 bg-transparent hover:bg-white/5 border-b border-[#00F5B0]/10 flex flex-col gap-1 cursor-pointer transition-all"
+                      className="group p-4 bg-black/20 hover:bg-[#BF5AF2]/5 border border-white/5 hover:border-[#BF5AF2]/25 rounded flex flex-col gap-2 cursor-pointer transition-all duration-300"
                     >
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs text-white font-medium truncate pr-2">{proj.name}</span>
-                        <span className="text-[8px] text-white/40 font-mono uppercase shrink-0">[{proj.cityName}]</span>
+                      <div className="flex justify-between items-center text-[9px]">
+                        <span className="text-[#BF5AF2] font-semibold uppercase">{proj.type} // {proj.cityName.toUpperCase()}</span>
                       </div>
-                      <span className="text-[10px] text-[#7A8694] line-clamp-1">{proj.desc}</span>
+                      <h4 className="text-xs font-semibold text-white group-hover:text-[#BF5AF2] transition-colors leading-snug tracking-wide m-0">
+                        {proj.name}
+                      </h4>
+                      <p className="text-[10px] text-[#7A8694] leading-relaxed line-clamp-2 m-0 font-light">
+                        {proj.desc}
+                      </p>
                     </div>
                   ))}
                 </div>
               )}
 
-              {/* Technologies Matches */}
+              {/* Technology Shards */}
               {techMatches.length > 0 && (
-                <div>
-                  <div className="text-[9px] text-[#7A8694] tracking-widest mb-1.5 font-mono uppercase font-bold">⚡ Tech & Knowledge</div>
+                <div className="flex flex-col gap-2">
+                  <span className="text-[10px] text-[#7A8694] uppercase tracking-wider font-semibold">
+                    Dossier // Codex Shards ({techMatches.length})
+                  </span>
                   {techMatches.map(t => (
-                    <div key={t.id}
+                    <div 
+                      key={t.id}
                       onClick={() => {
                         onClose();
                         router.push(`/knowledge?article=${t.id}`);
                       }}
-                      className="py-2.5 px-1 bg-transparent hover:bg-white/5 border-b border-[#00F5B0]/10 flex flex-col gap-1 cursor-pointer transition-all"
+                      className="group p-4 bg-black/20 hover:bg-[#00F5B0]/5 border border-white/5 hover:border-[#00F5B0]/25 rounded flex flex-col gap-2 cursor-pointer transition-all duration-300"
                     >
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs text-white font-medium truncate pr-2">{t.title}</span>
-                        <span className="text-[8px] text-[#00F5B0] font-mono uppercase shrink-0">[{t.category}]</span>
+                      <div className="flex justify-between items-center text-[9px]">
+                        <span className="text-[#00F5B0] font-semibold uppercase">CODEX // {t.category.toUpperCase()}</span>
+                        <span className="text-white/40">READINESS: {t.readinessIndex}%</span>
                       </div>
-                      <span className="text-[10px] text-[#7A8694] line-clamp-1">{t.shortDesc}</span>
+                      <h4 className="text-xs font-semibold text-white group-hover:text-[#00F5B0] transition-colors leading-snug tracking-wide m-0">
+                        {t.title}
+                      </h4>
+                      <p className="text-[10px] text-[#7A8694] leading-relaxed line-clamp-2 m-0 font-light">
+                        {t.shortDesc}
+                      </p>
                     </div>
                   ))}
                 </div>
               )}
 
-              {/* People Matches */}
+              {/* Futurologist Shards */}
               {(futurologistMatches.length > 0 || architectMatches.length > 0) && (
-                <div>
-                  <div className="text-[9px] text-[#7A8694] tracking-widest mb-1.5 font-mono uppercase font-bold">👥 Research Experts</div>
+                <div className="flex flex-col gap-2">
+                  <span className="text-[10px] text-[#7A8694] uppercase tracking-wider font-semibold">
+                    Dossier // Personnel Files ({futurologistMatches.length + architectMatches.length})
+                  </span>
                   
                   {/* Futurologists */}
                   {futurologistMatches.map(f => (
-                    <div key={f.slug}
+                    <div 
+                      key={f.slug}
                       onClick={() => {
                         onClose();
                         router.push(`/futurologists/${f.slug}`);
                       }}
-                      className="py-2 px-1 bg-transparent hover:bg-white/5 border-b border-[#00F5B0]/10 flex justify-between items-center cursor-pointer transition-all"
+                      className="group p-3 bg-black/20 hover:bg-[#FFB300]/5 border border-white/5 hover:border-[#FFB300]/25 rounded flex justify-between items-center cursor-pointer transition-all duration-300"
                     >
-                      <div>
-                        <div className="text-xs text-white font-light">{f.name}</div>
-                        <div className="text-[9px] text-[#7A8694] font-mono">{f.role}</div>
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-xs text-white font-semibold">{f.name}</span>
+                        <span className="text-[9px] text-[#7A8694] uppercase tracking-wider">{f.role} // {f.specialization}</span>
                       </div>
-                      <span className="text-[8px] text-[#00F5B0] font-mono uppercase tracking-wider">[Expert Sheet]</span>
+                      <span className="text-[9px] text-[#FFB300] font-semibold tracking-wider">[DOSSIER PROFILE]</span>
                     </div>
                   ))}
 
                   {/* City Architects */}
                   {architectMatches.map((arch, idx) => (
-                    <div key={idx}
+                    <div 
+                      key={idx}
                       onClick={() => {
                         onClose();
                         router.push(`/city/${arch.citySlug}`);
                       }}
-                      className="py-2 px-1 bg-transparent hover:bg-white/5 border-b border-[#00F5B0]/10 flex justify-between items-center cursor-pointer transition-all"
+                      className="group p-3 bg-black/20 hover:bg-[#FFB300]/5 border border-white/5 hover:border-[#FFB300]/25 rounded flex justify-between items-center cursor-pointer transition-all duration-300"
                     >
-                      <div>
-                        <div className="text-xs text-white font-light">{arch.name}</div>
-                        <div className="text-[9px] text-[#7A8694] font-mono">{arch.role} · {arch.cityName}</div>
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-xs text-white font-semibold">{arch.name}</span>
+                        <span className="text-[9px] text-[#7A8694] uppercase tracking-wider">{arch.role} // {arch.cityName.toUpperCase()} NODE</span>
                       </div>
-                      <span className="text-[8px] text-[#7A8694] font-mono uppercase tracking-wider">[Metropolis Panel]</span>
+                      <span className="text-[9px] text-[#7A8694] font-semibold tracking-wider">[METROPOLIS]</span>
                     </div>
                   ))}
                 </div>
               )}
-            </>
+
+            </div>
           )}
         </div>
       </div>

@@ -6,13 +6,127 @@ import Navbar from '@/components/Navbar';
 import BackgroundEffects from '@/components/BackgroundEffects';
 import { KB_ARTICLES } from '@/data/predictionsData';
 
-const C = {
-  emerald: '#00F5B0',
-  cyan: '#00D98F',
-  iceBlue: '#00D98F',
-  white: '#F5F7FA',
-  bg: 'rgba(2, 8, 15, 0.75)',
-  border: 'rgba(0, 245, 176, 0.15)',
+// Extended database articles to support Geopolitics and Economics sections
+const ALL_KB_ARTICLES = [
+  ...KB_ARTICLES,
+  {
+    id: 'kb-8',
+    title: 'Global Semiconductor Alliance',
+    category: 'Geopolitics',
+    shortDesc: 'Decentralized fabrication nodes and shipping corridors across trade blocks.',
+    content: 'Global silicon production has shifted away from centralized coastal nodes to secure, decentralized alliances. Allied regions construct high-yield fabrication centers inland, connected by secure rail networks and defended by orbital monitoring constellations to protect hardware supply lines against disruption vectors.',
+    readinessIndex: 85,
+    impactLevel: 'Critical' as const
+  },
+  {
+    id: 'kb-9',
+    title: 'Lifecycle Carbon Tariffs',
+    category: 'Economics',
+    shortDesc: 'Algorithmic border tax adjustments based on lifecycle carbon emissions.',
+    content: 'Enforces carbon taxation dynamically at regional borders using digital ledgers. The carbon footprint of every imported raw material or finished pod is calculated using real-time sensor metrics and taxed instantly, funding geo-engineering cooling grids and incentivizing clean local manufacturing.',
+    readinessIndex: 90,
+    impactLevel: 'High' as const
+  }
+];
+
+// Rich technical details for each article (Stats, Opportunities, Risks, Outlook, Sources)
+const ARTICLE_DETAILS: Record<string, {
+  stats: Record<string, string>;
+  opportunities: string[];
+  risks: string[];
+  outlook: string;
+  sources: string[];
+}> = {
+  'kb-1': {
+    stats: { 'Superconductor Coils': 'Double intensity', 'Reactor Footprint': '-90% size reduction', 'Net Energy Gain Ratio': 'Q = 22' },
+    opportunities: ['Modular integration into city microgrids', 'Abundant energy output for carbon-scrubbing systems'],
+    risks: ['Entangled signal cyber outages', 'Centralization vectors on high-capacity nodes'],
+    outlook: 'Commercialized targets set to supply 85% of planetary grids by 2050.',
+    sources: [
+      'Wright, E. & Carter, L. (2042). Superconductor Confinement Metrics. Journal of Applied Fusion, 18(4).',
+      'ITER Fusion Highway Protocol V3.1 (2039).'
+    ]
+  },
+  'kb-2': {
+    stats: { 'Surface/Deep Delta Temp': '20°C differential', 'Operational Cost': '$0.02 per kWh', 'Baseload Reliability': '99.9%' },
+    opportunities: ['Constant, non-fluctuating green power output', 'Co-generation of fresh desalinated water'],
+    risks: ['Ecological disturbance to marine layers', 'High initial capital expense for subsea pipelines'],
+    outlook: 'Ocean kinetic grids will anchor tropical coastal energy mix models by 2040.',
+    sources: [
+      'IPCC Energy Working Group Report (2041). OTEC System Integrations.',
+      'Carter, L. (2039). Baseload marine power generation. Ocean Systems Design (Vol. 12).'
+    ]
+  },
+  'kb-3': {
+    stats: { 'Soil Moisture Increase': '+35%', 'Species Recovery Rate': '1.8x acceleration', 'Biodiversity Score': '88/100' },
+    opportunities: ['Self-repairing biomes absorbing carbon spikes', 'Engineered microflora filtering river chemicals'],
+    risks: ['Unintended genetic drift in wild populations', 'Biosphere adaptation latency under extreme heat'],
+    outlook: 'Synthetic biosphere anchors will reclaim 40% of desertification zones by 2050.',
+    sources: [
+      'Jenkins, S. (2040). Genetic engineering of desert flora. Synthetic Ecosystems, 32(8).',
+      'Global Biosphere Restoration Index (2043).'
+    ]
+  },
+  'kb-4': {
+    stats: { 'Solar Deflection Rate': '1.5% globally', 'Global Cooling Index': '-0.5°C target', 'Operational Window': '12-year lifecycle' },
+    opportunities: ['Immediate halting of polar feedback loops', 'Preservation of critical sea-level ice sheets'],
+    risks: ['Acidification impacts on oceanic layers', 'Geopolitical disputes over temperature settings'],
+    outlook: 'LEO mirror arrays slated for launch by 2038 to check runaway sea-level rise.',
+    sources: [
+      'Carter, L., et al. (2041). Albedo deflection simulation models. Atmospheric Interventions, 9(1).',
+      'UN Climate Geo-engineering Accord Guidelines (2039).'
+    ]
+  },
+  'kb-5': {
+    stats: { 'Regolith Grade': '15 ppb (parts per billion)', 'Mining Efficiency': '+120%', 'Helium-3 Transport Cap': '120 tons/yr' },
+    opportunities: ['Clean, zero-waste aneutronic fusion fuel', 'Establishes LEO logistical staging hubs'],
+    risks: ['Debris collision vectors in launch corridors', 'High initial cargo freight costs from orbit'],
+    outlook: 'Robotic regolith mining terminals will achieve commercial output scale by 2045.',
+    sources: [
+      'Sato, K. (2043). Lunar Helium-3 logistics pipelines. Journal of Offworld Mining, 22(11).',
+      'Lunar Resources Commission Annual Outlook (2044).'
+    ]
+  },
+  'kb-6': {
+    stats: { 'Qubit Node Capacity': '10,000 entangled qubits', 'Transit Delays': '<0.5ms global', 'Interception Vectors': '0.00%' },
+    opportunities: ['100% intercept-secure structural data grids', 'Instantaneous synchronization of smart city pods'],
+    risks: ['Logic array decryption vector leakage', 'Heavy hardware dependency on raw mineral imports'],
+    outlook: 'Entangled orbital networks will coordinate 90% of transport algorithms by 2035.',
+    sources: [
+      'Wright, E. (2037). Quantum Cryptographic Infrastructures. Security Systems Quarterly, 104(3).',
+      'Global Network Security Syndicate Assessment (2039).'
+    ]
+  },
+  'kb-7': {
+    stats: { 'Accretion Speed': '3cm per year', 'Tensile Strength': '3x standard concrete', 'Surge Buffer Capacity': '75%' },
+    opportunities: ['Self-healing foundations housing floating cities', 'Reforestation of coral nurseries in tropical bays'],
+    risks: ['High local electrical load requirements', 'Potential heavy metal precipitation in closed lagoons'],
+    outlook: 'Accreted reef dikes will buffer 80% of vulnerable delta zones by 2050.',
+    sources: [
+      'Carter, L. & Jenkins, S. (2044). Minerals accretion under marine current grids. Structural Oceanography, 15(2).',
+      'Floating Metropolis Design Consortium Standard Protocols (2042).'
+    ]
+  },
+  'kb-8': {
+    stats: { 'Fabs Operational': '8 global clusters', 'Yield Rate': '98.5%', 'Critical Mineral Buffer': '78% secure' },
+    opportunities: ['Resilient decentralized local chip production', 'Bypasses traditional shipping bottlenecks'],
+    risks: ['High water consumption in fabrication nodes', 'Blockade risk on East Asian maritime corridors'],
+    outlook: 'Digital block alliances will enforce local fabrication nodes by 2035.',
+    sources: [
+      'Sato, K., et al. (2040). Supply chain security in digital blocs. Geopolitical Materials, 17(5).',
+      'GSA Fabrication Output Report (2042).'
+    ]
+  },
+  'kb-9': {
+    stats: { 'Carbon Tariff Rate': '$45 per ton', 'Scrubbing Subsidy': '35% reinvestment', 'Compliance Score': '94%' },
+    opportunities: ['Rapid phasing out of high-carbon logistics', 'Generates trillions for polar geo-engineering projects'],
+    risks: ['Trade friction between competing economic blocks', 'Tariff evasion via third-party shipping channels'],
+    outlook: 'Lifecycle carbon accounting grids will scale globally by 2030.',
+    sources: [
+      'Global Economics Commission Carbon Adjustment Guidelines (2038).',
+      'Jenkins, S. (2041). Ledgers for lifecycle carbon tracking. Journal of Futures Economics, 28(6).'
+    ]
+  }
 };
 
 function KnowledgeBaseContent() {
@@ -29,54 +143,71 @@ function KnowledgeBaseContent() {
     }
   }, [articleParam]);
 
-  const categories = ['ALL', 'Technologies', 'Future Jobs', 'Climate', 'Energy', 'Space'];
+  const categories = ['ALL', 'AI', 'Climate', 'Energy', 'Cities', 'Space', 'Geopolitics'];
 
-  const filteredArticles = KB_ARTICLES.filter(art => 
-    selectedCategory === 'ALL' || art.category.toLowerCase() === selectedCategory.toLowerCase()
-  );
-
-  const activeArticle = KB_ARTICLES.find(x => x.id === expandedArticleId);
-
-  const panelStyle: React.CSSProperties = {
-    background: C.bg,
-    backdropFilter: 'blur(20px)',
-    border: `1px solid ${C.border}`,
-    borderRadius: '4px',
-    padding: '24px',
-    boxShadow: '0 0 30px rgba(0,229,255,0.05), inset 0 0 15px rgba(0,229,255,0.01)',
-    position: 'relative',
-    overflow: 'hidden',
+  // Map database categories to user-requested sections
+  const getMappedCategory = (cat: string, id: string): string => {
+    if (id === 'kb-1' || id === 'kb-2') return 'Energy';
+    if (id === 'kb-3' || id === 'kb-4') return 'Climate';
+    if (id === 'kb-5') return 'Space';
+    if (id === 'kb-6') return 'AI';
+    if (id === 'kb-7') return 'Cities';
+    if (id === 'kb-8' || id === 'kb-9') return 'Geopolitics';
+    
+    // Fallback mapping
+    const c = cat.toLowerCase();
+    if (c === 'technologies' || c === 'future jobs') return 'AI';
+    return cat;
   };
 
-  const cornerAccent = (
-    <>
-      <div style={{ position: 'absolute', top: 0, left: 0, width: 8, height: 8, borderTop: `1px solid ${C.cyan}`, borderLeft: `1px solid ${C.cyan}` }} />
-      <div style={{ position: 'absolute', top: 0, right: 0, width: 8, height: 8, borderTop: `1px solid ${C.cyan}`, borderRight: `1px solid ${C.cyan}` }} />
-      <div style={{ position: 'absolute', bottom: 0, left: 0, width: 8, height: 8, borderBottom: `1px solid ${C.cyan}`, borderLeft: `1px solid ${C.cyan}` }} />
-      <div style={{ position: 'absolute', bottom: 0, right: 0, width: 8, height: 8, borderBottom: `1px solid ${C.cyan}`, borderRight: `1px solid ${C.cyan}` }} />
-    </>
-  );
+  const getCategoryStyle = (category: string) => {
+    const cat = category.toLowerCase();
+    if (cat.includes('ai')) return { color: '#00F5D4', shadow: 'rgba(0, 245, 212, 0.18)' };
+    if (cat.includes('climate')) return { color: '#FF0055', shadow: 'rgba(255, 0, 85, 0.18)' };
+    if (cat.includes('energy')) return { color: '#00F5B0', shadow: 'rgba(0, 245, 176, 0.18)' };
+    if (cat.includes('space')) return { color: '#BF5AF2', shadow: 'rgba(191, 90, 242, 0.18)' };
+    if (cat.includes('cities')) return { color: '#0A84FF', shadow: 'rgba(10, 132, 255, 0.18)' };
+    if (cat.includes('geopolitics')) return { color: '#FFB300', shadow: 'rgba(255, 179, 0, 0.18)' };
+    return { color: '#00F5B0', shadow: 'rgba(0, 245, 176, 0.18)' };
+  };
+
+  const filteredArticles = ALL_KB_ARTICLES.filter(art => {
+    const mapped = getMappedCategory(art.category, art.id);
+    return selectedCategory === 'ALL' || mapped.toLowerCase() === selectedCategory.toLowerCase();
+  });
+
+  const activeArticle = ALL_KB_ARTICLES.find(x => x.id === expandedArticleId);
+  const activeDetails = activeArticle ? (ARTICLE_DETAILS[activeArticle.id] || {
+    stats: {},
+    opportunities: [],
+    risks: [],
+    outlook: 'Projections are verifying.',
+    sources: []
+  }) : null;
 
   return (
-    <div className="content-container pt-32 pb-20 relative z-20 flex flex-col gap-10 animate-fade-up">
+    <div className={`${activeArticle ? 'reading-container' : 'content-container'} pt-32 pb-24 relative z-20 flex flex-col gap-8 animate-fade-up`}>
       
       {/* Page Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-[#00F5B0]/15 pb-6">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-white/5 pb-6">
         <div className="flex flex-col gap-3">
-          <h1 className="editorial-title text-white">
-            Knowledge <span className="text-[#00F5B0] font-normal">Base</span>
+          <span className="text-[10px] font-mono text-[#00F5B0] uppercase tracking-[0.25em] font-semibold">
+            Foresight Codex
+          </span>
+          <h1 className="editorial-title text-white tracking-tight m-0 text-3xl font-light">
+            Planetary <span style={{ color: '#00F5B0' }} className="font-normal">Knowledge Base</span>
           </h1>
-          <p className="editorial-subtitle text-[#7A8694]">
-            Technical specs, deployment logs, and readiness parameters for futuristic technologies.
+          <p className="text-[#7A8694] font-light text-sm max-w-2xl leading-relaxed m-0">
+            Technical specifications, biological/geological coefficients, and deployment parameters for futuristic technologies.
           </p>
         </div>
 
         {activeArticle && (
           <button
             onClick={() => setExpandedArticleId(null)}
-            className="self-start md:self-auto px-4 py-2 border border-[#00F5B0]/20 bg-[#00F5B0]/5 hover:bg-[#00F5B0] hover:text-[#02060A] hover:border-transparent text-[#00F5B0] font-mono text-[9px] tracking-widest uppercase rounded transition-all duration-300"
+            className="self-start md:self-auto px-4 py-2 border border-[#00F5B0]/30 hover:border-[#00F5B0] text-[#00F5B0] text-xs font-mono rounded transition-all duration-300 bg-transparent cursor-pointer tracking-wider uppercase font-semibold hover:shadow-[0_0_10px_rgba(0, 245, 176, 0.15)]"
           >
-            [← Back to Database]
+            ← Return to Database
           </button>
         )}
       </div>
@@ -85,18 +216,20 @@ function KnowledgeBaseContent() {
       {!activeArticle && (
         <div className="flex flex-wrap gap-2">
           {categories.map(cat => {
-            const isSelected = selectedCategory === cat;
+            const isSelected = selectedCategory.toLowerCase() === cat.toLowerCase();
+            const style = getCategoryStyle(cat === 'ALL' ? 'Energy' : cat);
             return (
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-4 py-2 font-mono text-[9px] tracking-widest uppercase border rounded transition-all duration-200 ${
+                className={`px-3.5 py-1.5 text-xs rounded transition-all duration-300 font-mono cursor-pointer border ${
                   isSelected 
-                    ? 'bg-[#00F5B0] text-[#02060A] border-transparent font-bold'
-                    : 'bg-[#00F5B0]/5 border-[#00F5B0]/20 text-[#00F5B0] hover:bg-[#00F5B0]/10'
+                    ? 'bg-[#00F5B0] text-[#02060A] border-transparent font-semibold shadow-[0_0_10px_rgba(0,245,176,0.3)]'
+                    : 'bg-transparent border-white/5 text-[#7A8694] hover:bg-white/5 hover:border-[#00F5B0]/30 hover:text-white'
                 }`}
+                style={isSelected ? { backgroundColor: style.color, boxShadow: `0 0 10px ${style.shadow}` } : {}}
               >
-                {cat}
+                {cat === 'ALL' ? 'All Sectors' : cat}
               </button>
             );
           })}
@@ -105,60 +238,136 @@ function KnowledgeBaseContent() {
 
       {/* Dynamic Main Body Content */}
       <div className="min-h-[400px]">
-        {activeArticle ? (
+        {activeArticle && activeDetails ? (
           
           /* Detailed View - Tier 1 Container */
-          <div className="card-tier-1 grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div 
+            className="premium-glass p-8 rounded-lg grid grid-cols-1 lg:grid-cols-3 gap-8"
+            style={{ backgroundColor: 'rgba(4, 11, 18, 0.8)' }}
+          >
             
             {/* Left Metrics Column */}
-            <div className="md:col-span-1 border-b md:border-b-0 md:border-r border-[#00F5B0]/15 pb-6 md:pb-0 md:pr-8 flex flex-col gap-6">
-              <span className="text-[10px] font-mono tracking-widest text-[#7A8694] uppercase">Resource Parameters</span>
-              
+            <div className="lg:col-span-1 border-b lg:border-b-0 lg:border-r border-white/5 pb-6 lg:pb-0 lg:pr-8 flex flex-col gap-6">
               <div>
-                <span className="text-[8px] text-[#7A8694] font-mono block mb-1">CLASSIFICATION</span>
-                <span className="text-sm font-semibold font-mono text-[#00F5B0] uppercase">{activeArticle.category}</span>
+                <span className="text-[9px] font-mono text-[#7A8694] uppercase tracking-wider block mb-1">Sector Classification</span>
+                <span 
+                  className="text-sm font-mono font-semibold"
+                  style={{ color: getCategoryStyle(getMappedCategory(activeArticle.category, activeArticle.id)).color }}
+                >
+                  {getMappedCategory(activeArticle.category, activeArticle.id).toUpperCase()}
+                </span>
               </div>
               
               <div>
-                <span className="text-[8px] text-[#7A8694] font-mono block mb-2">DEPLOYMENT READINESS STATUS</span>
+                <span className="text-[9px] font-mono text-[#7A8694] uppercase tracking-wider block mb-2">Deployment Readiness</span>
                 <div className="flex items-center gap-3">
-                  <div className="flex-1 h-3 bg-[#040B12] border border-[#00F5B0]/15 rounded overflow-hidden">
+                  <div className="flex-1 h-1 bg-white/5 rounded-full overflow-hidden">
                     <div 
-                      className="h-full bg-[#00F5B0]"
-                      style={{ width: `${activeArticle.readinessIndex}%` }}
+                      className="h-full"
+                      style={{ 
+                        width: `${activeArticle.readinessIndex}%`, 
+                        backgroundColor: getCategoryStyle(getMappedCategory(activeArticle.category, activeArticle.id)).color,
+                        boxShadow: `0 0 6px ${getCategoryStyle(getMappedCategory(activeArticle.category, activeArticle.id)).color}` 
+                      }}
                     />
                   </div>
-                  <span className="text-[#00F5B0] font-bold font-mono text-xs">{activeArticle.readinessIndex}%</span>
+                  <span className="font-mono text-xs font-semibold text-white/90">{activeArticle.readinessIndex}%</span>
                 </div>
               </div>
 
               <div>
-                <span className="text-[8px] text-[#7A8694] font-mono block mb-1">BIOSPHERE IMPACT COEFFICIENT</span>
-                <span className={`px-2 py-0.5 text-[9px] font-mono uppercase tracking-wider rounded-sm ${
+                <span className="text-[9px] font-mono text-[#7A8694] uppercase tracking-wider block mb-1">Impact Coefficient</span>
+                <span className={`px-2 py-0.5 text-[10px] font-mono rounded font-semibold inline-block ${
                   activeArticle.impactLevel === 'Critical' 
-                    ? 'bg-rose-950 text-rose-455 border border-rose-500/30' 
+                    ? 'bg-rose-950/40 text-rose-400 border border-rose-500/30' 
                     : 'bg-[#040B12] text-[#00F5B0] border border-[#00F5B0]/15'
                 }`}>
-                  {activeArticle.impactLevel}
+                  {activeArticle.impactLevel.toUpperCase()}
                 </span>
               </div>
 
-              <div className="mt-auto border-t border-[#00F5B0]/15 pt-4 flex flex-col gap-2">
-                <span className="text-[9px] font-mono text-slate-500">DATABASE REF: KB-{activeArticle.id.toUpperCase()}</span>
-                <span className="text-[9px] font-mono text-[#00F5B0]">STATUS: INTEGRATED PROTOCOL</span>
+              {/* Key Stats Table */}
+              {Object.keys(activeDetails.stats).length > 0 && (
+                <div className="border border-white/5 bg-black/40 rounded p-4 flex flex-col gap-2.5">
+                  <span className="text-[9px] font-mono text-[#7A8694] uppercase tracking-wider">Research Parameters</span>
+                  <table className="w-full text-[11px] text-left font-mono">
+                    <tbody>
+                      {Object.entries(activeDetails.stats).map(([k, v]) => (
+                        <tr key={k} className="border-b border-white/5 last:border-0">
+                          <td className="py-2 text-[#7A8694] font-light">{k}</td>
+                          <td className="py-2 text-white text-right font-medium">{v}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              <div className="mt-auto pt-4 flex flex-col gap-1.5 text-[9px] font-mono text-[#7A8694]">
+                <span>Database Ref: <span className="text-white">KB-{activeArticle.id.toUpperCase()}</span></span>
+                <span className="text-[#00F5B0] font-semibold">Status: Verified protocol</span>
               </div>
             </div>
 
             {/* Right Details Column */}
-            <div className="md:col-span-2 flex flex-col gap-6">
+            <div className="lg:col-span-2 flex flex-col gap-6">
               <div>
-                <h2 className="text-2xl font-light text-white uppercase tracking-wide mb-1">{activeArticle.title}</h2>
-                <p className="text-[#00D98F] text-xs font-mono font-medium">{activeArticle.shortDesc}</p>
+                <h2 className="text-xl font-light text-white mb-1 tracking-wide">{activeArticle.title}</h2>
+                <p className="text-[#00D98F] text-xs font-mono tracking-wider">{activeArticle.shortDesc}</p>
               </div>
 
-              <div className="card-tier-3 text-sm text-[#7A8694] leading-relaxed font-mono whitespace-pre-line">
+              <div className="bg-black/35 border border-white/5 rounded-lg p-5 text-xs text-[#A8B3BC] leading-relaxed font-light">
                 {activeArticle.content}
               </div>
+
+              {/* Opportunities & Risks list */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-t border-white/5 pt-4">
+                <div className="flex flex-col gap-3">
+                  <span className="text-[10px] text-rose-400 font-mono uppercase tracking-wider font-semibold">Key Vulnerabilities</span>
+                  <ul className="list-none p-0 m-0 flex flex-col gap-2.5 text-xs text-[#7A8694] font-light">
+                    {activeDetails.risks.map((risk, idx) => (
+                      <li key={idx} className="flex gap-2 items-start leading-relaxed text-left">
+                        <span className="w-1.5 h-1.5 rounded-full bg-rose-500 mt-1.5 flex-shrink-0" />
+                        <span>{risk}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                
+                <div className="flex flex-col gap-3">
+                  <span className="text-[10px] text-[#00F5B0] font-mono uppercase tracking-wider font-semibold">Strategic Opportunities</span>
+                  <ul className="list-none p-0 m-0 flex flex-col gap-2.5 text-xs text-[#7A8694] font-light">
+                    {activeDetails.opportunities.map((opp, idx) => (
+                      <li key={idx} className="flex gap-2 items-start leading-relaxed text-left">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#00F5B0] mt-1.5 flex-shrink-0" />
+                        <span>{opp}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              {/* Future Outlook */}
+              <div className="flex flex-col gap-2 border-t border-white/5 pt-4">
+                <span className="text-[10px] text-[#7A8694] font-mono uppercase tracking-wider font-semibold">Future Outlook</span>
+                <p className="text-xs text-[#00F5B0]/95 font-mono italic m-0 bg-[#00F5B0]/5 border border-[#00F5B0]/10 rounded p-3">
+                  {activeDetails.outlook}
+                </p>
+              </div>
+
+              {/* Sources Bibliography */}
+              {activeDetails.sources && activeDetails.sources.length > 0 && (
+                <div className="flex flex-col gap-2 border-t border-white/5 pt-4">
+                  <span className="text-[10px] text-[#7A8694] font-mono uppercase tracking-wider font-semibold">Sources & Citations</span>
+                  <div className="flex flex-col gap-1">
+                    {activeDetails.sources.map((src, idx) => (
+                      <div key={idx} className="text-[10px] text-white/55 font-mono leading-relaxed border-l-2 border-white/10 pl-3 py-0.5">
+                        {src}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
           </div>
@@ -167,49 +376,62 @@ function KnowledgeBaseContent() {
           /* Database Grid View - 3 columns */
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredArticles.length === 0 ? (
-              <div className="col-span-3 text-center py-20 font-mono text-xs text-[#7A8694]">
-                NO RESOURCE SHARDS COMPILED IN THIS SECTOR.
+              <div className="col-span-3 text-center py-20 text-xs text-[#7A8694] premium-glass rounded-lg">
+                No resource shards compiled in this sector.
               </div>
             ) : (
-              filteredArticles.map(art => (
-                <div
-                  key={art.id}
-                  onClick={() => setExpandedArticleId(art.id)}
-                  className="card-tier-2 cursor-pointer flex flex-col justify-between p-5 min-h-[300px]"
-                >
-                  {/* Thumbnail Area Placeholder */}
-                  <div className="h-28 w-full bg-[#02060A]/85 border border-[#00F5B0]/15 rounded flex items-center justify-center relative overflow-hidden group-hover:border-[#00F5B0]/30 transition-colors">
-                    <div className="absolute inset-0 bg-gradient-to-tr from-[#00F5B0]/5 to-transparent opacity-40" />
-                    <div className="text-[9px] font-mono text-[#00F5B0]/35 tracking-wider uppercase font-semibold">DB-SHARD REF: {art.id.toUpperCase()}</div>
-                    {/* Subtle grid line decorative pattern */}
-                    <div className="absolute inset-0 bg-[linear-gradient(rgba(0,245,176,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(0,245,176,0.02)_1px,transparent_1px)] bg-[size:10px_10px]" />
-                  </div>
+              filteredArticles.map(art => {
+                const mappedCategory = getMappedCategory(art.category, art.id);
+                const style = getCategoryStyle(mappedCategory);
+                return (
+                  <div
+                    key={art.id}
+                    onClick={() => setExpandedArticleId(art.id)}
+                    className="group premium-glass cursor-pointer flex flex-col justify-between p-6 min-h-[260px] border border-white/5 hover:translate-y-[-4px] transition-all duration-300"
+                    style={{
+                      backgroundColor: 'rgba(4, 11, 18, 0.75)',
+                      '--glow-color': style.color
+                    } as any}
+                  >
+                    <div className="flex flex-col gap-4 flex-1">
+                      <div className="flex justify-between items-center text-[10px] font-mono tracking-wider">
+                        <span className="font-semibold uppercase" style={{ color: style.color }}>{mappedCategory}</span>
+                        <span className={art.impactLevel === 'Critical' ? 'text-rose-400 font-semibold' : 'text-[#7A8694]'}>
+                          {art.impactLevel.toUpperCase()} IMPACT
+                        </span>
+                      </div>
 
-                  <div className="flex flex-col gap-2.5 flex-1">
-                    <div className="flex justify-between items-center text-[9px] font-mono">
-                      <span className="text-[#00F5B0] font-semibold uppercase">{art.category}</span>
-                      <span className={art.impactLevel === 'Critical' ? 'text-rose-400 font-bold text-[8px] uppercase' : 'text-[#7A8694] text-[8px] uppercase'}>{art.impactLevel} Impact</span>
+                      <div className="flex flex-col gap-2">
+                        <h3 className="text-sm font-semibold text-white group-hover:text-white leading-snug tracking-wide m-0 transition-colors">
+                          {art.title}
+                        </h3>
+                        <p className="text-xs text-[#7A8694] leading-relaxed line-clamp-3 font-light m-0">{art.shortDesc}</p>
+                      </div>
                     </div>
 
-                    <div className="flex flex-col gap-1">
-                      <h3 className="text-base font-light text-white group-hover:text-[#00F5B0] transition-colors uppercase leading-snug tracking-wide">
-                        {art.title}
-                      </h3>
-                      <p className="text-xs text-[#7A8694] leading-relaxed line-clamp-3">{art.shortDesc}</p>
+                    <div className="border-t border-white/5 pt-3 mt-6 flex justify-between items-center text-[10px] font-mono">
+                      <span className="text-[#7A8694]">Readiness: <span className="text-white font-semibold">{art.readinessIndex}%</span></span>
+                      <span 
+                        className="group-hover:underline uppercase tracking-wider font-semibold"
+                        style={{ color: style.color }}
+                      >
+                        Inspect →
+                      </span>
                     </div>
                   </div>
-
-                  <div className="border-t border-[#00F5B0]/10 pt-2.5 mt-auto flex justify-between items-center text-[9px] font-mono">
-                    <span className="text-[#7A8694]">READINESS: {art.readinessIndex}%</span>
-                    <span className="text-[#00F5B0] font-bold uppercase tracking-wider group-hover:underline">Inspect &gt;</span>
-                  </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         )}
       </div>
 
+      <style jsx global>{`
+        .group:hover {
+          border-color: var(--glow-color, rgba(0, 245, 176, 0.3)) !important;
+          box-shadow: 0 0 20px var(--glow-color, rgba(0, 245, 176, 0.1)) !important;
+        }
+      `}</style>
     </div>
   );
 }
@@ -218,8 +440,8 @@ export default function KnowledgePage() {
   return (
     <main className="h-screen w-screen overflow-y-auto bg-[#02060A] text-[#e2e8f0] relative custom-scrollbar">
       <BackgroundEffects earthMode="cyber" />
-      <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-[rgba(2,8,15,0.95)] to-transparent pointer-events-none z-10" />
-      <Navbar earthMode="cyber" />
+      <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-[rgba(2,6,10,0.95)] to-transparent pointer-events-none z-10" />
+      <Navbar />
       <Suspense fallback={
         <div className="h-full w-full flex items-center justify-center font-mono text-[#00F5B0] text-xs">
           DECRYPTING KNOWLEDGE SHEETS...

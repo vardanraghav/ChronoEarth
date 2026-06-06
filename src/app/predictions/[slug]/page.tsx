@@ -187,6 +187,7 @@ export default function PredictionDetailPage({ params }: { params: Promise<Param
   const [newAuthor, setNewAuthor] = useState('');
   const [newContent, setNewContent] = useState('');
   const [sortMode, setSortMode] = useState<'top' | 'newest'>('top');
+  const [avatarError, setAvatarError] = useState(false);
 
   // Load bookmarks & votes from localStorage
   useEffect(() => {
@@ -381,13 +382,13 @@ Generated via ChronoEarth forecast engine.`;
 
       <Navbar earthMode="cyber" />
 
-      <div className="content-container pt-32 pb-20 relative z-20 flex flex-col gap-8 animate-fade-up">
+      <div className="reading-container pt-36 pb-24 relative z-20 flex flex-col gap-8 animate-fade-up">
         
         {/* Navigation Breadcrumb */}
-        <div className="flex items-center gap-2 font-mono text-[10px] text-[#00F5B0]">
-          <Link href="/predictions" className="hover:text-white transition-colors">FORECASTS DIRECTORY</Link>
+        <div className="flex items-center gap-2 text-xs text-[#00F5B0]">
+          <Link href="/predictions" className="hover:text-white transition-colors">Forecasts directory</Link>
           <span>/</span>
-          <span className="text-[#7A8694]">{p.title.toUpperCase()}</span>
+          <span className="text-[#7A8694]">{p.title}</span>
         </div>
 
         {/* 2-Column Dashboard layout */}
@@ -398,42 +399,42 @@ Generated via ChronoEarth forecast engine.`;
             <div className="card-tier-2 flex flex-col gap-6">
 
               <div className="flex flex-col gap-1 border-b border-[#00F5B0]/15 pb-4">
-                <span className="text-[9px] font-mono text-[#7A8694]">FORECAST ID: {p.id.toUpperCase()}</span>
-                <h2 className="text-lg font-bold text-white uppercase tracking-wider">Metrics Matrix</h2>
+                <span className="text-xs text-[#7A8694]">Forecast ID: <span className="font-mono">{p.id.toUpperCase()}</span></span>
+                <h2 className="text-lg font-normal text-white">Metrics matrix</h2>
               </div>
 
               {/* Gauges */}
               <div className="flex justify-around items-center py-2 border-b border-[#00F5B0]/15">
-                <CircularGauge value={p.confidenceScore} color={C.cyan} label="Confidence Score" />
-                <CircularGauge value={82} color={C.emerald} label="Planetary Stability" />
+                <CircularGauge value={p.confidenceScore} color={C.cyan} label="Confidence score" />
+                <CircularGauge value={82} color={C.emerald} label="Planetary stability" />
               </div>
 
               {/* Stats Lists */}
-              <div className="flex flex-col gap-3 font-mono text-xs border-b border-[#00F5B0]/15 pb-4">
+              <div className="flex flex-col gap-3 text-xs border-b border-[#00F5B0]/15 pb-4">
                 <div className="flex justify-between">
-                  <span className="text-slate-500 text-[10px]">GEOLOCATION KEY</span>
-                  <span className="text-[#00F5B0] font-semibold">{p.city.toUpperCase()}</span>
+                  <span className="text-[#7A8694]">Geolocation</span>
+                  <span className="text-[#00F5B0] font-medium">{p.city}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500 text-[10px]">TARGET CHRONO-YEAR</span>
-                  <span className="text-[#00F5B0] font-bold">{p.year} FORECAST</span>
+                  <span className="text-[#7A8694]">Target chrono-year</span>
+                  <span className="text-[#00F5B0] font-medium">{p.year} forecast</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500 text-[10px]">UPVOTES REGISTERED</span>
-                  <span className="text-white font-bold">{votesCount} Net Votes</span>
+                  <span className="text-[#7A8694]">Upvotes registered</span>
+                  <span className="text-white font-medium">{votesCount} net votes</span>
                 </div>
               </div>
 
               {/* Mini Charts */}
               <div className="flex flex-col gap-3">
-                <span className="text-[10px] font-mono tracking-wider text-slate-500 uppercase">SIMULATED DATA TRENDS</span>
+                <span className="text-xs text-[#7A8694] font-medium">Simulated data trends</span>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="card-tier-3 flex flex-col">
-                    <span className="text-[7px] text-[#7A8694] font-mono block mb-1">STRENGTH VARIATION</span>
+                    <span className="text-xs text-[#7A8694] block mb-1">Strength variation</span>
                     <MiniSparkline color={C.cyan} />
                   </div>
                   <div className="card-tier-3 flex flex-col">
-                    <span className="text-[7px] text-[#7A8694] font-mono block mb-1">NETWORK ACCURACY</span>
+                    <span className="text-xs text-[#7A8694] block mb-1">Network accuracy</span>
                     <MiniSparkline color={C.emerald} />
                   </div>
                 </div>
@@ -446,42 +447,42 @@ Generated via ChronoEarth forecast engine.`;
                 <div className="flex border border-[#00F5B0]/15 rounded overflow-hidden">
                   <button
                     onClick={() => triggerVote('up')}
-                    className={`flex-1 py-2 font-mono text-[9px] tracking-widest uppercase transition-all ${
+                    className={`flex-1 py-2 text-xs transition-all ${
                       hasVoted === 'up'
-                        ? 'bg-[#040B12] text-[#00F5B0] border-r border-[#00F5B0]/15'
+                        ? 'bg-[#040B12] text-[#00F5B0] border-r border-[#00F5B0]/15 font-medium'
                         : 'bg-[#00F5B0]/5 hover:bg-[#00F5B0]/10 text-[#7A8694] border-r border-[#00F5B0]/15'
                     }`}
                   >
-                    ▲ VOTE PROBABLE
+                    ▲ Vote probable
                   </button>
                   <button
                     onClick={() => triggerVote('down')}
-                    className={`flex-1 py-2 font-mono text-[9px] tracking-widest uppercase transition-all ${
+                    className={`flex-1 py-2 text-xs transition-all ${
                       hasVoted === 'down'
-                        ? 'bg-rose-950/65 text-rose-455'
+                        ? 'bg-rose-950/65 text-rose-455 font-medium'
                         : 'bg-[#00F5B0]/5 hover:bg-[#00F5B0]/10 text-[#7A8694]'
                     }`}
                   >
-                    ▼ VOTE IMPROBABLE
+                    ▼ Vote improbable
                   </button>
                 </div>
 
                 {/* Bookmark Toggle */}
                 <button
                   onClick={toggleSave}
-                  className={`w-full py-2 font-mono text-[9px] tracking-widest uppercase border rounded transition-all duration-200 ${
+                  className={`w-full py-2 text-xs border rounded transition-all duration-200 ${
                     isSaved
-                      ? 'bg-[#00F5B0]/10 border-[#00F5B0] text-[#00F5B0] font-bold shadow-none'
+                      ? 'bg-[#00F5B0]/10 border-[#00F5B0] text-[#00F5B0] font-medium shadow-none'
                       : 'bg-transparent border-[#00F5B0]/15 text-[#7A8694] hover:border-[#00F5B0]/35 hover:text-white'
                   }`}
                 >
-                  {isSaved ? '🔖 TIMELINE PATH SAVED' : '🔖 SAVE FOR MONITORING'}
+                  {isSaved ? '🔖 Timeline path saved' : '🔖 Save for monitoring'}
                 </button>
 
                 {/* Share Link */}
                 <button
                   onClick={triggerShare}
-                  className="w-full py-2 font-mono text-[9px] tracking-widest uppercase bg-[#00F5B0]/10 border border-[#00D98F]/20 hover:border-[#00D98F]/50 text-[#00F5B0] rounded transition-all duration-200"
+                  className="w-full py-2 text-xs bg-[#00F5B0]/10 border border-[#00D98F]/20 hover:border-[#00D98F]/50 text-[#00F5B0] rounded transition-all duration-200"
                 >
                   🔗 {shareText}
                 </button>
@@ -489,9 +490,9 @@ Generated via ChronoEarth forecast engine.`;
                 {/* Download Report */}
                 <button
                   onClick={triggerExport}
-                  className="w-full py-2 font-mono text-[9px] tracking-widest uppercase bg-[#00F5B0] hover:bg-[#00D98F] text-[#02060A] font-bold rounded transition-all duration-200"
+                  className="w-full py-2 text-xs bg-[#00F5B0] hover:bg-[#00D98F] text-[#02060A] font-medium rounded transition-all duration-200"
                 >
-                  ⚡ EXPORT INTEL REPORT (.TXT)
+                  ⚡ Export intelligence report (.txt)
                 </button>
 
               </div>
@@ -505,13 +506,13 @@ Generated via ChronoEarth forecast engine.`;
             {/* Forecast Content Panel */}
             <div className="card-tier-1 flex flex-col gap-6">
 
-              <div className="flex justify-between items-center text-[10px] font-mono">
-                <span className="px-2 py-0.5 bg-[#040B12] text-[#00F5B0] border border-[#00F5B0]/20 uppercase tracking-wider rounded-sm">{p.category}</span>
-                <span className="text-[#00F5B0] uppercase tracking-widest">{p.year} TIMELINE SHARD</span>
+              <div className="flex justify-between items-center text-xs">
+                <span className="px-2 py-0.5 bg-[#040B12] text-[#00F5B0] border border-[#00F5B0]/20 rounded-sm">{p.category}</span>
+                <span className="text-[#00F5B0]">{p.year} timeline shard</span>
               </div>
 
               <div>
-                <h1 className="text-3xl font-light text-white uppercase tracking-wide mb-2">{p.title}</h1>
+                <h1 className="text-2xl font-light text-white mb-2">{p.title}</h1>
                 
                 {/* Author Block */}
                 {authorObj && (
@@ -519,27 +520,35 @@ Generated via ChronoEarth forecast engine.`;
                     href={`/futurologists/${authorObj.slug}`}
                     className="flex items-center gap-3 w-fit mt-3 group"
                   >
-                    <img 
-                      src={authorObj.avatar} 
-                      alt={p.author} 
-                      className="w-8 h-8 rounded-full border border-[#00F5B0]/30 object-cover shadow-none group-hover:scale-105 transition-transform"
-                    />
+                    {avatarError ? (
+                      <div className="w-8 h-8 rounded-full border border-[#00F5B0]/30 flex items-center justify-center bg-[#040B12] text-[9px] font-mono text-[#00F5B0] font-bold shrink-0">
+                        {p.author.split(' ').map(n => n[0]).join('')}
+                      </div>
+                    ) : (
+                      <img 
+                        src={authorObj.avatar} 
+                        alt={p.author} 
+                        loading="lazy"
+                        onError={() => setAvatarError(true)}
+                        className="w-8 h-8 rounded-full border border-[#00F5B0]/30 object-cover shadow-none group-hover:scale-105 transition-transform shrink-0"
+                      />
+                    )}
                     <div>
-                      <span className="text-xs font-semibold text-white group-hover:text-[#00F5B0] transition-colors">{p.author}</span>
-                      <span className="text-[8px] font-mono text-[#7A8694] uppercase block">{authorObj.role}</span>
+                      <span className="text-xs font-medium text-white group-hover:text-[#00F5B0] transition-colors">{p.author}</span>
+                      <span className="text-xs text-[#7A8694] block">{authorObj.role}</span>
                     </div>
                   </Link>
                 )}
               </div>
 
-              <div className="border-t border-[#00F5B0]/15 pt-6 text-sm leading-relaxed text-[#7A8694] font-sans whitespace-pre-wrap">
+              <div className="border-t border-[#00F5B0]/15 pt-6 text-sm leading-relaxed text-[#7A8694] whitespace-pre-wrap">
                 {p.description}
               </div>
 
               {/* Tags */}
               <div className="flex flex-wrap gap-2 pt-2 border-t border-[#00F5B0]/15">
                 {p.tags.map(tag => (
-                  <span key={tag} className="px-2 py-1 bg-[#00F5B0]/10 text-[9px] font-mono text-[#00F5B0] uppercase tracking-wider border border-[#00F5B0]/10 rounded-full">
+                  <span key={tag} className="px-2 py-1 bg-[#00F5B0]/10 text-xs text-[#00F5B0] border border-[#00F5B0]/10 rounded-full">
                     #{tag.replace(/\s+/g, '')}
                   </span>
                 ))}

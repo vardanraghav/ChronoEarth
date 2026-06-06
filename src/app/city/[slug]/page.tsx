@@ -51,27 +51,27 @@ function CommentNode({ comment, onReply, onVote }: CommentNodeProps) {
     <div className="border-l border-[#00F5B0]/20 pl-5 mt-5 flex flex-col gap-2 relative">
       <div className="absolute -left-[3px] top-1.5 w-1.5 h-1.5 rounded-full bg-[#040B12] border border-[#00F5B0]/20" />
       
-      <div className="flex justify-between items-center text-[10px] font-mono text-[#00F5B0] tracking-wider">
-        <span className="font-semibold text-white">{comment.author}</span>
+      <div className="flex justify-between items-center text-xs text-[#00F5B0]">
+        <span className="text-white">{comment.author}</span>
         <span className="text-[#7A8694]">{new Date(comment.timestamp).toLocaleDateString()}</span>
       </div>
       
-      <p className="text-xs text-[#7A8694] font-sans leading-relaxed">
+      <p className="text-xs text-[#7A8694] leading-relaxed">
         {comment.content}
       </p>
       
-      <div className="flex items-center gap-4 text-[9px] font-mono mt-1">
+      <div className="flex items-center gap-4 text-xs mt-1">
         <button 
           onClick={() => onVote(comment.id)} 
-          className="text-[#00F5B0] hover:text-[#00D98F] transition-colors font-semibold"
+          className="text-[#00F5B0] hover:text-[#00D98F] transition-colors font-mono"
         >
           ▲ {comment.votes}
         </button>
         <button 
           onClick={() => setReplyOpen(!replyOpen)} 
-          className="text-[#00F5B0] hover:underline transition-all uppercase tracking-widest text-[8px]"
+          className="text-[#00F5B0] hover:underline transition-all"
         >
-          {replyOpen ? '[CLOSE]' : '[REPLY]'}
+          {replyOpen ? 'Close reply' : 'Reply'}
         </button>
       </div>
 
@@ -79,22 +79,22 @@ function CommentNode({ comment, onReply, onVote }: CommentNodeProps) {
         <form onSubmit={submitReply} className="mt-3 flex flex-col gap-3 card-tier-3">
           <input
             type="text"
-            placeholder="Identity Alias..."
+            placeholder="Identity alias..."
             value={replyAuthor}
             onChange={e => setReplyAuthor(e.target.value)}
-            className="bg-transparent border-b border-[#00F5B0]/15 text-xs text-white py-1.5 outline-none focus:border-[#00F5B0] font-mono"
+            className="bg-transparent border-b border-[#00F5B0]/15 text-xs text-white py-1.5 outline-none focus:border-[#00F5B0]"
             required
           />
           <textarea
             placeholder="Synthesize transmission reply..."
             value={replyContent}
             onChange={e => setReplyContent(e.target.value)}
-            className="bg-transparent border border-[#00F5B0]/15 text-xs text-slate-300 p-2 outline-none focus:border-[#00F5B0] rounded min-h-[60px] font-sans leading-relaxed"
+            className="bg-transparent border border-[#00F5B0]/15 text-xs text-slate-300 p-2 outline-none focus:border-[#00F5B0] rounded min-h-[60px] leading-relaxed"
             required
           />
-          <div className="flex gap-2 justify-end">
-            <button type="button" onClick={() => setReplyOpen(false)} className="text-[9px] font-mono text-slate-500 uppercase px-2 hover:text-white">Cancel</button>
-            <button type="submit" className="text-[9px] font-mono text-[#00F5B0] border border-[#00F5B0]/20 hover:border-transparent hover:bg-[#00F5B0] hover:text-[#02060A] bg-transparent uppercase px-3 py-1.5">Reply</button>
+          <div className="flex gap-2 justify-end text-xs">
+            <button type="button" onClick={() => setReplyOpen(false)} className="text-slate-500 px-2 hover:text-white">Cancel</button>
+            <button type="submit" className="text-[#00F5B0] border border-[#00F5B0]/20 hover:border-transparent hover:bg-[#00F5B0] hover:text-[#02060A] bg-transparent px-3 py-1">Reply</button>
           </div>
         </form>
       )}
@@ -142,6 +142,8 @@ export default function CityDetailPage({ params }: { params: Promise<Params> }) 
   const [newContent, setNewContent] = useState('');
   const [liked, setLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(148);
+  const [imageError, setImageError] = useState(false);
+  const [failedAvatars, setFailedAvatars] = useState<Record<string, boolean>>({});
 
   // Load comments & likes from localStorage
   useEffect(() => {
@@ -179,9 +181,9 @@ export default function CityDetailPage({ params }: { params: Promise<Params> }) 
 
   if (!city || !cityExtended) {
     return (
-      <main className="h-screen w-screen bg-[#02060A] flex flex-col items-center justify-center text-white gap-4 font-mono">
-        <div>[ERROR // CITY ARCHIVE ACCESS CORRUPTED]</div>
-        <Link href="/" className="text-[#00F5B0] hover:underline">[← RETURN TO MAIN GRID]</Link>
+      <main className="h-screen w-screen bg-[#02060A] flex flex-col items-center justify-center text-white gap-4">
+        <div>City archive access corrupted</div>
+        <Link href="/" className="text-[#00F5B0] hover:underline">← Return to main grid</Link>
       </main>
     );
   }
@@ -252,15 +254,6 @@ export default function CityDetailPage({ params }: { params: Promise<Params> }) 
     localStorage.setItem(`chrono_city_comments_${slug}`, JSON.stringify(updated));
   };
 
-  const panelStyle: React.CSSProperties = {
-    background: 'rgba(2, 8, 15, 0.75)',
-    backdropFilter: 'blur(24px)',
-    border: '1px solid rgba(255, 255, 255, 0.05)',
-    borderRadius: '4px',
-    padding: '32px',
-    position: 'relative',
-    overflow: 'hidden',
-  };
   return (
     <main className="h-screen w-screen overflow-y-auto bg-[#02060A] text-[#e2e8f0] relative custom-scrollbar">
       <BackgroundEffects earthMode="cyber" />
@@ -268,13 +261,13 @@ export default function CityDetailPage({ params }: { params: Promise<Params> }) 
 
       <Navbar earthMode="cyber" />
 
-      <div className="content-container pt-32 pb-20 relative z-20 flex flex-col gap-12 animate-fade-up">
+      <div className="reading-container pt-36 pb-24 relative z-20 flex flex-col gap-12 animate-fade-up">
         
         {/* Navigation Link */}
-        <div className="flex items-center gap-2 font-mono text-[10px] text-[#00F5B0] tracking-widest uppercase mb-2 select-none">
-          <Link href="/" className="hover:text-white transition-colors">ORBIT SCANNER</Link>
+        <div className="flex items-center gap-2 text-xs text-[#00F5B0] mb-2 select-none">
+          <Link href="/" className="hover:text-white transition-colors">Orbit scanner</Link>
           <span>/</span>
-          <span className="text-[#7A8694]">{city.name} BRIEFING</span>
+          <span className="text-[#7A8694]">{city.name} briefing</span>
         </div>
 
         {/* ── HERO BANNER SECTION ────────────────────────────────────────── */}
@@ -284,7 +277,7 @@ export default function CityDetailPage({ params }: { params: Promise<Params> }) 
               {city.name}
             </h1>
             <p className="editorial-subtitle text-[#7A8694]">
-              {city.country} Hub Matrix · Coordinates: {city.lat.toFixed(4)}° N, {city.lon.toFixed(4)}° E
+              {city.country} hub matrix · Coordinates: <span className="font-mono">{city.lat.toFixed(4)}° N, {city.lon.toFixed(4)}° E</span>
             </p>
           </div>
 
@@ -294,7 +287,7 @@ export default function CityDetailPage({ params }: { params: Promise<Params> }) 
               <button
                 key={yr}
                 onClick={() => setActiveYear(yr)}
-                className={`px-5 py-1.5 font-mono text-[9px] uppercase tracking-widest rounded-sm transition-all ${
+                className={`px-5 py-1.5 text-xs rounded-sm transition-all ${
                   activeYear === yr
                     ? 'bg-[#00F5B0] text-[#02060A] font-medium'
                     : 'text-[#7A8694] hover:text-white'
@@ -307,38 +300,47 @@ export default function CityDetailPage({ params }: { params: Promise<Params> }) 
         </div>
 
         {/* Large Cover Image (Beneath name and brief) */}
-        <div className="w-full h-[360px] overflow-hidden rounded border border-[#00F5B0]/15 relative">
-          <img 
-            src={cityExtended.image} 
-            alt={city.name} 
-            loading="lazy"
-            className="w-full h-full object-cover filter brightness-[0.70] contrast-[1.02]" 
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#02060A]/80 via-transparent to-transparent" />
+        <div className="w-full h-[360px] overflow-hidden rounded border border-[#00F5B0]/15 relative bg-black/40">
+          {imageError ? (
+            <div className="w-full h-full flex flex-col items-center justify-center relative overflow-hidden bg-gradient-to-br from-[#040B12] to-[#02060A]">
+              <div className="absolute inset-0 opacity-10 bg-[linear-gradient(rgba(0,245,176,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(0,245,176,0.1)_1px,transparent_1px)] bg-[size:20px_20px]" />
+              <div className="absolute w-48 h-48 rounded-full border border-[#00F5B0]/10 animate-breathe" />
+              <span className="text-xs font-mono text-[#00F5B0]/60 uppercase tracking-[0.25em] z-10">Telemetry Feed Offline</span>
+            </div>
+          ) : (
+            <img 
+              src={cityExtended.image} 
+              alt={city.name} 
+              loading="lazy"
+              onError={() => setImageError(true)}
+              className="w-full h-full object-cover filter brightness-[0.70] contrast-[1.02]" 
+            />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#02060A]/80 via-transparent to-transparent pointer-events-none" />
         </div>
 
         {/* 3 Key Metrics directly below cover image */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="card-tier-2 flex flex-col gap-3 p-5">
-            <span className="font-mono text-[9px] tracking-widest text-[#00F5B0] uppercase font-bold">AI Integration</span>
-            <span className="text-4xl font-light text-white">{aiAdoption.toFixed(0)}%</span>
-            <p className="text-xs text-[#7A8694] leading-relaxed font-serif">
+            <span className="text-xs text-[#00F5B0]">AI integration</span>
+            <span className="text-4xl font-light text-white font-mono">{aiAdoption.toFixed(0)}%</span>
+            <p className="text-xs text-[#7A8694] leading-relaxed">
               Autonomous municipal systems manage transit pathways, microgrids, and local safety meshes, achieving high-efficiency resource routing.
             </p>
           </div>
           
           <div className="card-tier-2 flex flex-col gap-3 p-5">
-            <span className="font-mono text-[9px] tracking-widest text-[#00F5B0] uppercase font-bold">Climate Stability</span>
-            <span className="text-4xl font-light text-white">{climateStability.toFixed(0)}%</span>
-            <p className="text-xs text-[#7A8694] leading-relaxed font-serif">
+            <span className="text-xs text-[#00F5B0]">Climate stability</span>
+            <span className="text-4xl font-light text-white font-mono">{climateStability.toFixed(0)}%</span>
+            <p className="text-xs text-[#7A8694] leading-relaxed">
               Active geo-adaptive interventions, thermal cooling structures, and micro-climate management help maintain regional biological indicators.
             </p>
           </div>
 
           <div className="card-tier-2 flex flex-col gap-3 p-5">
-            <span className="font-mono text-[9px] tracking-widest text-[#00F5B0] uppercase font-bold">Renewable Energy</span>
-            <span className="text-4xl font-light text-white">{renewableEnergy.toFixed(0)}%</span>
-            <p className="text-xs text-[#7A8694] leading-relaxed font-serif">
+            <span className="text-xs text-[#00F5B0]">Renewable energy</span>
+            <span className="text-4xl font-light text-white font-mono">{renewableEnergy.toFixed(0)}%</span>
+            <p className="text-xs text-[#7A8694] leading-relaxed">
               Localized energy harvesting—powered by thin-film photovoltaic surfaces and deep thermal conversion loops—supports the municipal power grid.
             </p>
           </div>
@@ -346,8 +348,8 @@ export default function CityDetailPage({ params }: { params: Promise<Params> }) 
 
         {/* Central Editorial Narrative Briefing */}
         <div className="max-w-3xl flex flex-col gap-3 my-2">
-          <h2 className="font-display text-xl font-light text-white uppercase tracking-wide border-b border-[#00F5B0]/15 pb-1.5 mb-2">Planetary Integration & Outlook</h2>
-          <p className="font-serif text-sm text-[#7A8694] leading-relaxed font-light">
+          <h2 className="text-lg font-light text-white border-b border-[#00F5B0]/15 pb-1.5 mb-2">Planetary integration & outlook</h2>
+          <p className="text-sm text-[#7A8694] leading-relaxed font-light">
             As we approach the mid-century threshold, {city.name} undergoes a profound ecological and technological reorganization. 
             Under the guidance of planetary coordinator nodes, the metropolis faces evolving climate regimes with automated adaptive infrastructure. 
             The following matrix outlines the telemetry forecasts, technological milestones, and community consensus data for the year {activeYear}.
@@ -357,41 +359,41 @@ export default function CityDetailPage({ params }: { params: Promise<Params> }) 
         {/* Secondary Metrics Dashboard Section */}
         <div className="flex flex-col gap-6">
           <div className="border-b border-[#00F5B0]/15 pb-2">
-            <h2 className="text-base font-light text-white tracking-wider uppercase font-mono">
-              Secondary Telemetry Indices ({activeYear})
+            <h2 className="text-base font-light text-white">
+              Secondary telemetry indices ({activeYear})
             </h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="card-tier-3 flex flex-col gap-2 p-4">
-              <span className="font-mono text-[9px] tracking-widest text-[#7A8694] uppercase">Mobility Index</span>
-              <span className="text-2xl font-light text-white">{transportIndex.toFixed(0)}%</span>
-              <p className="text-xs text-[#7A8694] leading-relaxed font-serif">
+              <span className="text-xs text-[#7A8694]">Mobility index</span>
+              <span className="text-2xl font-light text-white font-mono">{transportIndex.toFixed(0)}%</span>
+              <p className="text-xs text-[#7A8694] leading-relaxed">
                 Autonomous travel grids deploy demand-matched drone pods and subterranean high-speed tubes.
               </p>
             </div>
 
             <div className="card-tier-3 flex flex-col gap-2 p-4">
-              <span className="font-mono text-[9px] tracking-widest text-[#7A8694] uppercase">Digital Infrastructure</span>
-              <span className="text-2xl font-light text-white">{digitalInfra.toFixed(0)}%</span>
-              <p className="text-xs text-[#7A8694] leading-relaxed font-serif">
+              <span className="text-xs text-[#7A8694]">Digital infrastructure</span>
+              <span className="text-2xl font-light text-white font-mono">{digitalInfra.toFixed(0)}%</span>
+              <p className="text-xs text-[#7A8694] leading-relaxed">
                 High-density optical transceivers and secure local ledgers prevent system telemetry desynchronization.
               </p>
             </div>
 
             <div className="card-tier-3 flex flex-col gap-2 p-4">
-              <span className="font-mono text-[9px] tracking-widest text-[#7A8694] uppercase">Orbital Space Sync</span>
-              <span className="text-2xl font-light text-white">{orbitalCoverage.toFixed(0)}%</span>
-              <p className="text-xs text-[#7A8694] leading-relaxed font-serif">
+              <span className="text-xs text-[#7A8694]">Orbital space sync</span>
+              <span className="text-2xl font-light text-white font-mono">{orbitalCoverage.toFixed(0)}%</span>
+              <p className="text-xs text-[#7A8694] leading-relaxed">
                 Direct satellite links from low-orbit tracking constellations verify regional carbon density.
               </p>
             </div>
 
             <div className="card-tier-3 flex flex-col gap-2 p-4 md:col-span-3">
-              <span className="font-mono text-[9px] tracking-widest text-[#7A8694] uppercase font-bold">Demographics & carrying capacity</span>
-              <span className="text-2xl font-light text-white">{population.toFixed(1)} Million Residents</span>
-              <p className="text-xs text-[#7A8694] leading-relaxed font-serif">
-                The city carrying capacity is projected to expand at an annual rate of +{((city.offsets.popGrowth - 1)*100).toFixed(1)}%. Biophilic zoning allows for high-density living without accelerating urban strain or carbon release.
+              <span className="text-xs text-[#7A8694]">Demographics & carrying capacity</span>
+              <span className="text-2xl font-light text-white"><span className="font-mono">{population.toFixed(1)}</span> million residents</span>
+              <p className="text-xs text-[#7A8694] leading-relaxed">
+                The city carrying capacity is projected to expand at an annual rate of +<span className="font-mono">{((city.offsets.popGrowth - 1)*100).toFixed(1)}%</span>. Biophilic zoning allows for high-density living without accelerating urban strain or carbon release.
               </p>
             </div>
           </div>
@@ -400,8 +402,8 @@ export default function CityDetailPage({ params }: { params: Promise<Params> }) 
         {/* ── SECTION 3: PREDICTIONS TIMELINE ───────────────────────────────── */}
         <div className="card-tier-2 flex flex-col gap-8">
           <div className="border-b border-[#00F5B0]/15 pb-3">
-            <h2 className="text-lg font-light text-white tracking-wider uppercase">
-              Roadmap Projections
+            <h2 className="text-lg font-light text-white">
+              Roadmap projections
             </h2>
           </div>
 
@@ -414,18 +416,18 @@ export default function CityDetailPage({ params }: { params: Promise<Params> }) 
                   <div className="absolute -left-1 w-2 h-2 rounded-full bg-[#00F5B0] mt-2" />
                   
                   <div className="card-tier-3 flex flex-col gap-2">
-                    <div className="flex justify-between items-center text-[10px] font-mono text-[#7A8694] tracking-wider">
-                      <span className="font-semibold">{year} TARGET</span>
-                      <span className="uppercase">{pred.category}</span>
+                    <div className="flex justify-between items-center text-xs text-[#7A8694]">
+                      <span><span className="font-mono">{year}</span> target</span>
+                      <span>{pred.category}</span>
                     </div>
 
-                    <h3 className="text-lg text-white font-light uppercase">{pred.title}</h3>
-                    <p className="font-serif text-sm text-[#7A8694] leading-relaxed">{pred.description}</p>
+                    <h3 className="text-lg text-white font-light">{pred.title}</h3>
+                    <p className="text-sm text-[#7A8694] leading-relaxed">{pred.description}</p>
                     
-                    <div className="flex justify-between items-center border-t border-[#00F5B0]/15 pt-3 mt-1 text-[9px] font-mono text-[#7A8694]">
-                      <span>CONFIDENCE SCORING: {pred.confidenceScore}%</span>
-                      <Link href={`/predictions/${pred.slug}`} className="text-[#00F5B0] hover:underline uppercase tracking-widest font-semibold text-[8px]">
-                        Read Document &gt;
+                    <div className="flex justify-between items-center border-t border-[#00F5B0]/15 pt-3 mt-1 text-xs text-[#7A8694]">
+                      <span>Confidence scoring: <span className="font-mono">{pred.confidenceScore}%</span></span>
+                      <Link href={`/predictions/${pred.slug}`} className="text-[#00F5B0] hover:underline">
+                        Read document →
                       </Link>
                     </div>
                   </div>
@@ -438,8 +440,8 @@ export default function CityDetailPage({ params }: { params: Promise<Params> }) 
         {/* ── SECTION 4: FAMOUS PLACES ──────────────────────────────────────── */}
         <div className="card-tier-2 flex flex-col gap-8">
           <div className="border-b border-[#00F5B0]/15 pb-3">
-            <h2 className="text-lg font-light text-white tracking-wider uppercase">
-              Futuristic Landmarks
+            <h2 className="text-lg font-light text-white">
+              Futuristic landmarks
             </h2>
           </div>
 
@@ -449,10 +451,10 @@ export default function CityDetailPage({ params }: { params: Promise<Params> }) 
                 key={place.name}
                 className="card-tier-3 flex flex-col gap-3"
               >
-                <h3 className="text-base font-light text-white tracking-wide uppercase">
+                <h3 className="text-base font-light text-white">
                   {place.name}
                 </h3>
-                <p className="font-serif text-xs text-[#7A8694] leading-relaxed">
+                <p className="text-xs text-[#7A8694] leading-relaxed">
                   {place.desc}
                 </p>
               </div>
@@ -463,8 +465,8 @@ export default function CityDetailPage({ params }: { params: Promise<Params> }) 
         {/* ── SECTION 5: NOTABLE PEOPLE ─────────────────────────────────────── */}
         <div className="card-tier-2 flex flex-col gap-8">
           <div className="border-b border-[#00F5B0]/15 pb-3">
-            <h2 className="text-lg font-light text-white tracking-wider uppercase">
-              Notable System Architects
+            <h2 className="text-lg font-light text-white">
+              Notable system architects
             </h2>
           </div>
 
@@ -474,19 +476,26 @@ export default function CityDetailPage({ params }: { params: Promise<Params> }) 
                 key={person.name}
                 className="card-tier-3 flex gap-4 items-start"
               >
-                <img 
-                  src={person.avatar} 
-                  alt={person.name} 
-                  loading="lazy"
-                  className="w-14 h-14 rounded-full border border-[#00F5B0]/15 object-cover"
-                />
-                <div className="flex-1 flex flex-col gap-1">
-                  <div className="flex justify-between items-start">
-                    <h3 className="text-base font-light text-white">{person.name}</h3>
-                    <span className="font-mono text-[8px] text-[#00F5B0] uppercase tracking-widest">{person.role}</span>
+                {failedAvatars[person.name] ? (
+                  <div className="w-14 h-14 rounded-full border border-[#00F5B0]/20 flex items-center justify-center bg-[#040B12] text-xs font-mono text-[#00F5B0] font-bold shrink-0">
+                    {person.name.split(' ').map(n => n[0]).join('')}
                   </div>
-                  <div className="font-mono text-[9px] text-[#7A8694] tracking-wider font-light">{person.specialty}</div>
-                  <p className="font-serif text-xs text-[#7A8694] leading-relaxed mt-2">{person.contribution}</p>
+                ) : (
+                  <img 
+                    src={person.avatar} 
+                    alt={person.name} 
+                    loading="lazy"
+                    onError={() => setFailedAvatars(prev => ({ ...prev, [person.name]: true }))}
+                    className="w-14 h-14 rounded-full border border-[#00F5B0]/15 object-cover shrink-0"
+                  />
+                )}
+                <div className="flex-1 flex flex-col gap-1 min-w-0">
+                  <div className="flex justify-between items-start gap-1">
+                    <h3 className="text-base font-light text-white truncate">{person.name}</h3>
+                    <span className="text-xs text-[#00F5B0] shrink-0">{person.role}</span>
+                  </div>
+                  <div className="text-xs text-[#7A8694] font-light">{person.specialty}</div>
+                  <p className="text-xs text-[#7A8694] leading-relaxed mt-2">{person.contribution}</p>
                 </div>
               </div>
             ))}
@@ -496,8 +505,8 @@ export default function CityDetailPage({ params }: { params: Promise<Params> }) 
         {/* ── SECTION 6: FUTURE PROJECTS ────────────────────────────────────── */}
         <div className="card-tier-2 flex flex-col gap-8">
           <div className="border-b border-[#00F5B0]/15 pb-3">
-            <h2 className="text-lg font-light text-white tracking-wider uppercase">
-              Metropolitan Development Projects
+            <h2 className="text-lg font-light text-white">
+              Metropolitan development projects
             </h2>
           </div>
 
@@ -507,8 +516,8 @@ export default function CityDetailPage({ params }: { params: Promise<Params> }) 
                 key={proj.name}
                 className="card-tier-3 flex flex-col gap-2"
               >
-                <h3 className="text-base font-light text-white uppercase">{proj.name}</h3>
-                <p className="font-serif text-xs text-[#7A8694] leading-relaxed">{proj.desc}</p>
+                <h3 className="text-base font-light text-white">{proj.name}</h3>
+                <p className="text-xs text-[#7A8694] leading-relaxed">{proj.desc}</p>
               </div>
             ))}
           </div>
@@ -518,54 +527,54 @@ export default function CityDetailPage({ params }: { params: Promise<Params> }) 
         <div className="card-tier-2 flex flex-col gap-8">
           
           <div className="flex justify-between items-center border-b border-[#00F5B0]/15 pb-3">
-            <h2 className="text-lg font-light text-white tracking-wider uppercase">
-              Consensus Shard Thread
+            <h2 className="text-lg font-light text-white">
+              Consensus shard thread
             </h2>
 
             {/* Like count button */}
             <button
               onClick={handleLike}
-              className={`px-4 py-2 font-mono text-[9px] uppercase tracking-widest border transition-all duration-300 ${
+              className={`px-4 py-1.5 text-xs border transition-all duration-300 ${
                 liked 
                   ? 'bg-[#00F5B0] text-[#02060A] border-[#00F5B0]'
                   : 'bg-transparent border-[#00F5B0]/15 hover:border-transparent hover:bg-[#00F5B0] hover:text-[#02060A] text-[#00F5B0]'
               }`}
             >
-              ♥ SUPPORT PLAN ({likesCount})
+              ♥ Support plan ({likesCount})
             </button>
           </div>
 
           {/* Add Comment Form - Tier 3 */}
           <form onSubmit={handleAddTopComment} className="card-tier-3 flex flex-col gap-4">
-            <span className="font-mono text-[10px] text-[#7A8694] uppercase tracking-wider">Add Comments to Ledger</span>
+            <span className="text-xs text-[#7A8694]">Add comments to ledger</span>
             <input
               type="text"
               placeholder="Identity alias..."
               value={newAuthor}
               onChange={e => setNewAuthor(e.target.value)}
-              className="bg-transparent border-b border-[#00F5B0]/15 text-xs text-white py-2 outline-none focus:border-[#00F5B0] transition-colors font-mono"
+              className="bg-transparent border-b border-[#00F5B0]/15 text-xs text-white py-2 outline-none focus:border-[#00F5B0] transition-colors"
               required
             />
             <textarea
               placeholder="Synthesize observations, critiques or recommendations for this timeline target..."
               value={newContent}
               onChange={e => setNewContent(e.target.value)}
-              className="bg-transparent border border-[#00F5B0]/15 text-xs text-[#7A8694] p-3 outline-none focus:border-[#00F5B0] rounded min-h-[80px] font-sans leading-relaxed"
+              className="bg-transparent border border-[#00F5B0]/15 text-xs text-[#7A8694] p-3 outline-none focus:border-[#00F5B0] rounded min-h-[80px] leading-relaxed"
               required
             />
             <button
               type="submit"
-              className="self-end px-5 py-2 border border-[#00F5B0]/20 hover:border-transparent hover:bg-[#00F5B0] hover:text-[#02060A] bg-transparent text-[#00F5B0] transition-all duration-300 font-mono text-[9px] tracking-widest uppercase"
+              className="self-end px-5 py-1.5 border border-[#00F5B0]/20 hover:border-transparent hover:bg-[#00F5B0] hover:text-[#02060A] bg-transparent text-[#00F5B0] transition-all duration-300 text-xs"
             >
-              TRANSMIT FEEDBACK
+              Transmit feedback
             </button>
           </form>
 
           {/* Comment Threads */}
           <div className="flex flex-col gap-5 divide-y divide-[#00F5B0]/10 mt-2">
             {comments.length === 0 ? (
-              <div className="text-center py-6 font-mono text-xs text-[#7A8694]">
-                AWAITING LEDGER SHARD DATA...
+              <div className="text-center py-6 text-xs text-[#7A8694]">
+                Awaiting ledger shard data...
               </div>
             ) : (
               comments.map(c => (

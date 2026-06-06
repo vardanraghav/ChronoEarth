@@ -160,16 +160,16 @@ export default function FeedbackPage() {
             <div className="card-tier-3 flex flex-col gap-5">
               
               <div className="flex items-center gap-3 border-b border-[#00F5B0]/15 pb-3">
-                <span className="text-xs font-mono font-bold text-white uppercase tracking-wider">Submit Transmission</span>
+                <span className="text-xs text-white">Submit transmission</span>
               </div>
 
               <form onSubmit={handleTransmit} className="flex flex-col gap-4">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[9px] font-mono text-[#7A8694] uppercase tracking-widest font-medium">TRANSMISSION CATEGORY</label>
+                  <label className="text-xs text-[#7A8694]">Transmission category</label>
                   <select
                     value={category}
                     onChange={e => setCategory(e.target.value as any)}
-                    className="bg-[#03050a] border-b border-[#00F5B0]/15 py-2 text-xs font-mono text-white outline-none focus:border-[#00F5B0] transition-colors"
+                    className="bg-[#03050a] border-b border-[#00F5B0]/15 py-2 text-xs text-white outline-none focus:border-[#00F5B0] transition-colors"
                   >
                     <option value="General Feedback">General Feedback</option>
                     <option value="Bug Report">Bug Report</option>
@@ -180,45 +180,45 @@ export default function FeedbackPage() {
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[9px] font-mono text-[#7A8694] uppercase tracking-widest font-medium">IDENTITY CODE (NAME)</label>
+                  <label className="text-xs text-[#7A8694]">Identity code (name)</label>
                   <input
                     type="text"
                     value={author}
                     onChange={e => setAuthor(e.target.value)}
                     placeholder="E.g., User_Node_412"
-                    className="bg-transparent border-b border-[#00F5B0]/15 py-2 text-xs font-mono text-white outline-none focus:border-[#00F5B0] transition-colors"
+                    className="bg-transparent border-b border-[#00F5B0]/15 py-2 text-xs text-white outline-none focus:border-[#00F5B0] transition-colors"
                     required
                   />
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[9px] font-mono text-[#7A8694] uppercase tracking-widest font-medium">SUMMARY SUBJECT</label>
+                  <label className="text-xs text-[#7A8694]">Summary subject</label>
                   <input
                     type="text"
                     value={title}
                     onChange={e => setTitle(e.target.value)}
                     placeholder="Brief description..."
-                    className="bg-transparent border-b border-[#00F5B0]/15 py-2 text-xs font-mono text-white outline-none focus:border-[#00F5B0] transition-colors"
+                    className="bg-transparent border-b border-[#00F5B0]/15 py-2 text-xs text-white outline-none focus:border-[#00F5B0] transition-colors"
                     required
                   />
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[9px] font-mono text-[#7A8694] uppercase tracking-widest font-medium">DETAILED LOG CONTENTS</label>
+                  <label className="text-xs text-[#7A8694]">Detailed log contents</label>
                   <textarea
                     value={content}
                     onChange={e => setContent(e.target.value)}
                     placeholder="Enter analytical details..."
-                    className="bg-transparent border border-[#00F5B0]/15 rounded p-3 text-xs font-serif text-[#7A8694] outline-none focus:border-[#00F5B0] transition-colors min-h-[120px] leading-relaxed"
+                    className="bg-transparent border border-[#00F5B0]/15 rounded p-3 text-xs text-[#7A8694] outline-none focus:border-[#00F5B0] transition-colors min-h-[120px] leading-relaxed"
                     required
                   />
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full py-2.5 border border-[#00F5B0]/20 hover:border-transparent hover:bg-[#00F5B0] hover:text-[#02060A] bg-transparent text-[#00F5B0] font-mono text-[9px] tracking-widest uppercase transition-all duration-300"
+                  className="w-full py-2 border border-[#00F5B0]/20 hover:border-transparent hover:bg-[#00F5B0] hover:text-[#02060A] bg-transparent text-[#00F5B0] text-xs transition-all duration-300"
                 >
-                  TRANSMIT TO CONSOLE
+                  Transmit feedback
                 </button>
               </form>
 
@@ -230,7 +230,7 @@ export default function FeedbackPage() {
             <div className="card-tier-2 h-full flex flex-col gap-5">
 
               <div className="flex items-center gap-3 border-b border-[#00F5B0]/15 pb-3">
-                <span className="text-xs font-mono font-bold text-white uppercase tracking-wider">Recent Transmissions</span>
+                <span className="text-xs text-white">Recent transmissions</span>
               </div>
 
               <div className="custom-scrollbar flex flex-col gap-4 overflow-y-auto max-h-[60vh] pr-2">
@@ -239,17 +239,17 @@ export default function FeedbackPage() {
                     key={item.id}
                     className="card-tier-3 flex flex-col gap-2"
                   >
-                    <div className="flex justify-between items-center text-[8px] font-mono text-[#7A8694]">
-                      <span className="px-1.5 py-0.5 rounded border border-[#00F5B0]/15 text-[#00F5B0] uppercase font-medium">
+                    <div className="flex justify-between items-center text-xs text-[#7A8694]">
+                      <span className="px-1.5 py-0.5 rounded border border-[#00F5B0]/15 text-[#00F5B0]">
                         {item.category}
                       </span>
                       <span>{new Date(item.timestamp).toLocaleDateString()}</span>
                     </div>
 
-                    <h4 className="text-xs font-semibold text-white uppercase mt-1">{item.title}</h4>
-                    <p className="text-[11px] text-[#7A8694] leading-relaxed font-serif">{item.content}</p>
+                    <h4 className="text-xs font-light text-white mt-1">{item.title}</h4>
+                    <p className="text-xs text-[#7A8694] leading-relaxed">{item.content}</p>
                     
-                    <span className="text-[8px] font-mono text-[#7A8694] uppercase mt-1">Sender: {item.author}</span>
+                    <span className="text-xs text-[#7A8694] mt-1">Sender: {item.author}</span>
                   </div>
                 ))}
               </div>
@@ -264,20 +264,20 @@ export default function FeedbackPage() {
             <div className="card-tier-2 flex flex-col gap-4">
 
               <div className="flex items-center gap-3 border-b border-[#00F5B0]/15 pb-3">
-                <span className="text-xs font-mono font-bold text-white uppercase tracking-wider">Most Requested Features</span>
+                <span className="text-xs text-white">Most requested features</span>
               </div>
 
               <div className="flex flex-col gap-4">
                 {sortedFeatures.map(feat => (
                   <div key={feat.id} className="flex gap-3 justify-between items-start border-b border-[#00F5B0]/15 pb-3 last:border-b-0 last:pb-0">
                     <div className="flex-1 flex flex-col gap-1">
-                      <h4 className="text-xs font-semibold text-white uppercase tracking-wide">{feat.title}</h4>
-                      <p className="text-[10px] text-[#7A8694] leading-normal font-serif">{feat.desc}</p>
+                      <h4 className="text-xs font-light text-white">{feat.title}</h4>
+                      <p className="text-xs text-[#7A8694] leading-normal">{feat.desc}</p>
                     </div>
                     
                     <button
                       onClick={() => handleVoteFeature(feat.id)}
-                      className="px-2 py-1.5 border border-[#00F5B0]/15 hover:border-transparent hover:bg-[#00F5B0] hover:text-[#02060A] rounded text-[9px] font-mono text-[#00F5B0] bg-transparent transition-colors flex flex-col items-center justify-center w-12"
+                      className="px-2 py-1.5 border border-[#00F5B0]/15 hover:border-transparent hover:bg-[#00F5B0] hover:text-[#02060A] rounded text-xs text-[#00F5B0] bg-transparent font-mono transition-colors flex flex-col items-center justify-center w-12"
                     >
                       <span>▲</span>
                       <span>{getFeatureVotes(feat)}</span>
@@ -291,10 +291,10 @@ export default function FeedbackPage() {
             <div className="card-tier-2 flex flex-col gap-4">
 
               <div className="flex items-center gap-3 border-b border-[#00F5B0]/15 pb-3">
-                <span className="text-xs font-mono font-bold text-white uppercase tracking-wider">Top Forecast Contributors</span>
+                <span className="text-xs text-white">Top forecast contributors</span>
               </div>
 
-              <div className="flex flex-col gap-3 font-mono text-[9px]">
+              <div className="flex flex-col gap-3 text-xs">
                 {[
                   { name: 'Dr. Evelyn Wright', role: 'AI Ethicist', shards: 142 },
                   { name: 'Dr. Kenji Sato', role: 'Orbital Logistics', shards: 115 },
@@ -305,13 +305,13 @@ export default function FeedbackPage() {
                 ].map((item, idx) => (
                   <div key={item.name} className="flex justify-between items-center border-b border-[#00F5B0]/15 pb-2 last:border-0 last:pb-0">
                     <div className="flex gap-2">
-                      <span className="text-[#00F5B0]/40 font-bold w-3">{idx + 1}.</span>
+                      <span className="text-[#00F5B0]/40 font-mono w-3">{idx + 1}.</span>
                       <div>
-                        <span className="text-white font-medium block">{item.name}</span>
-                        <span className="text-[#7A8694] text-[7px] uppercase">{item.role}</span>
+                        <span className="text-white block">{item.name}</span>
+                        <span className="text-[#7A8694] text-xs">{item.role}</span>
                       </div>
                     </div>
-                    <span className="text-white font-medium">{item.shards} Logged</span>
+                    <span className="text-white"><span className="font-mono">{item.shards}</span> logged</span>
                   </div>
                 ))}
               </div>

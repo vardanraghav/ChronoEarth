@@ -1,167 +1,209 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { EarthMode } from './CesiumGlobeContent';
 import SearchModal from './SearchModal';
 
 interface NavbarProps {
-  earthMode?: EarthMode;
-  onSearchClick?: () => void; // Keeping prop for backwards compatibility if needed
+  onSearchClick?: () => void;
   setActiveCity?: (city: any) => void;
+  earthMode?: 'cyber' | 'realistic';
+  activeView?: 'map' | 'feed';
+  onViewChange?: (view: 'map' | 'feed') => void;
 }
 
-const realisticNavLinks = [
-  { path: '/', label: 'Monitor' },
-  { path: '/predictions', label: 'Predictions' },
-  { path: '/about',   label: 'About'   },
-];
-
-const cyberNavLinks = [
-  { path: '/',           label: 'Telemetry' },
-  { path: '/feed',        label: 'Feed' },
-  { path: '/predictions', label: 'Predictions' },
-  { path: '/knowledge',    label: 'Knowledge base' },
-  { path: '/futurologists', label: 'Futurologists' },
-  { path: '/about',       label: 'About' },
-  { path: '/feedback',    label: 'Feedback' },
-];
-
-export default function Navbar({
-  earthMode = 'cyber',
-  setActiveCity,
-}: NavbarProps) {
+export default function Navbar({ setActiveCity }: NavbarProps) {
   const pathname = usePathname();
   const [searchOpen, setSearchOpen] = useState(false);
-  const isCyber = earthMode === 'cyber';
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Disable body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+    };
+  }, [mobileMenuOpen]);
+
+  const navLinks = [
+    { href: '/', label: 'Map', icon: '🌍', activePattern: /^\/$/ },
+    { href: '/feed', label: 'Feed', icon: '📰', activePattern: /^\/feed/ },
+    { href: '/predictions', label: 'Predictions', icon: '🔮', activePattern: /^\/predictions/ },
+    { href: '/knowledge', label: 'Knowledge', icon: '📚', activePattern: /^\/knowledge/ },
+    { href: '/futurechat', label: 'FutureChat', icon: '💬', activePattern: /^\/futurechat/ },
+  ];
 
   return (
     <>
       <nav
-        className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between"
+        className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between transition-all duration-300"
         style={{
-          padding:    '22px 40px',
-          background: isCyber
-            ? 'linear-gradient(180deg, rgba(2, 8, 15, 0.50) 0%, transparent 100%)'
-            : 'linear-gradient(180deg, rgba(2, 8, 15, 0.40) 0%, transparent 100%)',
-          transition: 'background 1.5s ease',
-          animation:  'fade-in 1.2s ease forwards',
+          padding: '24px 48px',
+          background: 'linear-gradient(180deg, rgba(2, 6, 10, 0.9) 0%, rgba(2, 6, 10, 0.4) 60%, transparent 100%)',
+          backdropFilter: 'blur(20px)',
+          borderBottom: '1px solid rgba(0, 245, 176, 0.08)',
         }}
       >
-        {/* Wordmark */}
+        {/* Brand Logo - Futuristic, Sleek */}
         <Link
           href="/"
-          className="select-none flex items-center gap-[0.6em] hover:opacity-90 transition-opacity font-display"
-          style={{
-            fontWeight:   300,
-            fontSize:     '11px',
-            letterSpacing:'0.45em',
-            textTransform:'uppercase',
-            textDecoration: 'none',
-          }}
+          className="group flex flex-col no-underline"
+          style={{ letterSpacing: '0.25em' }}
         >
-          <span style={{
-            color:      isCyber ? '#00F5B0' : 'rgba(255,255,255,0.95)',
-            transition: 'all 0.6s ease',
-          }}>CHRONO</span>
-          <span style={{ color: isCyber ? 'rgba(0, 245, 176, 0.3)' : 'rgba(255,255,255,0.2)', fontSize: '6px', letterSpacing: 0 }}>·</span>
-          <span style={{ color: isCyber ? '#00D98F' : 'rgba(255,255,255,0.6)', transition: 'color 0.6s ease' }}>EARTH</span>
+          <div className="flex items-center gap-1.5 font-light text-base tracking-[0.3em] text-white uppercase font-sans">
+            <span>CHRONO</span>
+            <span style={{ color: '#00F5B0', textShadow: '0 0 10px rgba(0, 245, 176, 0.4)' }} className="font-semibold">EARTH</span>
+          </div>
+          <span className="text-[9px] font-mono text-white/30 uppercase tracking-[0.15em] mt-0.5 transition-colors group-hover:text-white/50">
+            Future Intelligence Platform
+          </span>
         </Link>
 
-        {/* Desktop nav links */}
-        <div className="hidden md:flex items-center gap-12 font-display">
-          {isCyber ? (
-            <>
-              {cyberNavLinks.map((link) => {
-                const isActive = pathname === link.path;
-                return (
-                  <Link
-                    key={link.path}
-                    href={link.path}
-                    style={{
-                      textDecoration: 'none',
-                      fontWeight: isActive ? 500 : 300, 
-                      fontSize: '8px', 
-                      letterSpacing: '0.22em',
-                      textTransform: 'none',
-                      color: isActive ? '#00F5B0' : 'rgba(255,255,255,0.4)',
-                      transition: 'all 0.3s ease',
-                      padding: '4px 0',
-                      position: 'relative',
-                    }}
-                  >
-                    {link.label}
-                    {isActive && (
-                      <div style={{
-                        position: 'absolute', bottom: -2, left: 0, right: 0, height: 1,
-                        background: '#00F5B0'
-                      }} />
-                    )}
-                  </Link>
-                );
-              })}
-              
-              {/* Search Trigger Button */}
-              <button
-                onClick={() => setSearchOpen(true)}
+        {/* Minimalist Centered Navigation Links */}
+        <div className="hidden md:flex items-center gap-10">
+          {navLinks.map((link) => {
+            const isActive = link.activePattern.test(pathname);
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="group relative flex items-center gap-1.5 py-1.5 px-1 no-underline text-xs tracking-wider uppercase font-mono transition-colors"
                 style={{
-                  background: 'transparent',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  borderRadius: '3px',
-                  cursor: 'pointer',
-                  fontWeight: 300,
-                  fontSize: '8px',
-                  letterSpacing: '0.18em',
-                  color: 'rgba(255, 255, 255, 0.6)',
-                  padding: '5px 14px',
-                  marginLeft: '12px',
-                  transition: 'all 0.3s ease',
-                  fontFamily: 'var(--font-sans)',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
-                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)';
-                  e.currentTarget.style.color = '#fff';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'transparent';
-                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-                  e.currentTarget.style.color = 'rgba(255, 255, 255, 0.6)';
+                  color: isActive ? '#FFFFFF' : 'rgba(255, 255, 255, 0.55)',
                 }}
               >
-                Search
-              </button>
-            </>
-          ) : (
-            realisticNavLinks.map((link) => {
-              const isActive = pathname === link.path;
-              return (
-                <Link
-                  key={link.path}
-                  href={link.path}
-                  style={{
-                    textDecoration: 'none',
-                    fontWeight: 300, 
-                    fontSize: '9px', 
-                    letterSpacing: '0.35em',
-                    textTransform: 'none',
-                    color: isActive ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.28)',
-                    transition: 'color 0.3s ease',
-                    padding: '4px 0',
-                  }}
-                  onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.color = 'rgba(255,255,255,0.75)'; }}
-                  onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.color = 'rgba(255,255,255,0.28)'; }}
-                >
-                  {link.label}
-                </Link>
-              );
-            })
-          )}
+                <span className={`transition-transform duration-300 group-hover:scale-110 ${isActive ? 'animate-breathe' : ''}`}>
+                  {link.icon}
+                </span>
+                <span className="group-hover:text-white transition-colors">{link.label}</span>
+                {isActive && (
+                  <span
+                    className="absolute bottom-0 left-0 right-0 h-[2px] rounded-full"
+                    style={{
+                      background: 'linear-gradient(90deg, transparent, #00F5B0, transparent)',
+                      boxShadow: '0 0 8px #00F5B0',
+                    }}
+                  />
+                )}
+              </Link>
+            );
+          })}
+
+          {/* Search Trigger */}
+          <button
+            onClick={() => setSearchOpen(true)}
+            className="group flex items-center gap-1.5 py-1.5 px-1 bg-transparent border-none cursor-pointer text-xs tracking-wider uppercase font-mono transition-colors text-white/55 hover:text-white"
+          >
+            <span className="transition-transform duration-300 group-hover:scale-110">
+              🔍
+            </span>
+            <span>Search</span>
+          </button>
         </div>
+
+        {/* Mobile menu trigger */}
+        <button
+          className="md:hidden flex flex-col gap-1.5 cursor-pointer bg-transparent border-none p-2 relative z-50"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        >
+          <div className="w-6 h-[1px] bg-white transition-all duration-300" style={{ transform: mobileMenuOpen ? 'rotate(45deg) translate(5px, 5px)' : 'none', background: mobileMenuOpen ? '#00F5B0' : '#FFF' }} />
+          <div className="w-6 h-[1px] bg-white transition-all duration-300" style={{ opacity: mobileMenuOpen ? 0 : 1 }} />
+          <div className="w-6 h-[1px] bg-white transition-all duration-300" style={{ transform: mobileMenuOpen ? 'rotate(-45deg) translate(5px, -5px)' : 'none', background: mobileMenuOpen ? '#00F5B0' : '#FFF' }} />
+        </button>
+
       </nav>
 
-      {/* Reusable Search Overlay */}
+      {/* Full-Screen Mobile Menu Overlay */}
+      {mobileMenuOpen && (
+        <div
+          className="fixed inset-0 w-screen h-screen z-[99999] flex flex-col justify-center items-center gap-8 md:hidden animate-slide-in-right"
+          style={{
+            background: 'rgba(2, 6, 10, 0.96)',
+            backdropFilter: 'blur(30px)',
+            WebkitBackdropFilter: 'blur(30px)',
+          }}
+        >
+          {/* Close Button top-right */}
+          <button
+            onClick={() => setMobileMenuOpen(false)}
+            className="fixed top-6 right-6 bg-transparent border-none text-[#00F5B0] hover:text-[#00D98F] cursor-pointer text-xs font-mono uppercase tracking-widest transition-colors p-2.5 z-[100000]"
+            style={{ textShadow: '0 0 10px rgba(0, 245, 176, 0.4)' }}
+          >
+            [✕ close]
+          </button>
+
+          {/* Menu Header */}
+          <div className="flex flex-col items-center gap-1 mb-6">
+            <div className="flex items-center gap-1.5 font-light text-lg tracking-[0.3em] text-white uppercase font-sans">
+              <span>CHRONO</span>
+              <span style={{ color: '#00F5B0', textShadow: '0 0 10px rgba(0, 245, 176, 0.4)' }} className="font-semibold">EARTH</span>
+            </div>
+            <span className="text-[9px] font-mono text-white/30 uppercase tracking-[0.15em]">
+              System Directory
+            </span>
+          </div>
+
+          {/* Vertical Links */}
+          <div className="flex flex-col gap-6 items-center">
+            {navLinks.map((link) => {
+              const isActive = link.activePattern.test(pathname);
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="flex items-center gap-4 py-2.5 px-6 text-base tracking-[0.2em] uppercase font-mono no-underline transition-all duration-300 hover:scale-105"
+                  style={{
+                    color: isActive ? '#00F5B0' : 'rgba(255, 255, 255, 0.65)',
+                    textShadow: isActive ? '0 0 12px rgba(0, 245, 176, 0.5)' : 'none',
+                  }}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <span className={isActive ? 'animate-breathe' : ''}>{link.icon}</span>
+                  <span>{link.label}</span>
+                </Link>
+              );
+            })}
+            
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                setSearchOpen(true);
+              }}
+              className="flex items-center gap-4 py-2.5 px-6 bg-transparent border-none text-base tracking-[0.2em] uppercase font-mono cursor-pointer text-white/65 hover:text-white transition-all duration-300 hover:scale-105"
+            >
+              <span>🔍</span>
+              <span>Search</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* CSS Keyframes for mobile menu slide-in */}
+      <style>{`
+        @keyframes slideInRight {
+          from {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+        .animate-slide-in-right {
+          animation: slideInRight 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+      `}</style>
+
+      {/* Center Command Menu / Reusable Search Overlay */}
       <SearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} setActiveCity={setActiveCity} />
     </>
   );

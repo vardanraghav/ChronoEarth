@@ -9,6 +9,7 @@ export interface CityData {
   country: string;
   lat: number;
   lon: number;
+  year: number; // Activation/foundation year (2030, 2040, 2050)
   offsets: {
     temp: number;       // base temp offset (e.g. Dubai is hot, Toronto is cold)
     tempRise: number;   // rate of temp rise (e.g. higher in landlocked/desert cities)
@@ -19,12 +20,14 @@ export interface CityData {
   details: Record<string, string>; // localized features
 }
 
-export const citiesRawData: Omit<CityData, 'projections'>[] = [
+export const citiesRawData: CityData[] = [
+  // ─── 2030 CITIES (16 CITIES) ───────────────────────────────────────────────
   {
-    name: 'Delhi',
+    name: 'New Delhi',
     country: 'India',
     lat: 28.6139,
     lon: 77.2090,
+    year: 2030,
     offsets: { temp: 4.5, tempRise: 1.2, seaLevel: 0, population: 0.033, popGrowth: 1.12 },
     details: {
       climate: "Heat dome intensity. Atmospheric smog filters. Aquifer recharge grids.",
@@ -38,6 +41,7 @@ export const citiesRawData: Omit<CityData, 'projections'>[] = [
     country: 'India',
     lat: 19.0760,
     lon: 72.8777,
+    year: 2030,
     offsets: { temp: 2.5, tempRise: 0.8, seaLevel: 1.5, population: 0.021, popGrowth: 1.08 },
     details: {
       climate: "Sea-level dikes. Storm surge floodgates. Marine salinity sensors.",
@@ -47,10 +51,11 @@ export const citiesRawData: Omit<CityData, 'projections'>[] = [
     }
   },
   {
-    name: 'Bangalore',
+    name: 'Bengaluru',
     country: 'India',
     lat: 12.9716,
     lon: 77.5946,
+    year: 2030,
     offsets: { temp: 1.2, tempRise: 0.9, seaLevel: 0, population: 0.014, popGrowth: 1.15 },
     details: {
       climate: "Microclimate control nodes. Rainwater hyper-harvesting. Cool-roof paint.",
@@ -60,62 +65,195 @@ export const citiesRawData: Omit<CityData, 'projections'>[] = [
     }
   },
   {
-    name: 'Hyderabad',
-    country: 'India',
-    lat: 17.3850,
-    lon: 78.4867,
-    offsets: { temp: 3.1, tempRise: 1.0, seaLevel: 0, population: 0.011, popGrowth: 1.10 },
+    name: 'Tokyo',
+    country: 'Japan',
+    lat: 35.6762,
+    lon: 139.6503,
+    year: 2030,
+    offsets: { temp: -0.2, tempRise: 0.7, seaLevel: 1.1, population: 0.037, popGrowth: 1.02 },
     details: {
-      climate: "Arid land greening. Waste water bio-reactors. Smart shading canopies.",
-      energy: "Biomass energy conversion. Distributed solar blocks. Kinetic roads.",
-      satellites: "Agricultural moisture telemetry. Urban expansion tracking arrays.",
-      biodiversity: "Pharmaceutical bio-domes. Smart botanical parks. Urban trees."
+      climate: "Heat dome shielding grids. Coastal seawall sensor matrix. Subterranean flood bypass network.",
+      energy: "Thorium reactor loops. Offshore deep-wind corridors. Kinetic path generation.",
+      satellites: "Congestion monitoring beacons. Autonomous flight navigation swarms.",
+      biodiversity: "Vertical garden towers. Tokyo bay re-oxygenation. Urban bird sanctuaries."
     }
   },
   {
-    name: 'Chennai',
-    country: 'India',
-    lat: 13.0827,
-    lon: 80.2707,
-    offsets: { temp: 3.8, tempRise: 0.9, seaLevel: 1.3, population: 0.012, popGrowth: 1.06 },
+    name: 'Seoul',
+    country: 'South Korea',
+    lat: 37.5665,
+    lon: 126.9780,
+    year: 2030,
+    offsets: { temp: -0.5, tempRise: 0.8, seaLevel: 0.9, population: 0.010, popGrowth: 1.01 },
     details: {
-      climate: "Desalination hyper-plants. Water recycling grids. Seawall telemetry.",
-      energy: "Ocean thermal energy conversion. Solar grids. Hydrogen fuel depots.",
-      satellites: "Sea-surface temp radars. Coastal erosion monitoring swarms.",
-      biodiversity: "Estuary restoration. Wetland bio-filters. Smart dune grass walls."
+      climate: "Micro-climatic cooling bays. Subway flood locks. Smart pavement collectors.",
+      energy: "Thorium energy networks. Kinetic pavement arrays. Solar window overlays.",
+      satellites: "Urban traffic sync systems. Drone grid routing nodes.",
+      biodiversity: "Vertical green facades. Cheonggyecheon eco-zone. Urban bee fields."
     }
   },
   {
-    name: 'Kolkata',
-    country: 'India',
-    lat: 22.5726,
-    lon: 88.3639,
-    offsets: { temp: 2.2, tempRise: 0.8, seaLevel: 1.7, population: 0.016, popGrowth: 1.05 },
+    name: 'Singapore',
+    country: 'Singapore',
+    lat: 1.3521,
+    lon: 103.8198,
+    year: 2030,
+    offsets: { temp: 2.8, tempRise: 0.6, seaLevel: 1.6, population: 0.006, popGrowth: 1.05 },
     details: {
-      climate: "Sunderbans buffer walls. Delta flood alert nodes. River level sensors.",
-      energy: "Bio-gas digesters. Solar river-barges. Local wind arrays.",
-      satellites: "River silt telemetry. High-precision storm path prediction sats.",
-      biodiversity: "Mangrove replanting zones. Wetland conservation. Urban bird havens."
+      climate: "Seawall salinity gates. Rain water super-collection loops. Local cooling vents.",
+      energy: "Tidal kinetic arrays. Floating solar reservoirs. Regional microgrids.",
+      satellites: "Maritime channel radars. Urban expansion mapping constellations.",
+      biodiversity: "Biophilic garden towers. Coral reef electric nurseries. Coastal mangroves."
     }
   },
   {
-    name: 'Ahmedabad',
-    country: 'India',
-    lat: 23.0225,
-    lon: 72.5714,
-    offsets: { temp: 4.2, tempRise: 1.1, seaLevel: 0, population: 0.009, popGrowth: 1.09 },
+    name: 'Dubai',
+    country: 'Middle East',
+    lat: 25.2048,
+    lon: 55.2708,
+    year: 2030,
+    offsets: { temp: 8.5, tempRise: 1.4, seaLevel: 0.8, population: 0.005, popGrowth: 1.11 },
     details: {
-      climate: "Sabarmati riverfront bio-filters. Cool corridors. Urban shade meshes.",
-      energy: "Canal-top solar systems. High-capacity battery storage. Grid nodes.",
-      satellites: "Urban heat island radars. Green cover density spectral mapping.",
-      biodiversity: "Native mini-forests. Green river buffers. Urban rooftop farms."
+      climate: "Climate-controlled biodomes. Cloud-seeding towers. Air cooling vents.",
+      energy: "Desert mega-solar. CSP receiver tower. Green hydrogen hypergrids.",
+      satellites: "Hyperloop navigation meshes. Orbital sandstorm warning beams.",
+      biodiversity: "Desert forestation biomes. Coastal reef grids. Desert pocket parks."
     }
   },
+  {
+    name: 'Nairobi',
+    country: 'Kenya',
+    lat: -1.2921,
+    lon: 36.8219,
+    year: 2030,
+    offsets: { temp: 1.8, tempRise: 1.1, seaLevel: 0, population: 0.008, popGrowth: 1.16 },
+    details: {
+      climate: "Arid land recharge grids. Water reclamation blocks. Soil stabilizers.",
+      energy: "Rift valley geothermal fields. Micro-wind turbine meshes. Biomass loops.",
+      satellites: "Agricultural moisture monitors. Wildlife migratory radio nets.",
+      biodiversity: "Green highway corridors. Savanna forestation belts. Eco-fencing."
+    }
+  },
+  {
+    name: 'London',
+    country: 'United Kingdom',
+    lat: 51.5074,
+    lon: -0.1278,
+    year: 2030,
+    offsets: { temp: -1.5, tempRise: 0.5, seaLevel: 1.2, population: 0.011, popGrowth: 1.02 },
+    details: {
+      climate: "Thames Barrier II. River surge sluices. Subterranean flood bypasses.",
+      energy: "North Sea wind interlinks. Retrofitted tube heat harvesting. Solar slate.",
+      satellites: "Congestion telemetry nets. Urban transit automated mesh beacons.",
+      biodiversity: "Green belt buffers. Urban park rewilding. River ecology recovery."
+    }
+  },
+  {
+    name: 'Berlin',
+    country: 'Germany',
+    lat: 52.5200,
+    lon: 13.4050,
+    year: 2030,
+    offsets: { temp: -1.0, tempRise: 0.6, seaLevel: 0, population: 0.004, popGrowth: 1.01 },
+    details: {
+      climate: "Rainwater swales. Evaporative cooling plazas. Heat pump arrays.",
+      energy: "Balcony solar mesh. Biogas circular plants. Wind corridors.",
+      satellites: "Micro-mobility beacons. Autonomous bike/drone lane telemetry.",
+      biodiversity: "Forest expansion corridors. Green rooftops. Bee highway trails."
+    }
+  },
+  {
+    name: 'Paris',
+    country: 'France',
+    lat: 48.8566,
+    lon: 2.3522,
+    year: 2030,
+    offsets: { temp: -0.5, tempRise: 0.7, seaLevel: 0, population: 0.012, popGrowth: 1.02 },
+    details: {
+      climate: "Seine flood diversion dams. Urban shade canopies. Cool-roof paint.",
+      energy: "Geothermal district grids. Solar road tiles. Hydrogen fuel grids.",
+      satellites: "Subway alignment beacons. Transit navigation swarm links.",
+      biodiversity: "Urban rooftop vineyards. Linear forest corridors. Rewilding squares."
+    }
+  },
+  {
+    name: 'New York',
+    country: 'USA',
+    lat: 40.7128,
+    lon: -74.0060,
+    year: 2030,
+    offsets: { temp: -0.5, tempRise: 0.6, seaLevel: 1.4, population: 0.021, popGrowth: 1.02 },
+    details: {
+      climate: "Harbor surge gates. Subway automated bilge. Sea level monitors.",
+      energy: "Atlantic wind array. Skyscraper solar paint. Distributed battery hubs.",
+      satellites: "Grid stability telemetry. Autonomous cargo drone orbital controls.",
+      biodiversity: "Central Park rewilding. Vertical garden high-rises. Oyster reef grids."
+    }
+  },
+  {
+    name: 'Los Angeles',
+    country: 'USA',
+    lat: 34.0522,
+    lon: -118.2437,
+    year: 2030,
+    offsets: { temp: 2.0, tempRise: 0.9, seaLevel: 1.1, population: 0.018, popGrowth: 1.04 },
+    details: {
+      climate: "Wildfire thermal barriers. Coastal desalination plants. Drought canopies.",
+      energy: "Mojave solar pipelines. Kinetic highway cells. Storage battery hubs.",
+      satellites: "Thermal wildfire monitors. Transit automated corridor grids.",
+      biodiversity: "Chaparral rewilding grids. Urban pocket parks. Eco-bridge crossings."
+    }
+  },
+  {
+    name: 'Sydney',
+    country: 'Australia',
+    lat: -33.8688,
+    lon: 151.2093,
+    year: 2030,
+    offsets: { temp: 1.0, tempRise: 0.8, seaLevel: 1.3, population: 0.006, popGrowth: 1.05 },
+    details: {
+      climate: "Coastal seawall defenses. Smart harbor locks. Salinity tracking grids.",
+      energy: "Offshore wind generators. Distributed residential solar. Wave kinetic nodes.",
+      satellites: "Coral shelf thermal cams. Coastal erosion telemetry nodes.",
+      biodiversity: "Mangrove restoration channels. Harbor reef matrices. Native forest parks."
+    }
+  },
+  {
+    name: 'São Paulo',
+    country: 'Brazil',
+    lat: -23.5505,
+    lon: -46.6333,
+    year: 2030,
+    offsets: { temp: 1.5, tempRise: 0.9, seaLevel: 0, population: 0.024, popGrowth: 1.05 },
+    details: {
+      climate: "Rainwater holding basins. Smart aqueduct networks. Cool plazas.",
+      energy: "Biomass generator grids. Local hydro networks. Smart solar tiles.",
+      satellites: "Precipitation radar nodes. Deforestation spectral telemetry.",
+      biodiversity: "Urban jungle pathways. Rooftop vegetation nodes. Pocket forests."
+    }
+  },
+  {
+    name: 'Toronto',
+    country: 'Canada',
+    lat: 43.6532,
+    lon: -79.3832,
+    year: 2030,
+    offsets: { temp: -3.5, tempRise: 0.5, seaLevel: 0, population: 0.007, popGrowth: 1.04 },
+    details: {
+      climate: "Lake cooling loops. Snowmelt collection tanks. Deep geothermal heating.",
+      energy: "Nuclear small modular reactors. Geothermal loops. Kinetic walkways.",
+      satellites: "Great Lakes ice mapping. Great Lakes freight tracking beacons.",
+      biodiversity: "Ravine ecosystem corridors. Smart windbreak trees. Green rooftops."
+    }
+  },
+
+  // ─── 2040 CITIES (20 CITIES) ───────────────────────────────────────────────
   {
     name: 'Shanghai',
     country: 'China',
     lat: 31.2304,
     lon: 121.4737,
+    year: 2040,
     offsets: { temp: 1.5, tempRise: 0.7, seaLevel: 1.4, population: 0.029, popGrowth: 1.03 },
     details: {
       climate: "Deep-water flood locks. Automated dike barriers. Subsidence compensators.",
@@ -129,6 +267,7 @@ export const citiesRawData: Omit<CityData, 'projections'>[] = [
     country: 'Pakistan',
     lat: 33.6844,
     lon: 73.0479,
+    year: 2040,
     offsets: { temp: 1.0, tempRise: 1.0, seaLevel: 0, population: 0.003, popGrowth: 1.14 },
     details: {
       climate: "Foothill microclimate shields. Glacier runoff regulators. Cloud sensors.",
@@ -138,23 +277,11 @@ export const citiesRawData: Omit<CityData, 'projections'>[] = [
     }
   },
   {
-    name: 'Dubai',
-    country: 'Middle East',
-    lat: 25.2048,
-    lon: 55.2708,
-    offsets: { temp: 8.5, tempRise: 1.4, seaLevel: 0.8, population: 0.005, popGrowth: 1.11 },
-    details: {
-      climate: "Climate-controlled biodomes. Cloud-seeding towers. Air cooling vents.",
-      energy: "Desert mega-solar. CSP receiver tower. Green hydrogen hypergrids.",
-      satellites: "Hyperloop navigation meshes. Orbital sandstorm warning beams.",
-      biodiversity: "Desert forestation biomes. Coastal reef grids. Desert pocket parks."
-    }
-  },
-  {
     name: 'Riyadh',
-    country: 'Middle East',
+    country: 'Saudi Arabia',
     lat: 24.7136,
     lon: 46.6753,
+    year: 2040,
     offsets: { temp: 8.0, tempRise: 1.3, seaLevel: 0, population: 0.009, popGrowth: 1.10 },
     details: {
       climate: "Thermal shielding canopies. Deep aquifer pumps. Desal water channels.",
@@ -164,62 +291,11 @@ export const citiesRawData: Omit<CityData, 'projections'>[] = [
     }
   },
   {
-    name: 'London',
-    country: 'Europe',
-    lat: 51.5074,
-    lon: -0.1278,
-    offsets: { temp: -1.5, tempRise: 0.5, seaLevel: 1.2, population: 0.011, popGrowth: 1.02 },
-    details: {
-      climate: "Thames Barrier II. River surge sluices. Subterranean flood bypasses.",
-      energy: "North Sea wind interlinks. Retrofitted tube heat harvesting. Solar slate.",
-      satellites: "Congestion telemetry nets. Urban transit automated mesh beacons.",
-      biodiversity: "Green belt buffers. Urban park rewilding. River ecology recovery."
-    }
-  },
-  {
-    name: 'Berlin',
-    country: 'Europe',
-    lat: 52.5200,
-    lon: 13.4050,
-    offsets: { temp: -1.0, tempRise: 0.6, seaLevel: 0, population: 0.004, popGrowth: 1.01 },
-    details: {
-      climate: "Rainwater swales. Evaporative cooling plazas. Heat pump arrays.",
-      energy: "Balcony solar mesh. Biogas circular plants. Wind corridors.",
-      satellites: "Micro-mobility beacons. Autonomous bike/drone lane telemetry.",
-      biodiversity: "Forest expansion corridors. Green rooftops. Bee highway trails."
-    }
-  },
-  {
-    name: 'New York',
-    country: 'North America',
-    lat: 40.7128,
-    lon: -74.0060,
-    offsets: { temp: -0.5, tempRise: 0.6, seaLevel: 1.4, population: 0.021, popGrowth: 1.02 },
-    details: {
-      climate: "Harbor surge gates. Subway automated bilge. Sea level monitors.",
-      energy: "Atlantic wind array. Skyscraper solar paint. Distributed battery hubs.",
-      satellites: "Grid stability telemetry. Autonomous cargo drone orbital controls.",
-      biodiversity: "Central Park rewilding. Vertical garden high-rises. Oyster reef grids."
-    }
-  },
-  {
-    name: 'Toronto',
-    country: 'North America',
-    lat: 43.6532,
-    lon: -79.3832,
-    offsets: { temp: -3.5, tempRise: 0.5, seaLevel: 0, population: 0.007, popGrowth: 1.04 },
-    details: {
-      climate: "Lake cooling loops. Snowmelt collection tanks. Deep geothermal heating.",
-      energy: "Nuclear small modular reactors. Geothermal loops. Kinetic walkways.",
-      satellites: "Great Lakes ice mapping. Great Lakes freight tracking beacons.",
-      biodiversity: "Ravine ecosystem corridors. Smart windbreak trees. Green rooftops."
-    }
-  },
-  {
     name: 'Moscow',
     country: 'Russia',
     lat: 55.7558,
     lon: 37.6173,
+    year: 2040,
     offsets: { temp: -4.5, tempRise: 0.7, seaLevel: 0, population: 0.014, popGrowth: 1.01 },
     details: {
       climate: "Sub-zero grid buffers. Heated drone pathways. Permafrost telemetry.",
@@ -229,36 +305,740 @@ export const citiesRawData: Omit<CityData, 'projections'>[] = [
     }
   },
   {
-    name: 'Tokyo',
-    country: 'Japan',
-    lat: 35.6762,
-    lon: 139.6503,
-    offsets: { temp: -0.2, tempRise: 0.7, seaLevel: 1.1, population: 0.037, popGrowth: 1.02 },
+    name: 'Hyderabad',
+    country: 'India',
+    lat: 17.3850,
+    lon: 78.4867,
+    year: 2040,
+    offsets: { temp: 3.1, tempRise: 1.0, seaLevel: 0, population: 0.011, popGrowth: 1.10 },
     details: {
-      climate: "Heat dome shielding grids. Coastal seawall sensor matrix. Subterranean flood bypass network.",
-      energy: "Thorium reactor loops. Offshore deep-wind corridors. Kinetic path generation.",
-      satellites: "Congestion monitoring beacons. Autonomous flight navigation swarms.",
-      biodiversity: "Vertical garden towers. Tokyo bay re-oxygenation. Urban bird sanctuaries."
+      climate: "Arid land greening. Waste water bio-reactors. Smart shading canopies.",
+      energy: "Biomass energy conversion. Distributed solar blocks. Kinetic roads.",
+      satellites: "Agricultural moisture telemetry. Urban expansion tracking arrays.",
+      biodiversity: "Pharmaceutical bio-domes. Smart botanical parks. Urban trees."
     }
   },
   {
-    name: 'Singapore',
-    country: 'Asia',
-    lat: 1.3521,
-    lon: 103.8198,
-    offsets: { temp: 2.8, tempRise: 0.6, seaLevel: 1.6, population: 0.006, popGrowth: 1.05 },
+    name: 'Chennai',
+    country: 'India',
+    lat: 13.0827,
+    lon: 80.2707,
+    year: 2040,
+    offsets: { temp: 3.8, tempRise: 0.9, seaLevel: 1.3, population: 0.012, popGrowth: 1.06 },
     details: {
-      climate: "Seawall salinity gates. Rain water super-collection loops. Local cooling vents.",
-      energy: "Tidal kinetic arrays. Floating solar reservoirs. Regional microgrids.",
-      satellites: "Maritime channel radars. Urban expansion mapping constellations.",
-      biodiversity: "Biophilic garden towers. Coral reef electric nurseries. Coastal mangroves."
+      climate: "Desalination hyper-plants. Water recycling grids. Seawall telemetry.",
+      energy: "Ocean thermal energy conversion. Solar grids. Hydrogen fuel depots.",
+      satellites: "Sea-surface temp radars. Coastal erosion monitoring swarms.",
+      biodiversity: "Estuary restoration. Wetland bio-filters. Smart dune grass walls."
+    }
+  },
+  {
+    name: 'Kolkata',
+    country: 'India',
+    lat: 22.5726,
+    lon: 88.3639,
+    year: 2040,
+    offsets: { temp: 2.2, tempRise: 0.8, seaLevel: 1.7, population: 0.016, popGrowth: 1.05 },
+    details: {
+      climate: "Sunderbans buffer walls. Delta flood alert nodes. River level sensors.",
+      energy: "Bio-gas digesters. Solar river-barges. Local wind arrays.",
+      satellites: "River silt telemetry. High-precision storm path prediction sats.",
+      biodiversity: "Mangrove replanting zones. Wetland conservation. Urban bird havens."
+    }
+  },
+  {
+    name: 'Ahmedabad',
+    country: 'India',
+    lat: 23.0225,
+    lon: 72.5714,
+    year: 2040,
+    offsets: { temp: 4.2, tempRise: 1.1, seaLevel: 0, population: 0.009, popGrowth: 1.09 },
+    details: {
+      climate: "Sabarmati riverfront bio-filters. Cool corridors. Urban shade meshes.",
+      energy: "Canal-top solar systems. High-capacity battery storage. Grid nodes.",
+      satellites: "Urban heat island radars. Green cover density spectral mapping.",
+      biodiversity: "Native mini-forests. Green river buffers. Urban rooftop farms."
+    }
+  },
+  {
+    name: 'Lagos',
+    country: 'Nigeria',
+    lat: 6.5244,
+    lon: 3.3792,
+    year: 2040,
+    offsets: { temp: 2.5, tempRise: 0.9, seaLevel: 1.5, population: 0.028, popGrowth: 1.13 },
+    details: {
+      climate: "Lagoon barrier locks. Shoreline sea walls. Wetland drainage pumps.",
+      energy: "Tidal kinetic systems. Solar canopy structures. Local biogas loops.",
+      satellites: "Coastal erosion mapping. Dense cargo drone corridor guides.",
+      biodiversity: "Lagoon mangrove buffers. Hydroponic urban gardens. Floating parklands."
+    }
+  },
+  {
+    name: 'Cairo',
+    country: 'Egypt',
+    lat: 30.0444,
+    lon: 31.2357,
+    year: 2040,
+    offsets: { temp: 4.8, tempRise: 1.2, seaLevel: 0.6, population: 0.025, popGrowth: 1.11 },
+    details: {
+      climate: "Desert heat shields. Nile water flow governors. Cool plazas.",
+      energy: "Solar canal grids. Desert photo fields. Waste biomass generators.",
+      satellites: "Desertification mapping. Urban temperature radar grids.",
+      biodiversity: "Nile river banks rewilding. Drought-tolerant tree lines. Pocket gardens."
+    }
+  },
+  {
+    name: 'Jakarta',
+    country: 'Indonesia',
+    lat: -6.2088,
+    lon: 106.8456,
+    year: 2040,
+    offsets: { temp: 2.0, tempRise: 0.8, seaLevel: 1.9, population: 0.015, popGrowth: 1.07 },
+    details: {
+      climate: "Giant seawall defenses. Subsidence hydraulic pumps. Floodways.",
+      energy: "Offshore tidal systems. Rooftop solar layers. Local biomass reactors.",
+      satellites: "Sea state radars. Urban subsidence telemetry arrays.",
+      biodiversity: "Mangrove delta blocks. Urban parkland restoration. Floating gardens."
+    }
+  },
+  {
+    name: 'Manila',
+    country: 'Philippines',
+    lat: 14.5995,
+    lon: 120.9842,
+    year: 2040,
+    offsets: { temp: 2.2, tempRise: 0.7, seaLevel: 1.6, population: 0.016, popGrowth: 1.06 },
+    details: {
+      climate: "Storm gates. Seawall flood locks. Hydro runoff collectors.",
+      energy: "Ocean wave dynamos. Decentralized solar grids. Hydrogen depots.",
+      satellites: "Typhoon tracking telemetry. Coastal flood alert networks.",
+      biodiversity: "Coastal estuary buffers. Biophilic parklands. Mangrove walls."
+    }
+  },
+  {
+    name: 'Dhaka',
+    country: 'Bangladesh',
+    lat: 23.8103,
+    lon: 90.4125,
+    year: 2040,
+    offsets: { temp: 2.6, tempRise: 1.0, seaLevel: 1.2, population: 0.028, popGrowth: 1.10 },
+    details: {
+      climate: "Monsoon bypass locks. Delta flood containment. Hydraulic pumps.",
+      energy: "Solar rooftops. Neighborhood biogas blocks. Small wind arrays.",
+      satellites: "Riverbed sedimentation radar. Storm tracking satellite nets.",
+      biodiversity: "Water purification parks. Mangrove buffers. Floating crop beds."
+    }
+  },
+  {
+    name: 'Chongqing',
+    country: 'China',
+    lat: 29.5630,
+    lon: 106.5516,
+    year: 2040,
+    offsets: { temp: 3.5, tempRise: 1.0, seaLevel: 0, population: 0.038, popGrowth: 1.08 },
+    details: {
+      climate: "Mountain wind ventilation channels. Subterranean cool loops. Water grids.",
+      energy: "River kinetic turbines. Hydroelectric stations. Smart micro-grids.",
+      satellites: "Dense drone traffic guidelines. Mountain air temperature radars.",
+      biodiversity: "Vertical cliff gardens. Terraced biophilic structures. Green bridges."
+    }
+  },
+  {
+    name: 'Kinshasa',
+    country: 'Congo',
+    lat: -4.4419,
+    lon: 15.2663,
+    year: 2040,
+    offsets: { temp: 2.4, tempRise: 0.9, seaLevel: 0, population: 0.029, popGrowth: 1.18 },
+    details: {
+      climate: "Congo river regulators. Aquifer infiltration wells. Soil guards.",
+      energy: "Hydroelectric turbines. High-efficiency solar towers. Biogas plants.",
+      satellites: "Forest canopy tracking radars. Wildlife tracking swarm arrays.",
+      biodiversity: "River forestation reserves. Rain forest buffers. Vertical farming."
+    }
+  },
+  {
+    name: 'Karachi',
+    country: 'Pakistan',
+    lat: 24.8607,
+    lon: 67.0011,
+    year: 2040,
+    offsets: { temp: 4.1, tempRise: 1.2, seaLevel: 1.1, population: 0.026, popGrowth: 1.11 },
+    details: {
+      climate: "Heatwave mitigation cells. Coastal seawall blocks. Desal channels.",
+      energy: "Desert solar generators. Wind corridor farms. Floating ocean wind.",
+      satellites: "Heat island spectral telemetry. Sea level tracking radars.",
+      biodiversity: "Mangrove tidal corridors. Desert green parks. Biophilic rooftops."
+    }
+  },
+  {
+    name: 'Shenzhen',
+    country: 'China',
+    lat: 22.5431,
+    lon: 114.0579,
+    year: 2040,
+    offsets: { temp: 1.8, tempRise: 0.7, seaLevel: 1.3, population: 0.020, popGrowth: 1.04 },
+    details: {
+      climate: "Storm surge barrier nets. Subway water gates. Subsidence monitors.",
+      energy: "Thorium reactor loops. Building solar glass. Kinetic pavements.",
+      satellites: "Maglev system trackers. Drone delivery navigation beams.",
+      biodiversity: "Sponge-city parks. High-rise garden bridges. Oyster shell walls."
+    }
+  },
+  {
+    name: 'Mexico City',
+    country: 'Mexico',
+    lat: 19.4326,
+    lon: -99.1332,
+    year: 2040,
+    offsets: { temp: 2.2, tempRise: 0.8, seaLevel: 0, population: 0.025, popGrowth: 1.05 },
+    details: {
+      climate: "Hydraulic aquifer recharge wells. Soil sinking sensors. Cooling nodes.",
+      energy: "Solar rooftops. Biogas converters. Neighborhood battery pools.",
+      satellites: "Subsidence radar telemetry. Rainstorm tracking satellite nets.",
+      biodiversity: "Lacustrine marsh rewilding. Rooftop pocket farms. Green corridors."
+    }
+  },
+  {
+    name: 'Buenos Aires',
+    country: 'Argentina',
+    lat: -34.6037,
+    lon: -58.3816,
+    year: 2040,
+    offsets: { temp: 1.2, tempRise: 0.7, seaLevel: 1.2, population: 0.017, popGrowth: 1.04 },
+    details: {
+      climate: "Rio de la Plata tide locks. Drainage storm tunnels. Sea gates.",
+      energy: "Wind farm networks. Solar infrastructure tiles. Local hydro nets.",
+      satellites: "Estuary silt radars. Storm path prediction networks.",
+      biodiversity: "Pampa grassland reserves. Wetland bio-filters. Biophilic squares."
+    }
+  },
+  {
+    name: 'Reykjavik',
+    country: 'Iceland',
+    lat: 64.1466,
+    lon: -21.9426,
+    year: 2040,
+    offsets: { temp: -4.0, tempRise: 0.5, seaLevel: 0.9, population: 0.001, popGrowth: 1.03 },
+    details: {
+      climate: "Glacial runoff containment. Thermal district heating. Ocean locks.",
+      energy: "Geothermal steam dynamos. Hydro stations. Hydrogen production.",
+      satellites: "Arctic ice shelf radars. Volcanic ash flight path sensors.",
+      biodiversity: "Tundra reforestation loops. Arctic greenhouse grids. Marine reserves."
+    }
+  },
+
+  // ─── 2050 CITIES (36 CITIES) ───────────────────────────────────────────────
+  {
+    name: 'Neom',
+    country: 'Saudi Arabia',
+    lat: 28.2917,
+    lon: 34.6250,
+    year: 2050,
+    offsets: { temp: 7.5, tempRise: 1.1, seaLevel: 0.5, population: 0.005, popGrowth: 1.15 },
+    details: {
+      climate: "Mirrored surface shields. Desalination brine processors. Wind gates.",
+      energy: "Hydrogen fusion core. Desert solar grids. Solar tower complexes.",
+      satellites: "Autonomous pod coordinate guides. Laser power transmission beams.",
+      biodiversity: "Desert biomes. Sub-surface agriculture. Mangrove salt farms."
+    }
+  },
+  {
+    name: 'Masdar City',
+    country: 'UAE',
+    lat: 24.4372,
+    lon: 54.6186,
+    year: 2050,
+    offsets: { temp: 7.8, tempRise: 1.0, seaLevel: 0.6, population: 0.001, popGrowth: 1.10 },
+    details: {
+      climate: "Wind tower cooling tunnels. Thermal shield canopies. Water recycle loops.",
+      energy: "Photovoltaic farm cells. Hydrogen production plants. Kinetic roads.",
+      satellites: "Microclimate thermal grids. Ground sand sensors.",
+      biodiversity: "Biosphere biodomes. Arid plant sanctuaries. Vertical farms."
+    }
+  },
+  {
+    name: 'Songdo',
+    country: 'South Korea',
+    lat: 37.3826,
+    lon: 126.6548,
+    year: 2050,
+    offsets: { temp: -0.6, tempRise: 0.7, seaLevel: 1.1, population: 0.002, popGrowth: 1.02 },
+    details: {
+      climate: "Smart water recycling channels. Coastal flood valves. Wind tunnels.",
+      energy: "Microgrid thorium feeds. Smart window cells. Fuel cell arrays.",
+      satellites: "Autonomous transit nodes. Air spectral quality beacons.",
+      biodiversity: "Sponge central parks. Biophilic rooftops. Tidal wetlands."
+    }
+  },
+  {
+    name: 'Forest City',
+    country: 'Malaysia',
+    lat: 1.3411,
+    lon: 103.5855,
+    year: 2050,
+    offsets: { temp: 2.6, tempRise: 0.6, seaLevel: 1.5, population: 0.001, popGrowth: 1.06 },
+    details: {
+      climate: "Sea defense dikes. Rainwater filters. Air cooling corridors.",
+      energy: "Floating solar modules. Tidal kinetic setups. Local battery banks.",
+      satellites: "Coastal reef health cameras. Maritime transit sensors.",
+      biodiversity: "Vertical forest towers. Mangrove buffers. Seagrass nurseries."
+    }
+  },
+  {
+    name: 'Oceanix Busan',
+    country: 'South Korea',
+    lat: 35.1796,
+    lon: 129.0756,
+    year: 2050,
+    offsets: { temp: 0.2, tempRise: 0.6, seaLevel: 1.7, population: 0.001, popGrowth: 1.03 },
+    details: {
+      climate: "Floating platform stabilizers. Tidal buffers. Sea surge locks.",
+      energy: "Tidal dynamos. Platform solar covers. Wave power arrays.",
+      satellites: "Sea state telemetry. Platform movement beacons.",
+      biodiversity: "Biorock coral nurseries. Seaweed bio-filters. Marine parks."
+    }
+  },
+  {
+    name: 'Akon City',
+    country: 'Senegal',
+    lat: 14.2486,
+    lon: -16.8833,
+    year: 2050,
+    offsets: { temp: 3.2, tempRise: 1.0, seaLevel: 1.0, population: 0.003, popGrowth: 1.18 },
+    details: {
+      climate: "Coastal tide gates. Rainwater storage arrays. Shading structures.",
+      energy: "Solar farm complexes. Biogas generators. Geothermal cooling.",
+      satellites: "Decentralized trade grids. Drone navigation beacons.",
+      biodiversity: "Rewilded savanna belts. Mangrove barriers. Vertical gardening."
+    }
+  },
+  {
+    name: 'Eko Atlantic',
+    country: 'Nigeria',
+    lat: 6.4172,
+    lon: 3.4175,
+    year: 2050,
+    offsets: { temp: 2.4, tempRise: 0.8, seaLevel: 1.7, population: 0.005, popGrowth: 1.15 },
+    details: {
+      climate: "Great Wall seawall defenses. Sea surge locks. Drainage pumps.",
+      energy: "Offshore tidal kinetic nodes. Canopy solar tiles. Local biogas.",
+      satellites: "Coastal erosion mapping. Drone transport guides.",
+      biodiversity: "Mangrove ocean nurseries. Floating parks. Coastal dune grass."
+    }
+  },
+  {
+    name: 'Telosa',
+    country: 'USA',
+    lat: 39.0000,
+    lon: -115.0000,
+    year: 2050,
+    offsets: { temp: 1.8, tempRise: 1.1, seaLevel: 0, population: 0.005, popGrowth: 1.12 },
+    details: {
+      climate: "Aquifer recharge blocks. Water recycling arrays. Drought canopies.",
+      energy: "Mojave solar grid tie. Molten salt batteries. Local wind poles.",
+      satellites: "Ground moisture trackers. Autonomous transport guides.",
+      biodiversity: "High-yield vertical farms. Native parklands. Wildlife trails."
+    }
+  },
+  {
+    name: 'Woven City',
+    country: 'Japan',
+    lat: 35.2323,
+    lon: 138.9039,
+    year: 2050,
+    offsets: { temp: -0.4, tempRise: 0.6, seaLevel: 0, population: 0.001, popGrowth: 1.02 },
+    details: {
+      climate: "Smart water filtration grids. Subterranean cool loops. Shading.",
+      energy: "Hydrogen fuel cells. Local solar glazing. Geothermal taps.",
+      satellites: "Autonomous transport guides. Smart grid monitoring swarms.",
+      biodiversity: "Native plant streets. Hydroponic farming. Urban gardens."
+    }
+  },
+  {
+    name: 'Suva',
+    country: 'Fiji',
+    lat: -18.1248,
+    lon: 178.4501,
+    year: 2050,
+    offsets: { temp: 2.2, tempRise: 0.6, seaLevel: 1.8, population: 0.002, popGrowth: 1.05 },
+    details: {
+      climate: "Coral seawall buffers. Tidal gates. Floating platform locks.",
+      energy: "Ocean wave kinetic loops. Solar canopy layers. Wind setups.",
+      satellites: "Pacific sea state sensors. Reef health mapping swarms.",
+      biodiversity: "Electric coral foundations. Mangrove parks. Seagrass nurseries."
+    }
+  },
+  {
+    name: 'Amsterdam',
+    country: 'Netherlands',
+    lat: 52.3676,
+    lon: 4.9041,
+    year: 2050,
+    offsets: { temp: -1.2, tempRise: 0.5, seaLevel: 1.6, population: 0.002, popGrowth: 1.02 },
+    details: {
+      climate: "Dyke lock systems. Subterranean flood bays. Hydraulic gates.",
+      energy: "Floating wind farms. Canal thermal recovery. Solar glass.",
+      satellites: "Water level radars. Cycle route navigation swarms.",
+      biodiversity: "Aquatic sponge parks. Green roof buildings. Eco-bridges."
+    }
+  },
+  {
+    name: 'Copenhagen',
+    country: 'Denmark',
+    lat: 55.6761,
+    lon: 12.5683,
+    year: 2050,
+    offsets: { temp: -2.0, tempRise: 0.5, seaLevel: 1.3, population: 0.001, popGrowth: 1.02 },
+    details: {
+      climate: "Coastal storm defenses. Harbor lock system. Air vents.",
+      energy: "Wind farm complexes. Biomass fuel systems. Solar roofs.",
+      satellites: "Baltic ice mapping. Smart grid tracking beacons.",
+      biodiversity: "Rewilded park structures. Coastal mangroves. Pocket woods."
+    }
+  },
+  {
+    name: 'Helsinki',
+    country: 'Finland',
+    lat: 60.1699,
+    lon: 24.9384,
+    year: 2050,
+    offsets: { temp: -3.5, tempRise: 0.6, seaLevel: 0.8, population: 0.001, popGrowth: 1.01 },
+    details: {
+      climate: "Underground heat depots. Heated roads. Ocean storm gates.",
+      energy: "Modular SMR reactors. Geothermal grids. Solar glass paint.",
+      satellites: "Gulf ice trackers. Arctic route mapping satellites.",
+      biodiversity: "Boreal forest buffers. Sub-zero biodomes. Green parks."
+    }
+  },
+  {
+    name: 'Geneva',
+    country: 'Switzerland',
+    lat: 46.2044,
+    lon: 6.1432,
+    year: 2050,
+    offsets: { temp: -0.8, tempRise: 0.7, seaLevel: 0, population: 0.001, popGrowth: 1.02 },
+    details: {
+      climate: "Lake cooling arrays. Mountain slope guards. Water loops.",
+      energy: "Hydro turbine grids. Alpine solar panels. Geothermal wells.",
+      satellites: "Alpine melt telemetry. Research lab sync systems.",
+      biodiversity: "Mountain forest links. Rewilded parks. Lake biophilic reefs."
+    }
+  },
+  {
+    name: 'Vancouver',
+    country: 'Canada',
+    lat: 49.2827,
+    lon: -123.1207,
+    year: 2050,
+    offsets: { temp: -1.0, tempRise: 0.5, seaLevel: 1.2, population: 0.003, popGrowth: 1.04 },
+    details: {
+      climate: "Rainwater channels. Coastal seawall blocks. Slope shields.",
+      energy: "Hydro stations. Solar window grids. Geothermal loops.",
+      satellites: "Forest fire mapping. Marine transit radar arrays.",
+      biodiversity: "Temperate rainforest belts. Salmon river restoration. Green roofs."
+    }
+  },
+  {
+    name: 'Cape Town',
+    country: 'South Africa',
+    lat: -33.9249,
+    lon: 18.4241,
+    year: 2050,
+    offsets: { temp: 1.8, tempRise: 0.9, seaLevel: 1.2, population: 0.006, popGrowth: 1.08 },
+    details: {
+      climate: "Desalination nodes. Aquifer recharge loops. Sea walls.",
+      energy: "Wind farm networks. Solar infrastructure. Tidal power nodes.",
+      satellites: "Marine temperature cams. Drought risk tracking beacons.",
+      biodiversity: "Fynbos reserves. Coastal mangrove buffers. Rewilded parks."
+    }
+  },
+  {
+    name: 'Auckland',
+    country: 'New Zealand',
+    lat: -36.8485,
+    lon: 174.7633,
+    year: 2050,
+    offsets: { temp: 0.8, tempRise: 0.6, seaLevel: 1.4, population: 0.002, popGrowth: 1.05 },
+    details: {
+      climate: "Coastal defense locks. Storm runoffs. Salinity sensors.",
+      energy: "Geothermal dynamos. Wind installations. Ocean wave kinetic.",
+      satellites: "Pacific weather radar. Coastal erosion monitors.",
+      biodiversity: "Native forest trails. Coastal estuary parks. Marine reefs."
+    }
+  },
+  {
+    name: 'Anchorage',
+    country: 'USA',
+    lat: 61.2181,
+    lon: -149.9003,
+    year: 2050,
+    offsets: { temp: -5.5, tempRise: 0.6, seaLevel: 0.8, population: 0.001, popGrowth: 1.03 },
+    details: {
+      climate: "Sub-zero grid loops. Glacier melt filters. Permafrost monitors.",
+      energy: "SMR reactors. Wind installations. High-altitude solar.",
+      satellites: "Arctic route trackers. Glacier density spectral mapping.",
+      biodiversity: "Taiga park links. Sub-zero greenhouses. Pine reserves."
+    }
+  },
+  {
+    name: 'Tromsø',
+    country: 'Norway',
+    lat: 69.6492,
+    lon: 18.9553,
+    year: 2050,
+    offsets: { temp: -5.0, tempRise: 0.5, seaLevel: 0.7, population: 0.001, popGrowth: 1.02 },
+    details: {
+      climate: "Snow locks. Heated drone paths. Sea level dikes.",
+      energy: "Hydro stations. Deep wind installations. Geothermal wells.",
+      satellites: "Northern lights telemetry. Arctic cargo route guides.",
+      biodiversity: "Tundra reserves. Sub-zero bio-domes. Marine sanctuaries."
+    }
+  },
+  {
+    name: 'Lima',
+    country: 'Peru',
+    lat: -12.0464,
+    lon: -77.0428,
+    year: 2050,
+    offsets: { temp: 1.6, tempRise: 0.8, seaLevel: 1.2, population: 0.013, popGrowth: 1.04 },
+    details: {
+      climate: "Fog collectors. Desalination centers. Aqueduct loops.",
+      energy: "Solar farm complexes. Wind generators. Hydrogen loops.",
+      satellites: "Andean melt telemetry. Coastal temp mapping radars.",
+      biodiversity: "Arid plant reserves. Coastal wetland parks. Pocket gardens."
+    }
+  },
+  {
+    name: 'Casablanca',
+    country: 'Morocco',
+    lat: 33.5731,
+    lon: -7.5898,
+    year: 2050,
+    offsets: { temp: 2.8, tempRise: 1.0, seaLevel: 1.1, population: 0.005, popGrowth: 1.07 },
+    details: {
+      climate: "Seawall gates. Solar shade structures. Desal channels.",
+      energy: "Concentrated solar fields. Wind arrays. Hydrogen depots.",
+      satellites: "Saharan sand sensors. Coastal erosion monitors.",
+      biodiversity: "Saharan buffer forest. Coastal mangrove arrays. Green plazas."
+    }
+  },
+  {
+    name: 'Honolulu',
+    country: 'USA',
+    lat: 21.3069,
+    lon: -157.8583,
+    year: 2050,
+    offsets: { temp: 2.2, tempRise: 0.6, seaLevel: 1.7, population: 0.001, popGrowth: 1.04 },
+    details: {
+      climate: "Wave wall defenses. Salinity sensors. Drainage blocks.",
+      energy: "Wave kinetic systems. Building solar paint. Wind arrays.",
+      satellites: "Pacific storm trackers. Reef health radars.",
+      biodiversity: "Electric coral arrays. Mangrove restoration. Native parks."
+    }
+  },
+  {
+    name: 'Nuuk',
+    country: 'Greenland',
+    lat: 64.1743,
+    lon: -51.7373,
+    year: 2050,
+    offsets: { temp: -4.8, tempRise: 0.5, seaLevel: 0.8, population: 0.001, popGrowth: 1.05 },
+    details: {
+      climate: "Glacial runoff containment. Heated paths. Storm gates.",
+      energy: "Hydro stations. Wind generators. Geothermal setups.",
+      satellites: "Ice shelf radars. Arctic route trackers.",
+      biodiversity: "Tundra reserves. Arctic greenhouse grids. Marine parks."
+    }
+  },
+  {
+    name: 'Svalbard Dome',
+    country: 'Norway',
+    lat: 78.2232,
+    lon: 15.6267,
+    year: 2050,
+    offsets: { temp: -7.5, tempRise: 0.4, seaLevel: 0.5, population: 0.001, popGrowth: 1.02 },
+    details: {
+      climate: "Permafrost cooling shields. Global seed vault buffers. Air blocks.",
+      energy: "Small modular reactors. Wind installations. Geothermal wells.",
+      satellites: "Arctic logistics guides. Glacier monitoring spectral cams.",
+      biodiversity: "Seed vault research dome. Sub-zero botanical lab. Tundra parks."
+    }
+  },
+  {
+    name: 'Saharan Oasis Node',
+    country: 'Egypt',
+    lat: 26.0000,
+    lon: 28.0000,
+    year: 2050,
+    offsets: { temp: 7.2, tempRise: 1.1, seaLevel: 0, population: 0.001, popGrowth: 1.12 },
+    details: {
+      climate: "Solar shade meshes. Deep aquifer wells. Atmospheric loops.",
+      energy: "Solar canal systems. Molten salt panels. Wind columns.",
+      satellites: "Desert moisture tracking. Ground sandstorm alert nets.",
+      biodiversity: "Genetically engineered forest. Arid planting blocks. Date palms."
+    }
+  },
+  {
+    name: 'Great Green Node',
+    country: 'Senegal',
+    lat: 15.0000,
+    lon: -15.0000,
+    year: 2050,
+    offsets: { temp: 3.5, tempRise: 1.0, seaLevel: 0, population: 0.002, popGrowth: 1.15 },
+    details: {
+      climate: "Saharan buffer locks. Aquifer recharge loops. Shade structures.",
+      energy: "Solar field generators. Biogas loops. Kinetic networks.",
+      satellites: "Forest canopy scanners. Ground moisture spectral cams.",
+      biodiversity: "Green wall tree loops. Savanna rewilding zones. Pocket farms."
+    }
+  },
+  {
+    name: 'Amazon Reclaim Center',
+    country: 'Brazil',
+    lat: -3.0000,
+    lon: -60.0000,
+    year: 2050,
+    offsets: { temp: 2.0, tempRise: 0.8, seaLevel: 0, population: 0.002, popGrowth: 1.06 },
+    details: {
+      climate: "Rainforest moisture locks. Soil erosion regulators. Cool blocks.",
+      energy: "Solar canal arrays. Biomass generators. Local hydro nets.",
+      satellites: "Deforestation radar swarms. Species bio-telemetry nets.",
+      biodiversity: "Amazon replanting zones. Wildlife corridors. Seed banks."
+    }
+  },
+  {
+    name: 'Tesla Colony One',
+    country: 'USA',
+    lat: 37.2431,
+    lon: -115.7930,
+    year: 2050,
+    offsets: { temp: 3.2, tempRise: 1.0, seaLevel: 0, population: 0.003, popGrowth: 1.10 },
+    details: {
+      climate: "Desert microclimate shields. Closed water loops. Cool blocks.",
+      energy: "Solar tracking arrays. Super battery banks. Fusion cell core.",
+      satellites: "Grid stability scanners. Self-driving transport relays.",
+      biodiversity: "Hydroponic farm domes. Desert plant preserves. Eco-parks."
+    }
+  },
+  {
+    name: 'Pacific Gyre Platform',
+    country: 'Global Grid',
+    lat: 35.0000,
+    lon: -140.0000,
+    year: 2050,
+    offsets: { temp: 1.5, tempRise: 0.5, seaLevel: 2.0, population: 0.001, popGrowth: 1.02 },
+    details: {
+      climate: "Ocean platform stabilizers. Storm dikes. Wave locks.",
+      energy: "Wave kinetic turbines. Solar cover arrays. Ocean wind.",
+      satellites: "Pacific weather telemetry. Platform sync guides.",
+      biodiversity: "Plastic filter bio-systems. Fish nursery reefs. Seaweed farms."
+    }
+  },
+  {
+    name: 'Antarctic Research Hub',
+    country: 'Global Grid',
+    lat: -75.2504,
+    lon: 0.0000,
+    year: 2050,
+    offsets: { temp: -9.5, tempRise: 0.4, seaLevel: 0.2, population: 0.001, popGrowth: 1.01 },
+    details: {
+      climate: "Thermal shield domes. Ice shelf telemetry. Sub-zero loops.",
+      energy: "Modular fusion reactors. Wind installations. Heat grids.",
+      satellites: "Glacier density scanners. Southern ocean mapping swarms.",
+      biodiversity: "Seed vault libraries. Sub-zero botanical labs. Marine reserves."
+    }
+  },
+  {
+    name: 'Munich',
+    country: 'Germany',
+    lat: 48.1351,
+    lon: 11.5820,
+    year: 2050,
+    offsets: { temp: -1.2, tempRise: 0.6, seaLevel: 0, population: 0.003, popGrowth: 1.02 },
+    details: {
+      climate: "River flood bypass tunnels. Evaporative cooling swales. Cooling grids.",
+      energy: "Geothermal grid wells. Rooftop solar panels. Biogas plants.",
+      satellites: "Transit telemetry guides. Drone mapping beacons.",
+      biodiversity: "Isar river rewilding. Roof garden towers. Native tree lines."
+    }
+  },
+  {
+    name: 'Lisbon',
+    country: 'Portugal',
+    lat: 38.7223,
+    lon: -9.1393,
+    year: 2050,
+    offsets: { temp: 1.8, tempRise: 0.8, seaLevel: 1.3, population: 0.002, popGrowth: 1.04 },
+    details: {
+      climate: "Tagus surge gates. Seawall salinity sensors. Slope guards.",
+      energy: "Tidal kinetic systems. Solar canopy arrays. Wave power.",
+      satellites: "Ocean current tracking. Coastal erosion monitors.",
+      biodiversity: "River estuary buffers. Coastal dune restoration. Urban parks."
+    }
+  },
+  {
+    name: 'Dublin',
+    country: 'Ireland',
+    lat: 53.3498,
+    lon: -6.2603,
+    year: 2050,
+    offsets: { temp: -1.0, tempRise: 0.5, seaLevel: 1.4, population: 0.002, popGrowth: 1.03 },
+    details: {
+      climate: "Liffey flood gates. Storm surge dikes. Drainage channels.",
+      energy: "Offshore wind generators. Wave kinetic arrays. Solar slate.",
+      satellites: "Irish sea state radar. Smart grid telemetry trackers.",
+      biodiversity: "Rewilded peat bog parks. Coastal grass buffer dunes. Pocket forests."
+    }
+  },
+  {
+    name: 'Stockholm',
+    country: 'Sweden',
+    lat: 59.3293,
+    lon: 18.0686,
+    year: 2050,
+    offsets: { temp: -2.8, tempRise: 0.6, seaLevel: 0.9, population: 0.002, popGrowth: 1.02 },
+    details: {
+      climate: "Archipelago locks. Heated paths. Storm gates.",
+      energy: "District heating networks. Thorium micro-feeds. Solar glass.",
+      satellites: "Baltic ice radars. Transit tracking guides.",
+      biodiversity: "Water sponge parks. Biophilic rooftops. Marine reserves."
+    }
+  },
+  {
+    name: 'Oslo',
+    country: 'Norway',
+    lat: 59.9139,
+    lon: 10.7522,
+    year: 2050,
+    offsets: { temp: -3.2, tempRise: 0.5, seaLevel: 0.8, population: 0.001, popGrowth: 1.03 },
+    details: {
+      climate: "Fjord tide gates. Snowmelt buffer loops. Cool plazas.",
+      energy: "Hydro stations. Waste bio-reactors. Solar glass panels.",
+      satellites: "North Sea cargo guides. Forestry density scanners.",
+      biodiversity: "Nordic forest corridors. Green roof squares. Fjord bio-filters."
+    }
+  },
+  {
+    name: 'Rome',
+    country: 'Italy',
+    lat: 41.9028,
+    lon: 12.4964,
+    year: 2050,
+    offsets: { temp: 2.2, tempRise: 0.9, seaLevel: 0.6, population: 0.004, popGrowth: 1.02 },
+    details: {
+      climate: "Tiber river gates. Localized shading screens. Water grids.",
+      energy: "Solar heritage tiles. Grid battery storage. Geothermal wells.",
+      satellites: "Historic area sensors. Urban temperature radars.",
+      biodiversity: "Historic park rewilding. Vertical garden towers. Pocket forests."
     }
   }
 ];
 
 // Helper to programmatically generate interactive sci-fi city projections
 export const generateCityProjections = (
-  city: Omit<CityData, 'projections'>,
+  city: CityData,
   category: string,
   year: number
 ): CityProjection => {
@@ -327,4 +1107,82 @@ export const generateCityProjections = (
   }
 
   return { text, stability, status };
+};
+
+export interface CityIntelligence {
+  population: number; // in millions
+  smartCityIndex: number; // 0 to 100
+  aiAdoption: number; // 0 to 100
+  sustainability: number; // 0 to 100
+  climateRisk: number; // 0 to 100
+  growthForecast: string;
+}
+
+export const generateCityIntelligence = (
+  city: CityData,
+  year: number,
+  simulations: {
+    seaLevelRise: number;
+    fusionBreakthrough: boolean;
+    agiEmergence: boolean;
+    popDecline: boolean;
+    renewableTransition: boolean;
+    arcticDominance: boolean;
+    semiDisruptions: boolean;
+  }
+): CityIntelligence => {
+  const yearIndex = (year - 2025) / 5; // 0 to 5
+
+  // 1. Population calculation
+  let population = (city.offsets.population * 1000) * Math.pow(city.offsets.popGrowth, yearIndex / 5);
+  if (simulations.popDecline) {
+    population *= 0.88;
+  }
+
+  // 2. Smart City Index base
+  const smartBase = 65 + (Math.floor(city.offsets.temp * 2) % 15);
+  let smartCityIndex = Math.min(100, Math.max(40, smartBase + yearIndex * 4));
+  if (simulations.agiEmergence) {
+    smartCityIndex = Math.min(99, smartCityIndex + 20);
+  }
+
+  // 3. AI Adoption Level base
+  const aiBase = 55 + (Math.floor(city.offsets.tempRise * 10) % 20);
+  let aiAdoption = Math.min(100, Math.max(30, aiBase + yearIndex * 5));
+  if (simulations.agiEmergence) {
+    aiAdoption = Math.min(99, aiAdoption + 30);
+  }
+
+  // 4. Sustainability Rating base
+  const sustainBase = 60 + (Math.floor(city.offsets.popGrowth * 10) % 20);
+  let sustainability = Math.min(100, Math.max(40, sustainBase + yearIndex * 3));
+  if (simulations.fusionBreakthrough) {
+    sustainability = Math.min(99, sustainability + 22);
+  } else if (simulations.renewableTransition) {
+    sustainability = Math.min(95, sustainability + 12);
+  }
+  if (simulations.seaLevelRise > 0 && city.offsets.seaLevel > 0) {
+    sustainability = Math.max(20, sustainability - simulations.seaLevelRise * 12);
+  }
+
+  // 5. Climate Risk Score base
+  const riskBase = 40 + Math.floor(city.offsets.tempRise * 15) + Math.floor(city.offsets.seaLevel * 10);
+  let climateRisk = Math.min(100, Math.max(10, riskBase + yearIndex * 2));
+  if (simulations.seaLevelRise > 0 && city.offsets.seaLevel > 0) {
+    climateRisk = Math.min(100, climateRisk + simulations.seaLevelRise * 15);
+  }
+  if (simulations.fusionBreakthrough || simulations.renewableTransition) {
+    climateRisk = Math.max(10, climateRisk - 15);
+  }
+
+  // 6. Growth Forecast
+  let growthForecast = `${city.name} is projected to see a ${population > 10 ? 'steady stabilization' : 'high-tech expansion'} of carrying capacity towards ${population.toFixed(1)} million residents by ${year}.`;
+  if (simulations.agiEmergence) {
+    growthForecast += ` Adaptive AI grids have automated urban resource routing, boosting efficiency by 30%.`;
+  }
+  if (simulations.seaLevelRise > 0 && city.offsets.seaLevel > 0) {
+    growthForecast += ` Coastal inundation defenses are operating at maximum capacity to counter the +${simulations.seaLevelRise}m sea-level surge.`;
+  }
+
+  return { population, smartCityIndex, aiAdoption, sustainability, climateRisk, growthForecast };
 };

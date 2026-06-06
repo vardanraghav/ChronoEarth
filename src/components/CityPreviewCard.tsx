@@ -1,47 +1,40 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { CityData } from '@/data/citiesData';
+import { CityData, generateCityIntelligence } from '@/data/citiesData';
 import { getExtendedCityData, getCitySlug } from '@/data/citiesExtendedData';
-import { PREDICTIONS } from '@/data/predictionsData';
 
 interface CityPreviewCardProps {
   city: CityData;
+  activeYear: number;
+  activeSimulations: {
+    seaLevelRise: number;
+    fusionBreakthrough: boolean;
+    agiEmergence: boolean;
+    popDecline: boolean;
+    renewableTransition: boolean;
+    arcticDominance: boolean;
+    semiDisruptions: boolean;
+  };
   onClose: () => void;
 }
 
 const C = {
-  bg: 'rgba(2, 8, 15, 0.75)',
   primary: '#00F5B0',
-  secondary: '#00D98F',
-  accent: '#FFFFFF',
-  white: '#F5F7FA',
 };
 
-export default function CityPreviewCard({ city, onClose }: CityPreviewCardProps) {
-  const router = useRouter();
+export default function CityPreviewCard({ city, activeYear, activeSimulations, onClose }: CityPreviewCardProps) {
   const [countdown, setCountdown] = useState(5);
+  const [isAutoNavigating, setIsAutoNavigating] = useState(true);
+  const [imageError, setImageError] = useState(false);
   const cityExtended = getExtendedCityData(city.name);
   const slug = getCitySlug(city.name);
 
-  // Filter 3 predictions for this city
-  const cityPredictions = PREDICTIONS.filter(
-    p => p.city.toLowerCase() === city.name.toLowerCase()
-  ).slice(0, 3);
-  
-  // Fallback if less than 3
-  const finalPredictions = [...cityPredictions];
-  if (finalPredictions.length < 3) {
-    PREDICTIONS.forEach(p => {
-      if (finalPredictions.length < 3 && !finalPredictions.some(fp => fp.id === p.id)) {
-        finalPredictions.push(p);
-      }
-    });
-  }
+  const stats = generateCityIntelligence(city, activeYear, activeSimulations);
 
   // Timer loop for redirecting after 5s
   useEffect(() => {
+    if (!isAutoNavigating) return;
     if (countdown <= 0) {
       window.location.href = `/city/${slug}`;
       return;
@@ -50,102 +43,158 @@ export default function CityPreviewCard({ city, onClose }: CityPreviewCardProps)
       setCountdown(prev => prev - 1);
     }, 1000);
     return () => clearTimeout(timer);
-  }, [countdown, slug]);
+  }, [countdown, slug, isAutoNavigating]);
 
   const handleOpenNow = () => {
     window.location.href = `/city/${slug}`;
   };
 
-  const cornerAccent = (
-    <>
-      <div style={{ position: 'absolute', top: 0, left: 0, width: 8, height: 8, borderTop: `1px solid ${C.primary}`, borderLeft: `1px solid ${C.primary}` }} />
-      <div style={{ position: 'absolute', top: 0, right: 0, width: 8, height: 8, borderTop: `1px solid ${C.primary}`, borderRight: `1px solid ${C.primary}` }} />
-      <div style={{ position: 'absolute', bottom: 0, left: 0, width: 8, height: 8, borderBottom: `1px solid ${C.primary}`, borderLeft: `1px solid ${C.primary}` }} />
-      <div style={{ position: 'absolute', bottom: 0, right: 0, width: 8, height: 8, borderBottom: `1px solid ${C.primary}`, borderRight: `1px solid ${C.primary}` }} />
-    </>
-  );
+  const getMetricColor = (val: number, isRisk = false) => {
+    if (isRisk) {
+      if (val > 70) return '#FF3366';
+      if (val > 45) return '#FF9900';
+      return '#00F5B0';
+    }
+    if (val > 75) return '#00F5B0';
+    if (val > 50) return '#00D98F';
+    return '#FF9900';
+  };
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm pointer-events-auto"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm pointer-events-auto"
       onClick={onClose}
     >
       <div 
         onClick={e => e.stopPropagation()}
-        className="card-tier-1 w-full max-w-[420px] flex flex-col gap-4 relative animate-fade-up"
+        className="premium-glass w-full max-w-[380px] p-8 flex flex-col gap-6 relative rounded-xl animate-fade-up"
+        style={{
+          boxShadow: '0 24px 64px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(0, 245, 176, 0.2), inset 0 0 20px rgba(0, 245, 176, 0.02)'
+        }}
       >
-        {/* Hero image header */}
-        <div className="relative w-full h-[160px] overflow-hidden rounded">
-          <img 
-            src={cityExtended.image} 
-            alt={city.name} 
-            loading="lazy"
-            className="w-full h-full object-cover filter brightness-[0.7]" 
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#040B12] via-transparent to-transparent" />
-          <div className="absolute bottom-4 left-4">
-            <h2 className="text-xl font-light text-white uppercase m-0 leading-none">
-              {city.name}
-            </h2>
-            <div className="text-[9px] font-mono text-[#00F5B0] uppercase mt-1">
-              {city.country} · {city.lat.toFixed(4)}° N, {city.lon.toFixed(4)}° E
+        {/* Close Button */}
+        <button 
+          onClick={onClose} 
+          className="absolute top-5 right-5 bg-transparent border-none text-[#7A8694] hover:text-white cursor-pointer text-[10px] font-mono uppercase tracking-wider transition-colors"
+        >
+          [✕]
+        </button>
+
+        {/* Circular portrait image */}
+        <div className="flex justify-center mt-2">
+          {imageError ? (
+            <div className="w-24 h-24 rounded-full border border-[#00F5B0]/30 flex flex-col items-center justify-center bg-[#040B12] text-[9px] font-mono text-[#00F5B0]/50 tracking-wider shadow-[0_0_20px_rgba(0,245,176,0.1)]">
+              OFFLINE
+            </div>
+          ) : (
+            <img 
+              src={cityExtended.image} 
+              alt={city.name} 
+              loading="lazy"
+              onError={() => setImageError(true)}
+              className="w-24 h-24 rounded-full object-cover border border-[#00F5B0]/30 shadow-[0_0_20px_rgba(0,245,176,0.2)] shrink-0" 
+            />
+          )}
+        </div>
+
+        {/* City and Country header */}
+        <div className="text-center flex flex-col gap-1">
+          <h2 className="text-xl font-light text-white m-0 tracking-wide">
+            {city.name}
+          </h2>
+          <div className="text-[10px] text-[#00F5B0] font-mono tracking-[0.2em] uppercase font-semibold">
+            {city.country}
+          </div>
+        </div>
+
+        {/* Dashboard Grid Container */}
+        <div className="bg-black/20 border border-white/5 rounded-lg p-4 flex flex-col gap-4">
+          {/* Metric Dashboard */}
+          <div className="grid grid-cols-2 gap-4">
+            {/* Pop */}
+            <div className="flex flex-col gap-0.5">
+              <span className="text-[9px] text-[#7A8694] uppercase tracking-wider font-mono">Population</span>
+              <span className="text-xs font-semibold text-white">{stats.population.toFixed(1)}M</span>
+            </div>
+            {/* Smart Index */}
+            <div className="flex flex-col gap-1">
+              <span className="text-[9px] text-[#7A8694] uppercase tracking-wider font-mono">Smart Index</span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-white font-mono">{stats.smartCityIndex}%</span>
+                <div className="flex-1 h-[2px] bg-white/5 rounded-full overflow-hidden">
+                  <div className="h-full bg-[#00F5B0]" style={{ width: `${stats.smartCityIndex}%`, boxShadow: '0 0 4px #00F5B0' }} />
+                </div>
+              </div>
+            </div>
+            {/* AI Adoption */}
+            <div className="flex flex-col gap-1">
+              <span className="text-[9px] text-[#7A8694] uppercase tracking-wider font-mono">AI Adoption</span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-white font-mono">{stats.aiAdoption}%</span>
+                <div className="flex-1 h-[2px] bg-white/5 rounded-full overflow-hidden">
+                  <div className="h-full bg-[#00F5B0]" style={{ width: `${stats.aiAdoption}%`, boxShadow: '0 0 4px #00F5B0' }} />
+                </div>
+              </div>
+            </div>
+            {/* Sustainability */}
+            <div className="flex flex-col gap-1">
+              <span className="text-[9px] text-[#7A8694] uppercase tracking-wider font-mono">Sustainability</span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-white font-mono">{stats.sustainability}%</span>
+                <div className="flex-1 h-[2px] bg-white/5 rounded-full overflow-hidden">
+                  <div className="h-full bg-[#00F5B0]" style={{ width: `${stats.sustainability}%`, boxShadow: '0 0 4px #00F5B0' }} />
+                </div>
+              </div>
             </div>
           </div>
-          <button 
-            onClick={onClose} 
-            className="absolute top-4 right-4 bg-transparent border-none text-rose-455 cursor-pointer text-xs font-mono"
-          >
-            [✕]
-          </button>
-        </div>
 
-        {/* Narrative Outlook Briefing */}
-        <div className="flex flex-col gap-1.5 border-b border-[#00F5B0]/15 pb-4">
-          <div className="text-[10px] font-mono text-[#00F5B0] uppercase tracking-widest font-semibold">
-            Planetary Outlook Briefing
-          </div>
-          <p className="font-serif text-xs text-[#7A8694] leading-relaxed">
-            {city.name} is projected to stabilize its carrying capacity at {(city.offsets.population * 1000).toFixed(0)} million residents by 2050. 
-            The biophilic grid is tracking towards {75 + (city.offsets.popGrowth > 1.08 ? 19 : 8)}% AI coordination and remains highly climate-resilient, maintaining a {68 + (city.offsets.tempRise > 1.0 ? 8 : 22)}% environmental stability rating.
-          </p>
-        </div>
-
-        {/* Predictions list */}
-        <div className="flex flex-col gap-2">
-          <div className="text-[10px] font-mono text-white uppercase tracking-widest font-semibold">
-            Forecast Matrix Shards
-          </div>
-          <div className="flex flex-col gap-2">
-            {finalPredictions.slice(0, 2).map(p => (
-              <div 
-                key={p.id} 
-                className="font-serif text-xs text-[#7A8694] leading-relaxed" 
-              >
-                <strong className="font-mono text-white font-medium tracking-wide uppercase">{p.year} / {p.title}:</strong> {p.description.slice(0, 100)}...
+          {/* Climate Risk Row (full width) */}
+          <div className="border-t border-white/5 pt-3 flex justify-between items-center">
+            <span className="text-[9px] text-[#7A8694] uppercase tracking-wider font-mono">Climate Risk</span>
+            <div className="flex items-center gap-2 w-2/3">
+              <span className="text-xs font-semibold font-mono" style={{ color: getMetricColor(stats.climateRisk, true) }}>{stats.climateRisk}%</span>
+              <div className="flex-1 h-[2px] bg-white/5 rounded-full overflow-hidden">
+                <div className="h-full" style={{ width: `${stats.climateRisk}%`, backgroundColor: getMetricColor(stats.climateRisk, true) }} />
               </div>
-            ))}
+            </div>
           </div>
         </div>
 
-        {/* Countdown timer */}
-        <div className="font-mono text-[9px] text-[#7A8694] text-center mt-1">
-          Opening Intelligence Page in <span className="font-bold text-[#00F5B0] text-xs">{countdown}</span>s
+        {/* Growth Forecast sentence */}
+        <p className="text-[11px] text-[#7A8694] font-light leading-relaxed m-0 text-center px-1">
+          {stats.growthForecast}
+        </p>
+
+        {/* Countdown display */}
+        <div className="text-[10px] text-[#7A8694] text-center font-mono py-0.5">
+          {isAutoNavigating ? (
+            <>
+              Opening full briefing in <span className="font-semibold text-[#00F5B0] font-mono glow-primary animate-breathe">{countdown}s...</span>
+            </>
+          ) : (
+            <span className="text-[#7A8694]/50">Auto-navigation paused</span>
+          )}
         </div>
 
-        {/* Action button bar */}
-        <div className="flex gap-4 mt-2">
+        {/* Buttons */}
+        <div className="flex gap-3 mt-1">
           <button 
-            onClick={onClose}
-            className="flex-1 py-2 border border-[#00F5B0]/15 hover:border-transparent hover:bg-white/5 hover:text-white rounded text-[9px] font-mono text-[#7A8694] bg-transparent transition-colors uppercase tracking-widest"
+            onClick={() => setIsAutoNavigating(false)}
+            disabled={!isAutoNavigating}
+            className={`flex-1 py-2.5 border rounded-lg text-xs font-mono transition-all duration-300 cursor-pointer ${
+              isAutoNavigating
+                ? 'border-white/10 hover:border-white/20 hover:bg-white/5 text-[#7A8694] hover:text-white bg-transparent'
+                : 'border-transparent bg-white/5 text-[#7A8694]/20 cursor-default'
+            }`}
           >
-            CANCEL
+            Cancel
           </button>
           
           <button 
             onClick={handleOpenNow}
-            className="flex-[1.4] py-2 border border-[#00F5B0] bg-[#00F5B0] hover:bg-[#00D98F] text-[#02060A] rounded text-[9px] font-mono text-[#02060A] font-bold transition-all uppercase tracking-widest"
+            className="flex-[1.4] py-2.5 bg-[#00F5B0] hover:bg-[#00D98F] text-[#02060A] rounded-lg text-xs font-semibold transition-all duration-300 cursor-pointer tracking-wider uppercase font-mono shadow-[0_0_15px_rgba(0,245,176,0.2)] hover:shadow-[0_0_20px_rgba(0,245,176,0.4)]"
           >
-            OPEN NOW →
+            Open now →
           </button>
         </div>
       </div>

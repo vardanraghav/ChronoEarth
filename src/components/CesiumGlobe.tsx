@@ -5,12 +5,31 @@ import '../lib/cesium-setup';
 import { EarthMode } from './CesiumGlobeContent';
 
 interface CesiumGlobeProps {
-  activeYear:     number;
-  activeCategory: string;
-  activeCity:     any;
-  setActiveCity:  (city: any) => void;
-  overlays: { climate: boolean; pollution: boolean; energy: boolean; satellite: boolean; ai: boolean };
-  earthMode:      EarthMode;
+  activeYear:        number;
+  activeCategory:    string;
+  activeCity:        any;
+  setActiveCity:     (city: any) => void;
+  activeCountry:     string | null;
+  setActiveCountry:  (code: string | null) => void;
+  overlays:          { climate: boolean; pollution: boolean; energy: boolean; satellite: boolean; ai: boolean };
+  earthMode:         EarthMode;
+  activeLayers:      {
+    cities: boolean;
+    climate: boolean;
+    tech: boolean;
+    energy: boolean;
+    space: boolean;
+    geopolitical: boolean;
+  };
+  activeSimulations: {
+    seaLevelRise: number;
+    fusionBreakthrough: boolean;
+    agiEmergence: boolean;
+    popDecline: boolean;
+    renewableTransition: boolean;
+    arcticDominance: boolean;
+    semiDisruptions: boolean;
+  };
 }
 
 const CesiumGlobeContent = dynamic(
@@ -32,15 +51,21 @@ const CesiumGlobeContent = dynamic(
   }
 );
 
-export default function CesiumGlobe({ activeYear, activeCategory, activeCity, setActiveCity, overlays, earthMode }: CesiumGlobeProps) {
+export default function CesiumGlobe({
+  activeYear, activeCategory, activeCity, setActiveCity, activeCountry, setActiveCountry, overlays, earthMode, activeLayers, activeSimulations
+}: CesiumGlobeProps) {
   return (
     <CesiumGlobeContent
       activeYear={activeYear}
       activeCategory={activeCategory}
       activeCity={activeCity}
       setActiveCity={setActiveCity}
+      activeCountry={activeCountry}
+      setActiveCountry={setActiveCountry}
       overlays={overlays}
       earthMode={earthMode}
+      activeLayers={activeLayers}
+      activeSimulations={activeSimulations}
     />
   );
 }

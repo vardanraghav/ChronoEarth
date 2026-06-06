@@ -37,7 +37,7 @@ export default function AboutPage() {
       <Navbar earthMode="cyber" />
 
       {/* Main Container */}
-      <div className="content-container pt-32 pb-20 relative z-20 flex flex-col gap-10 animate-fade-up">
+      <div className="reading-container pt-32 pb-20 relative z-20 flex flex-col gap-10 animate-fade-up">
         
         {/* Title Header */}
         <div className="flex flex-col gap-3 border-b border-[#00F5B0]/15 pb-6">
@@ -52,46 +52,46 @@ export default function AboutPage() {
         {/* Section 1: Vision & Mission */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 my-4">
           <div className="flex flex-col gap-4">
-            <h2 className="text-xl font-light text-white tracking-wide uppercase font-display border-b border-[#00F5B0]/15 pb-2">
-              Planetary Vision
+            <h2 className="text-xl font-light text-white border-b border-[#00F5B0]/15 pb-2">
+              Planetary vision
             </h2>
-            <p className="text-sm leading-relaxed text-[#7A8694] font-serif font-light">
+            <p className="text-sm leading-relaxed text-[#7A8694] font-light">
               To construct a highly responsive digital twin model of planet Earth that integrates quantum forecasting, ecological telemetry, and technological trajectories. ChronoEarth serves as an active planetary operating system dashboard, enabling humanity to visualize, anticipate, and mitigate multi-dimensional systemic risks before they manifest.
             </p>
           </div>
 
           <div className="flex flex-col gap-4">
-            <h2 className="text-xl font-light text-white tracking-wide uppercase font-display border-b border-[#00F5B0]/15 pb-2">
-              Our Core Mission
+            <h2 className="text-xl font-light text-white border-b border-[#00F5B0]/15 pb-2">
+              Our core mission
             </h2>
-            <p className="text-sm leading-relaxed text-[#7A8694] font-serif font-light">
-              Our mission is to crowdsource and simulate future scenarios with empirical precision. By matching projections from leading futurologists with real-time planetary sensor readings, we enable citizens, policy makers, and systems engineers to vote on forecast likelihoods, test local technology impacts, and adapt urban centers dynamically.
+            <p className="text-sm leading-relaxed text-[#7A8694] font-light">
+              Our mission is to crowdsource and simulate future scenarios with empirical precision. By matching predictions from leading futurologists with real-time planetary sensor readings, we enable citizens, policy makers, and systems engineers to vote on forecast likelihoods, test local technology impacts, and adapt urban centers dynamically.
             </p>
           </div>
         </div>
 
         {/* Section 2: Methodology */}
         <div className="flex flex-col gap-6 my-6">
-          <h2 className="text-xl font-light text-white tracking-wide uppercase font-display border-b border-[#00F5B0]/15 pb-2">
-            Forecasting Engine Methodology
+          <h2 className="text-xl font-light text-white border-b border-[#00F5B0]/15 pb-2">
+            Forecasting engine methodology
           </h2>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="card-tier-2 flex flex-col gap-3 p-5">
-              <span className="text-[10px] font-mono text-[#00F5B0] uppercase tracking-wider font-semibold">Sensor Assimilation</span>
-              <p className="text-xs text-[#7A8694] leading-relaxed font-serif">
+              <span className="text-xs text-[#00F5B0]">Sensor assimilation</span>
+              <p className="text-xs text-[#7A8694] leading-relaxed">
                 Decentralized nodes monitor global telemetry including carbon coefficients, oceanic thermal differentials, and LEO satellite arrays.
               </p>
             </div>
             <div className="card-tier-2 flex flex-col gap-3 p-5">
-              <span className="text-[10px] font-mono text-[#00F5B0] uppercase tracking-wider font-semibold">Expert Synthesis</span>
-              <p className="text-xs text-[#7A8694] leading-relaxed font-serif">
+              <span className="text-xs text-[#00F5B0]">Expert synthesis</span>
+              <p className="text-xs text-[#7A8694] leading-relaxed">
                 Leading specialists in Quantum Intelligence, Geo-engineering, and Nanomedicine input projection parameters into the Chrono-matrix.
               </p>
             </div>
             <div className="card-tier-2 flex flex-col gap-3 p-5">
-              <span className="text-[10px] font-mono text-[#00F5B0] uppercase tracking-wider font-semibold">Branch Simulation</span>
-              <p className="text-xs text-[#7A8694] leading-relaxed font-serif">
+              <span className="text-xs text-[#00F5B0]">Branch simulation</span>
+              <p className="text-xs text-[#7A8694] leading-relaxed">
                 Predictive neural models run continuous timelines, scoring confidence ratings based on user validation, upvotes, and environmental trends.
               </p>
             </div>
@@ -100,8 +100,8 @@ export default function AboutPage() {
 
         {/* Section 3: Data Sources */}
         <div className="flex flex-col gap-6 my-6">
-          <h2 className="text-xl font-light text-white tracking-wide uppercase font-display border-b border-[#00F5B0]/15 pb-2">
-            Primary Data Feed Sources
+          <h2 className="text-xl font-light text-white border-b border-[#00F5B0]/15 pb-2">
+            Primary data feed sources
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -113,12 +113,12 @@ export default function AboutPage() {
             ].map(source => (
               <div key={source.title} className="card-tier-2 flex flex-col justify-between p-5 min-h-[140px]">
                 <div className="flex flex-col gap-2">
-                  <h3 className="text-sm font-semibold text-white font-mono uppercase">{source.title}</h3>
-                  <p className="text-xs text-[#7A8694] leading-relaxed font-serif">{source.desc}</p>
+                  <h3 className="text-sm font-light text-white">{source.title}</h3>
+                  <p className="text-xs text-[#7A8694] leading-relaxed">{source.desc}</p>
                 </div>
-                <div className="border-t border-[#00F5B0]/10 pt-2 mt-3 flex justify-between text-[9px] font-mono text-[#7A8694] uppercase">
+                <div className="border-t border-[#00F5B0]/10 pt-2 mt-3 flex justify-between text-xs text-[#7A8694]">
                   <span>{source.freq}</span>
-                  <span className="text-[#00F5B0] font-bold">{source.score}</span>
+                  <span className="text-[#00F5B0] font-mono">{source.score}</span>
                 </div>
               </div>
             ))}
@@ -127,17 +127,17 @@ export default function AboutPage() {
 
         {/* Section 4: Roadmap */}
         <div className="flex flex-col gap-6 my-6">
-          <h2 className="text-xl font-light text-white tracking-wide uppercase font-display border-b border-[#00F5B0]/15 pb-2">
-            Forecast Engine Roadmap
+          <h2 className="text-xl font-light text-white border-b border-[#00F5B0]/15 pb-2">
+            Forecast engine roadmap
           </h2>
           
           <div className="relative border-l border-[#00F5B0]/15 ml-4 md:ml-6 flex flex-col gap-8 mt-4">
             {/* Phase 1 */}
             <div className="relative pl-6">
               <div className="absolute -left-1 w-2 h-2 rounded-full bg-[#00F5B0] mt-1.5" />
-              <div className="text-[9px] font-mono text-[#7A8694] uppercase mb-1 font-semibold">System Foundation (Current Phase)</div>
-              <h3 className="text-base font-light text-white uppercase tracking-wider mb-2">Immersive Globe Visualizer & Routing</h3>
-              <p className="text-xs text-[#7A8694] max-w-3xl leading-relaxed font-serif">
+              <div className="text-xs text-[#7A8694] mb-1">System foundation (current phase)</div>
+              <h3 className="text-base font-light text-white mb-2">Immersive globe visualizer & routing</h3>
+              <p className="text-xs text-[#7A8694] max-w-3xl leading-relaxed">
                 Releasing the 3D planetary dot-matrix globe. Deploying Next.js content routers for the database, expert tracking, and interactive prediction layouts.
               </p>
             </div>
@@ -145,9 +145,9 @@ export default function AboutPage() {
             {/* Phase 2 */}
             <div className="relative pl-6">
               <div className="absolute -left-1 w-2 h-2 rounded-full bg-[#00F5B0] mt-1.5" />
-              <div className="text-[9px] font-mono text-[#7A8694] uppercase mb-1 font-semibold">Engagement Layer (Q3 2026 Target)</div>
-              <h3 className="text-base font-light text-white uppercase tracking-wider mb-2">Nested Comment Protocols & Custom Reports</h3>
-              <p className="text-xs text-[#7A8694] max-w-3xl leading-relaxed font-serif">
+              <div className="text-xs text-[#7A8694] mb-1">Engagement layer (Q3 2026 target)</div>
+              <h3 className="text-base font-light text-white mb-2">Nested comment protocols & custom reports</h3>
+              <p className="text-xs text-[#7A8694] max-w-3xl leading-relaxed">
                 Activating persistent local storage upvotes, bookmarked timelines, and recursive commenting hierarchies to build structured futurological debates.
               </p>
             </div>
@@ -155,9 +155,9 @@ export default function AboutPage() {
             {/* Phase 3 */}
             <div className="relative pl-6">
               <div className="absolute -left-1 w-2 h-2 rounded-full bg-[#00F5B0]/40 mt-1.5" />
-              <div className="text-[9px] font-mono text-[#7A8694] uppercase mb-1">Live Sensor Sync (Q1 2027 Target)</div>
-              <h3 className="text-base font-light text-white/70 uppercase tracking-wider mb-2">Active Climate Data Pipeline Integration</h3>
-              <p className="text-xs text-[#7A8694]/70 max-w-3xl leading-relaxed font-serif">
+              <div className="text-xs text-[#7A8694] mb-1">Live sensor sync (Q1 2027 target)</div>
+              <h3 className="text-base font-light text-white/70 mb-2">Active climate data pipeline integration</h3>
+              <p className="text-xs text-[#7A8694]/70 max-w-3xl leading-relaxed">
                 Plugging in direct API pipelines from planetary monitoring networks. Projections will automatically scale their confidence scores when climate thresholds are crossed.
               </p>
             </div>

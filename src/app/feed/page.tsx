@@ -6,17 +6,11 @@ import Navbar from '@/components/Navbar';
 import BackgroundEffects from '@/components/BackgroundEffects';
 import { PREDICTIONS, FUTUROLOGISTS } from '@/data/predictionsData';
 
-const C = {
-  emerald: '#00F5B0',
-  cyan: '#00D98F',
-  iceBlue: '#00D98F',
-  white: '#F5F7FA',
-  bg: 'rgba(2, 8, 15, 0.75)',
-  border: 'rgba(0, 245, 176, 0.15)',
-};
-
 export default function FeedPage() {
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [votes, setVotes] = useState<Record<string, number>>({});
+  const [visibleCount, setVisibleCount] = useState(6);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   // Load votes from localStorage
   useEffect(() => {
@@ -34,213 +28,212 @@ export default function FeedPage() {
     return p.initialVotes + (votes[p.id] || 0);
   };
 
-  // What's Hot (Top 2 predictions by votes)
-  const hotPredictions = [...PREDICTIONS]
-    .sort((a, b) => getVotesCount(b) - getVotesCount(a))
-    .slice(0, 2);
-
-  // What's New (Chronological - 2030 predictions)
-  const newPredictions = PREDICTIONS.filter(p => p.year === 2030).slice(0, 4);
-
-  // Trending sidebar (Sorted by votes, top 5)
-  const trendingPredictions = [...PREDICTIONS]
-    .sort((a, b) => getVotesCount(b) - getVotesCount(a))
-    .slice(0, 5);
-
   // Categories list
-  const feedCategories = ['AI', 'Climate', 'Cities', 'Energy', 'Space', 'Transport'];
+  const categories = ['All', 'AI', 'Climate', 'Energy', 'Space', 'Cities', 'Transport', 'Healthcare', 'Society'];
 
-  const panelStyle: React.CSSProperties = {
-    background: C.bg,
-    backdropFilter: 'blur(20px)',
-    border: `1px solid ${C.border}`,
-    borderRadius: '4px',
-    padding: '24px',
-    boxShadow: '0 0 30px rgba(0,229,255,0.05)',
-    position: 'relative',
-    overflow: 'hidden',
+  const getCategoryStyle = (category: string) => {
+    const cat = category.toLowerCase();
+    if (cat.includes('ai')) return { color: '#00F5D4', shadow: 'rgba(0, 245, 212, 0.18)', bg: 'rgba(0, 245, 212, 0.04)', border: 'rgba(0, 245, 212, 0.25)' };
+    if (cat.includes('climate')) return { color: '#FF0055', shadow: 'rgba(255, 0, 85, 0.18)', bg: 'rgba(255, 0, 85, 0.04)', border: 'rgba(255, 0, 85, 0.25)' };
+    if (cat.includes('energy')) return { color: '#00F5B0', shadow: 'rgba(0, 245, 176, 0.18)', bg: 'rgba(0, 245, 176, 0.04)', border: 'rgba(0, 245, 176, 0.25)' };
+    if (cat.includes('space')) return { color: '#BF5AF2', shadow: 'rgba(191, 90, 242, 0.18)', bg: 'rgba(191, 90, 242, 0.04)', border: 'rgba(191, 90, 242, 0.25)' };
+    if (cat.includes('cities')) return { color: '#0A84FF', shadow: 'rgba(10, 132, 255, 0.18)', bg: 'rgba(10, 132, 255, 0.04)', border: 'rgba(10, 132, 255, 0.25)' };
+    if (cat.includes('transport')) return { color: '#CCFF00', shadow: 'rgba(204, 255, 0, 0.18)', bg: 'rgba(204, 255, 0, 0.04)', border: 'rgba(204, 255, 0, 0.25)' };
+    if (cat.includes('healthcare')) return { color: '#00E5FF', shadow: 'rgba(0, 229, 255, 0.18)', bg: 'rgba(0, 229, 255, 0.04)', border: 'rgba(0, 229, 255, 0.25)' };
+    return { color: '#00F5B0', shadow: 'rgba(0, 245, 176, 0.18)', bg: 'rgba(0, 245, 176, 0.04)', border: 'rgba(0, 245, 176, 0.25)' };
   };
 
-  const cornerAccent = (
-    <>
-      <div style={{ position: 'absolute', top: 0, left: 0, width: 8, height: 8, borderTop: `1px solid ${C.cyan}`, borderLeft: `1px solid ${C.cyan}` }} />
-      <div style={{ position: 'absolute', top: 0, right: 0, width: 8, height: 8, borderTop: `1px solid ${C.cyan}`, borderRight: `1px solid ${C.cyan}` }} />
-      <div style={{ position: 'absolute', bottom: 0, left: 0, width: 8, height: 8, borderBottom: `1px solid ${C.cyan}`, borderLeft: `1px solid ${C.cyan}` }} />
-      <div style={{ position: 'absolute', bottom: 0, right: 0, width: 8, height: 8, borderBottom: `1px solid ${C.cyan}`, borderRight: `1px solid ${C.cyan}` }} />
-    </>
-  );
+  // Filter and sort predictions
+  const filteredItems = PREDICTIONS
+    .filter(p => selectedCategory === 'All' || p.category === selectedCategory)
+    .sort((a, b) => getVotesCount(b) - getVotesCount(a));
+
+  const handleLoadMore = () => {
+    if (visibleCount >= filteredItems.length) return;
+    setLoadingMore(true);
+    setTimeout(() => {
+      setVisibleCount(prev => Math.min(prev + 4, filteredItems.length));
+      setLoadingMore(false);
+    }, 800);
+  };
+
+  // Reset page size when category changes
+  useEffect(() => {
+    setVisibleCount(6);
+  }, [selectedCategory]);
 
   return (
     <main className="h-screen w-screen overflow-y-auto bg-[#02060A] text-[#e2e8f0] relative custom-scrollbar">
       <BackgroundEffects earthMode="cyber" />
-      <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-[rgba(2,8,15,0.95)] to-transparent pointer-events-none z-10" />
-      <Navbar earthMode="cyber" />
+      <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-[rgba(2,6,10,0.95)] to-transparent pointer-events-none z-10" />
+      <Navbar />
 
-      <div className="content-container pt-32 pb-20 relative z-20 flex flex-col gap-10 animate-fade-up">
+      <div className="content-container pt-32 pb-24 relative z-20 flex flex-col gap-8 animate-fade-up">
         {/* Page Header */}
-        <div className="flex flex-col gap-3 border-b border-[#00F5B0]/15 pb-6">
-          <h1 className="editorial-title text-white">
-            Forecasts <span className="text-[#00F5B0] font-normal">Feed</span>
+        <div className="flex flex-col gap-3 border-b border-white/5 pb-6">
+          <span className="text-[10px] font-mono text-[#00F5B0] uppercase tracking-[0.25em] font-semibold">
+            System Stream
+          </span>
+          <h1 className="editorial-title text-white tracking-tight m-0 text-3xl font-light">
+            Future Intelligence <span style={{ color: '#00F5B0' }} className="font-normal">Feed</span>
           </h1>
-          <p className="editorial-subtitle text-[#7A8694]">
-            Global timeline predictions simulated in real-time. Review upcoming milestones, analyze systemic indicators, and participate in discussion logs.
+          <p className="text-[#7A8694] font-light text-sm max-w-2xl leading-relaxed m-0">
+            Real-time tracking of critical technological, geopolitical, and ecological milestones. Projections are updated via planetary simulation algorithms.
           </p>
         </div>
 
-        {/* Main Grid: Left Column for Editorial News, Right Column for Trending */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-8 items-start">
-          
-          {/* Left Column: Editorial Articles */}
-          <div className="flex flex-col gap-8">
-            
-            {/* Top Story - Large Editorial Feature Card */}
-            {hotPredictions[0] && (() => {
-              const p = hotPredictions[0];
+        {/* Category Pill Selector */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-4 -mx-4 px-4 scrollbar-none">
+          {categories.map((cat) => {
+            const isActive = selectedCategory === cat;
+            const style = getCategoryStyle(cat);
+            return (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={`px-4 py-1.5 rounded-full font-mono text-[10px] tracking-wider uppercase border transition-all duration-300 cursor-pointer flex-shrink-0 ${
+                  isActive 
+                    ? 'text-white border-white bg-white/10' 
+                    : 'text-[#7A8694] border-white/5 bg-white/2 hover:text-white hover:border-white/20'
+                }`}
+                style={isActive ? { borderColor: style.color, boxShadow: `0 0 10px ${style.shadow}`, textShadow: `0 0 5px ${style.color}` } : {}}
+              >
+                {cat}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Feed Grid */}
+        {filteredItems.length === 0 ? (
+          <div className="h-64 flex flex-col items-center justify-center font-mono text-[#7A8694] border border-white/5 bg-black/20 rounded-lg">
+            <span>NO ACTIVE STREAM BROADCASTS FOUND</span>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredItems.slice(0, visibleCount).map((p) => {
               const authorObj = FUTUROLOGISTS.find(f => f.name === p.author);
+              const style = getCategoryStyle(p.category);
+              
+              // Simulate impact summary statements based on prediction details
+              let impact = "System transition underway.";
+              if (p.category === 'AI') impact = "Core cognitive automation spikes ↑";
+              else if (p.category === 'Energy') impact = "Energy grid costs drop ↓";
+              else if (p.category === 'Climate') impact = "Planetary stress thresholds reached";
+              else if (p.category === 'Space') impact = "Orbital cargo shipping costs drop ↓";
+              else if (p.category === 'Cities') impact = "Urban decentralization vectors increase ↑";
+
               return (
-                <div className="card-tier-1 flex flex-col justify-between min-h-[340px]">
+                <div 
+                  key={p.id}
+                  className="group premium-glass p-6 rounded-lg flex flex-col justify-between min-h-[300px] border border-white/5 hover:translate-y-[-4px] transition-all duration-300"
+                  style={{
+                    backgroundColor: 'rgba(4, 11, 18, 0.75)',
+                    '--glow-color': style.color
+                  } as any}
+                >
                   <div className="flex flex-col gap-4">
-                    <div className="flex justify-between items-center text-[10px] font-mono text-[#00F5B0]">
-                      <span className="uppercase tracking-wider">{p.category} // {p.city}</span>
-                      <span className="px-2.5 py-0.5 bg-[#02060A] border border-[#00F5B0]/20 rounded font-bold uppercase">{p.year} TARGET</span>
+                    {/* Category and Target Year */}
+                    <div className="flex justify-between items-center text-[10px] font-mono tracking-wider">
+                      <span 
+                        className="uppercase font-semibold tracking-[0.15em]" 
+                        style={{ color: style.color }}
+                      >
+                        {p.category}
+                      </span>
+                      <span className="text-[#7A8694]">{p.year} FORECAST</span>
                     </div>
 
-                    <h2 className="text-3xl font-light text-white uppercase tracking-tight leading-tight">
-                      {p.title}
-                    </h2>
-                    
-                    <p className="text-sm text-[#7A8694] leading-relaxed line-clamp-3">
-                      {p.description}
-                    </p>
+                    {/* Title */}
+                    <h3 className="text-sm font-semibold text-white/90 leading-snug m-0 tracking-wide group-hover:text-white transition-colors duration-300">
+                      <Link href={`/predictions/${p.slug}`} className="no-underline text-white hover:opacity-85 transition-opacity">
+                        {p.title}
+                      </Link>
+                    </h3>
+
+                    {/* Impact statement */}
+                    <div className="flex flex-col gap-1 mt-1 bg-black/40 border border-white/5 rounded p-3">
+                      <span className="text-[9px] font-mono text-[#7A8694] uppercase tracking-wider">Impact Vector</span>
+                      <span className="text-[11px] text-white/80 font-mono tracking-wide leading-relaxed">{impact}</span>
+                    </div>
                   </div>
 
-                  <div className="flex justify-between items-center border-t border-[#00F5B0]/15 pt-4 mt-6">
-                    {authorObj && (
-                      <Link href={`/futurologists/${authorObj.slug}`} className="flex items-center gap-2 group">
-                        <img src={authorObj.avatar} alt={p.author} className="w-7 h-7 rounded-full border border-[#00F5B0]/20 object-cover" />
-                        <span className="text-[10px] font-mono text-[#7A8694] group-hover:text-white transition-colors uppercase">{p.author}</span>
+                  <div className="flex flex-col gap-4 mt-6 border-t border-white/5 pt-4">
+                    {/* Probability Bar */}
+                    <div className="flex flex-col gap-1.5">
+                      <div className="flex justify-between items-center text-[10px] font-mono text-[#7A8694]">
+                        <span>Probability</span>
+                        <span className="font-semibold" style={{ color: style.color }}>{p.confidenceScore}%</span>
+                      </div>
+                      <div className="w-full h-[3px] bg-white/5 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full rounded-full transition-all duration-500" 
+                          style={{ 
+                            width: `${p.confidenceScore}%`, 
+                            backgroundColor: style.color,
+                            boxShadow: `0 0 8px ${style.color}` 
+                          }} 
+                        />
+                      </div>
+                    </div>
+
+                    {/* Futurologist credentials & Read Analysis */}
+                    <div className="flex items-center justify-between mt-2 pt-1">
+                      <div className="flex items-center gap-2">
+                        {authorObj?.avatar ? (
+                          <img 
+                            src={authorObj.avatar} 
+                            alt={p.author} 
+                            className="w-5 h-5 rounded-full object-cover border border-white/10"
+                          />
+                        ) : (
+                          <div className="w-5 h-5 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[8px] font-mono text-white">
+                            {p.author.charAt(0)}
+                          </div>
+                        )}
+                        <div className="flex flex-col">
+                          <span className="text-[10px] text-white/70 font-semibold">{p.author}</span>
+                          <span className="text-[8px] text-[#7A8694] tracking-wide font-mono uppercase">{authorObj?.role || 'Strategic Futurologist'}</span>
+                        </div>
+                      </div>
+                      <Link 
+                        href={`/predictions/${p.slug}`} 
+                        className="text-[10px] hover:opacity-100 font-mono no-underline transition-all uppercase tracking-wider font-semibold"
+                        style={{ color: style.color, textShadow: `0 0 4px ${style.shadow}` }}
+                      >
+                        Decrypt →
                       </Link>
-                    )}
-                    <Link href={`/predictions/${p.slug}`} className="text-xs font-mono text-[#00F5B0] hover:underline uppercase font-bold tracking-wider">
-                      Read Analysis &gt;
-                    </Link>
+                    </div>
                   </div>
                 </div>
               );
-            })()}
-
-            {/* 2-Column Article Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Hot Story 2 */}
-              {hotPredictions[1] && (() => {
-                const p = hotPredictions[1];
-                const authorObj = FUTUROLOGISTS.find(f => f.name === p.author);
-                return (
-                  <div className="card-tier-2 flex flex-col justify-between min-h-[240px]">
-                    <div className="flex flex-col gap-3">
-                      <div className="flex justify-between items-center text-[9px] font-mono text-[#00F5B0]">
-                        <span className="uppercase tracking-wider">{p.category} // {p.city}</span>
-                        <span className="text-[#7A8694]">{p.year} FORECAST</span>
-                      </div>
-                      <h3 className="text-lg font-light text-white uppercase tracking-wide leading-snug line-clamp-2">{p.title}</h3>
-                      <p className="text-xs text-[#7A8694] leading-relaxed line-clamp-3">{p.description}</p>
-                    </div>
-                    <div className="flex justify-between items-center border-t border-[#00F5B0]/15 pt-3 mt-4">
-                      {authorObj && (
-                        <span className="text-[9px] font-mono text-[#7A8694] uppercase">By {p.author}</span>
-                      )}
-                      <Link href={`/predictions/${p.slug}`} className="text-[10px] font-mono text-[#00F5B0] hover:underline uppercase font-semibold">
-                        Read &gt;
-                      </Link>
-                    </div>
-                  </div>
-                );
-              })()}
-
-              {/* Feed Categories (Compact editorial cells) */}
-              {PREDICTIONS.filter(p => p.id !== hotPredictions[0]?.id && p.id !== hotPredictions[1]?.id).slice(0, 3).map(p => {
-                const authorObj = FUTUROLOGISTS.find(f => f.name === p.author);
-                return (
-                  <div key={p.id} className="card-tier-2 flex flex-col justify-between min-h-[240px]">
-                    <div className="flex flex-col gap-3">
-                      <div className="flex justify-between items-center text-[9px] font-mono text-[#00F5B0]">
-                        <span className="uppercase tracking-wider">{p.category} // {p.city}</span>
-                        <span className="text-[#7A8694]">{p.year} FORECAST</span>
-                      </div>
-                      <h3 className="text-lg font-light text-white uppercase tracking-wide leading-snug line-clamp-2">{p.title}</h3>
-                      <p className="text-xs text-[#7A8694] leading-relaxed line-clamp-3">{p.description}</p>
-                    </div>
-                    <div className="flex justify-between items-center border-t border-[#00F5B0]/15 pt-3 mt-4">
-                      {authorObj && (
-                        <span className="text-[9px] font-mono text-[#7A8694] uppercase">By {p.author}</span>
-                      )}
-                      <Link href={`/predictions/${p.slug}`} className="text-[10px] font-mono text-[#00F5B0] hover:underline uppercase font-semibold">
-                        Read &gt;
-                      </Link>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            })}
           </div>
+        )}
 
-          {/* Right Column: Trending Sidebar */}
-          <div className="flex flex-col gap-6">
-            
-            {/* Trending Predictions */}
-            <div className="card-tier-3 flex flex-col gap-4">
-              <div className="border-b border-[#00F5B0]/15 pb-2">
-                <span className="text-[10px] font-mono font-bold text-white uppercase tracking-wider">Trending Metrics</span>
-              </div>
-
-              <div className="flex flex-col gap-4">
-                {trendingPredictions.map((p, idx) => (
-                  <Link 
-                    href={`/predictions/${p.slug}`}
-                    key={p.id} 
-                    className="flex gap-3 items-start group hover:opacity-90 transition-opacity"
-                  >
-                    <span className="text-sm font-bold font-mono text-[#00F5B0]/35 group-hover:text-[#00F5B0] transition-colors leading-none w-5 pt-0.5">
-                      {String(idx + 1).padStart(2, '0')}
-                    </span>
-                    <div className="flex-1 flex flex-col gap-1 border-b border-[#00F5B0]/10 pb-2">
-                      <h4 className="text-[11px] font-medium uppercase text-white group-hover:text-[#00F5B0] transition-colors tracking-wide leading-snug">
-                        {p.title}
-                      </h4>
-                      <div className="flex justify-between items-center text-[8px] font-mono text-[#7A8694] uppercase">
-                        <span>{p.category} · {p.year}</span>
-                        <span className="text-[#00F5B0] font-bold">▲ {getVotesCount(p)}</span>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            {/* Quick Metrics HUD */}
-            <div className="card-tier-3 flex flex-col gap-3">
-              <div className="border-b border-[#00F5B0]/15 pb-2">
-                <span className="text-[10px] font-mono font-bold text-white uppercase tracking-wider">System Readings</span>
-              </div>
-              <div className="flex flex-col gap-2 font-mono text-[9px]">
-                <div className="flex justify-between">
-                  <span className="text-slate-500">QUANTUM FLOW</span>
-                  <span className="text-[#00F5B0]">98.7% ACCURACY</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500">INDEXED FIELDS</span>
-                  <span className="text-white">12,842 CONCEPTS</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500">DECISION ALIGNED</span>
-                  <span className="text-[#00F5B0]">COOPERATIVE</span>
-                </div>
-              </div>
-            </div>
+        {/* Load More Button */}
+        {visibleCount < filteredItems.length && (
+          <div className="flex justify-center mt-8">
+            <button
+              onClick={handleLoadMore}
+              disabled={loadingMore}
+              className="px-6 py-2.5 border border-[#00F5B0]/30 hover:border-[#00F5B0] text-[#00F5B0] font-mono text-xs rounded transition-all duration-300 bg-transparent cursor-pointer tracking-wider uppercase font-semibold disabled:opacity-50"
+              style={{
+                boxShadow: '0 0 10px rgba(0, 245, 176, 0.05)',
+              }}
+            >
+              {loadingMore ? 'Decrypting Additional Streams...' : 'Load More Forecasts ↓'}
+            </button>
           </div>
-        </div>
-
+        )}
       </div>
+
+      <style jsx global>{`
+        .group:hover {
+          border-color: var(--glow-color, rgba(0, 245, 176, 0.3)) !important;
+          box-shadow: 0 0 20px var(--glow-color, rgba(0, 245, 176, 0.1)) !important;
+        }
+      `}</style>
     </main>
   );
 }

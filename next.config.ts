@@ -1,6 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Disable dev indicators (removes Next.js 'N' logo circle in bottom-left)
+  devIndicators: {
+    appIsrStatus: false,
+    buildActivity: false,
+  } as any,
+
   // ── Turbopack config (Next.js 16 dev default) ─────────────────────────
   // Empty config silences the "webpack config but no turbopack config" warning.
   turbopack: {},
