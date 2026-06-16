@@ -1,4 +1,4 @@
-export interface CountryIntelligenceProfile {
+﻿export interface CountryIntelligenceProfile {
   code: string;       // ISO 3166-1 alpha-3 code (e.g. "USA", "IND")
   name: string;
   year: number;
@@ -286,3 +286,4 @@ export const generateCountryProjections = (
 
   return profile;
 };
+

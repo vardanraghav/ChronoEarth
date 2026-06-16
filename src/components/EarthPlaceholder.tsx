@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 
@@ -21,26 +21,26 @@ const categoryThemes: Record<
   { primary: string; secondary: string; glow: string; particleColor: string }
 > = {
   'Ocean Monitoring': {
-    primary: '#00F5B0',
+    primary: '#00E5FF',
     secondary: '#14b8a6',
     glow: 'rgba(0, 240, 255, 0.15)',
-    particleColor: '#00F5B0',
+    particleColor: '#00E5FF',
   },
   'Biodiversity': {
-    primary: '#00F5B0',
-    secondary: '#00D98F',
+    primary: '#00E5FF',
+    secondary: '#6FEAFF',
     glow: 'rgba(16, 185, 129, 0.15)',
-    particleColor: '#00F5B0',
+    particleColor: '#00E5FF',
   },
   'Clean Energy': {
-    primary: '#00F5B0',
+    primary: '#00E5FF',
     secondary: '#f97316',
     glow: 'rgba(139, 92, 246, 0.15)',
-    particleColor: '#00F5B0',
+    particleColor: '#00E5FF',
   },
   'Satellite Network': {
     primary: '#FFFFFF',
-    secondary: '#00F5B0',
+    secondary: '#00E5FF',
     glow: 'rgba(59, 130, 246, 0.15)',
     particleColor: '#FFFFFF',
   },
@@ -268,3 +268,4 @@ export default function EarthPlaceholder({ activeYear, activeCategory }: EarthPl
     </>
   );
 }
+

@@ -4,14 +4,14 @@ import { useEffect, useRef, useState } from 'react';
 import { CityData, citiesRawData, generateCityProjections } from '../data/citiesData';
 
 const C = {
-  emerald: '#00F5B0',
-  cyan: '#00D98F',
-  iceBlue: '#00D98F',
+  emerald: '#00F5D4',
+  cyan: '#00E7C2',
+  iceBlue: '#00E7C2',
   accent: '#FFFFFF',
   white: '#F5F7FA',
-  bg: 'rgba(2, 8, 15, 0.75)',
-  border: 'rgba(0, 245, 176, 0.15)',
-  accentBg: 'rgba(0, 245, 176, 0.05)',
+  bg: 'rgba(3, 15, 18, 0.65)',
+  border: 'rgba(0, 245, 212, 0.08)',
+  accentBg: 'rgba(0, 245, 212, 0.02)',
 };
 
 interface CyberHUDProps {
@@ -221,10 +221,11 @@ export default function CyberHUD({
   };
 
   const panelStyle: React.CSSProperties = {
-    background: 'rgba(5, 12, 18, 0.55)',
-    backdropFilter: 'blur(16px)',
-    border: '1px solid rgba(0, 245, 176, 0.08)',
-    borderRadius: '4px',
+    background: 'rgba(3, 15, 18, 0.65)',
+    backdropFilter: 'blur(20px)',
+    border: '1px solid rgba(0, 245, 212, 0.08)',
+    borderRadius: '18px',
+    boxShadow: '0 12px 40px rgba(0, 0, 0, 0.55)',
     padding: '12px 14px',
     position: 'relative',
     overflow: 'hidden',
@@ -307,11 +308,11 @@ export default function CyberHUD({
           background: rgba(255,255,255,0.02);
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(0,229,255,0.2);
+          background: rgba(0,245,212,0.15);
           border-radius: 2px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: rgba(0,229,255,0.5);
+          background: rgba(0,245,212,0.35);
         }
       `}</style>
 
@@ -338,7 +339,7 @@ export default function CyberHUD({
                 Decentralized orbit tracks <span className="font-semibold text-white" style={{ color: C.accent }}>{satCount.toLocaleString()}</span> satellites.
               </p>
               <p>
-                Planetary system health remains within <span className="font-medium text-emerald-400" style={{ color: '#00F5B0' }}>optimal margins</span>.
+                Planetary system health remains within <span className="font-medium" style={{ color: '#00F5D4' }}>optimal margins</span>.
               </p>
             </div>
 
@@ -375,7 +376,7 @@ export default function CyberHUD({
                 <div className="font-sans-editorial text-[9px] text-white/50 flex flex-col gap-1.5">
                   <div className="flex items-center gap-2"><span className="text-white">◉</span> Major urban hubs</div>
                   <div className="flex items-center gap-2"><span className="text-emerald-400" style={{ color: C.emerald }}>●</span> Regional synced nodes</div>
-                  <div className="flex items-center gap-2"><span className="text-[#00F5B0]" style={{ color: C.cyan }}>◌</span> Climate telemetry points</div>
+                  <div className="flex items-center gap-2"><span style={{ color: C.cyan }}>◌</span> Climate telemetry points</div>
                   <div className="flex items-center gap-2"><span className="text-cyan-300" style={{ color: C.cyan }}>—</span> Energy pathways</div>
                 </div>
               </div>
@@ -524,7 +525,7 @@ export default function CyberHUD({
       {/* FLOATING HOLOGRAPHIC REPORT GENERATOR OVERLAY */}
       {(generatingReport || activeReport) && (
         <div style={{
-          position: 'fixed', inset: 0, background: 'rgba(2, 8, 15, 0.75)',
+          position: 'fixed', inset: 0, background: 'rgba(10, 20, 35, 0.55)',
           backdropFilter: 'blur(12px)', zIndex: 100, display: 'flex',
           alignItems: 'center', justifyContent: 'center', pointerEvents: 'auto'
         }}>
@@ -581,3 +582,4 @@ export default function CyberHUD({
     </>
   );
 }
+

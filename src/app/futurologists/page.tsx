@@ -7,12 +7,12 @@ import BackgroundEffects from '@/components/BackgroundEffects';
 import { FUTUROLOGISTS } from '@/data/predictionsData';
 
 const C = {
-  emerald: '#00F5B0',
-  cyan: '#00D98F',
-  iceBlue: '#00D98F',
+  emerald: '#00E5FF',
+  cyan: '#6FEAFF',
+  iceBlue: '#6FEAFF',
   white: '#F5F7FA',
-  bg: 'rgba(2, 8, 15, 0.75)',
-  border: 'rgba(0, 245, 176, 0.15)',
+  bg: 'rgba(10, 20, 35, 0.55)',
+  border: 'rgba(0, 229, 255, 0.15)',
 };
 
 export default function FuturologistsPage() {
@@ -42,18 +42,18 @@ export default function FuturologistsPage() {
   );
 
   return (
-    <main className="h-screen w-screen overflow-y-auto bg-[#02060A] text-[#e2e8f0] relative custom-scrollbar">
+    <main className="h-screen w-screen overflow-y-auto bg-[#02060B] text-[#e2e8f0] relative custom-scrollbar">
       <BackgroundEffects earthMode="cyber" />
       
-      <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-[rgba(2,8,15,0.95)] to-transparent pointer-events-none z-10" />
+      <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-[rgba(10, 20, 35, 0.75)] to-transparent pointer-events-none z-10" />
 
       <Navbar earthMode="cyber" />
 
       <div className="content-container pt-32 pb-20 relative z-20 flex flex-col gap-10 animate-fade-up">
         {/* Page Header */}
-        <div className="flex flex-col gap-3 border-b border-[#00F5B0]/15 pb-6">
+        <div className="flex flex-col gap-3 border-b border-[#00E5FF]/15 pb-6">
           <h1 className="editorial-title text-white">
-            Futurologists <span className="text-[#00F5B0] font-normal">Directory</span>
+            Futurologists <span className="text-[#00E5FF] font-normal">Directory</span>
           </h1>
           <p className="editorial-subtitle text-[#7A8694]">
             Meet the primary system architects and analysts modeling ChronoEarth's future timeline matrices.
@@ -70,7 +70,7 @@ export default function FuturologistsPage() {
               <div className="flex flex-col gap-3.5">
                 <div className="flex gap-3.5 items-center">
                   {failedAvatars[f.name] ? (
-                    <div className="w-12 h-12 rounded-full border border-[#00F5B0]/20 flex items-center justify-center bg-[#040B12] text-xs font-mono text-[#00F5B0] font-bold group-hover:scale-105 transition-transform shrink-0">
+                    <div className="w-12 h-12 rounded-full border border-[#00E5FF]/20 flex items-center justify-center bg-[#040B12] text-xs font-mono text-[#00E5FF] font-bold group-hover:scale-105 transition-transform shrink-0">
                       {f.name.split(' ').map(n => n[0]).join('')}
                     </div>
                   ) : (
@@ -79,7 +79,7 @@ export default function FuturologistsPage() {
                       alt={f.name} 
                       loading="lazy"
                       onError={() => setFailedAvatars(prev => ({ ...prev, [f.name]: true }))}
-                      className="w-12 h-12 rounded-full border border-[#00F5B0]/20 object-cover shadow-none group-hover:scale-105 transition-transform shrink-0"
+                      className="w-12 h-12 rounded-full border border-[#00E5FF]/20 object-cover shadow-none group-hover:scale-105 transition-transform shrink-0"
                     />
                   )}
                   
@@ -88,20 +88,20 @@ export default function FuturologistsPage() {
                       <h2 className="text-base font-light text-white truncate">
                         {f.name}
                       </h2>
-                      <span className="text-xs font-mono text-[#00F5B0]" title="Influence Score">{f.influenceScore}%</span>
+                      <span className="text-xs font-mono text-[#00E5FF]" title="Influence Score">{f.influenceScore}%</span>
                     </div>
-                    <div className="text-xs text-[#00F5B0] truncate">{f.role}</div>
+                    <div className="text-xs text-[#00E5FF] truncate">{f.role}</div>
                   </div>
                 </div>
 
-                <div className="text-xs text-[#7A8694] truncate border-b border-[#00F5B0]/10 pb-1.5">{f.specialization}</div>
+                <div className="text-xs text-[#7A8694] truncate border-b border-[#00E5FF]/10 pb-1.5">{f.specialization}</div>
 
                 <p className="text-xs text-[#7A8694] leading-relaxed line-clamp-3">
                   {f.bio}
                 </p>
               </div>
 
-              <div className="flex justify-between items-center border-t border-[#00F5B0]/15 pt-3 mt-4">
+              <div className="flex justify-between items-center border-t border-[#00E5FF]/15 pt-3 mt-4">
                 <div className="flex flex-col text-xs">
                   <span className="text-[#7A8694]">Active shards</span>
                   <span className="text-white"><span className="font-mono">{f.contributions}</span> active</span>
@@ -109,7 +109,7 @@ export default function FuturologistsPage() {
 
                 <Link
                   href={`/futurologists/${f.slug}`}
-                  className="px-3 py-1 text-xs border border-[#00F5B0]/20 bg-[#00F5B0]/5 hover:bg-[#00F5B0] hover:text-[#02060A] hover:border-transparent text-[#00F5B0] rounded transition-all duration-200"
+                  className="px-3 py-1 text-xs border border-[#00E5FF]/20 bg-[#00E5FF]/5 hover:bg-[#00E5FF] hover:text-[#02060A] hover:border-transparent text-[#00E5FF] rounded transition-all duration-200"
                 >
                   View profile →
                 </Link>
@@ -121,3 +121,4 @@ export default function FuturologistsPage() {
     </main>
   );
 }
+

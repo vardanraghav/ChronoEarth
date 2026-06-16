@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import { EarthMode } from './CesiumGlobeContent';
@@ -17,12 +17,12 @@ export default function Timeline({ activeYear, setActiveYear, earthMode = 'reali
   const fillPct   = (activeIdx / (years.length - 1)) * 100;
   const isCyber   = earthMode === 'cyber';
 
-  const accent       = isCyber ? '#00F5B0' : 'rgba(255,255,255,0.90)';
-  const accentFill   = isCyber ? 'rgba(0, 245, 176, 0.80)' : 'rgba(255,255,255,0.50)';
-  const trackColor   = isCyber ? 'rgba(0, 245, 176, 0.15)' : 'rgba(255,255,255,0.12)';
-  const yearActive   = isCyber ? '#00F5B0'              : 'rgba(255,255,255,0.95)';
+  const accent       = isCyber ? '#00E5FF' : 'rgba(255,255,255,0.90)';
+  const accentFill   = isCyber ? 'rgba(0, 229, 255, 0.80)' : 'rgba(255,255,255,0.50)';
+  const trackColor   = isCyber ? 'rgba(0, 229, 255, 0.15)' : 'rgba(255,255,255,0.12)';
+  const yearActive   = isCyber ? '#00E5FF'              : 'rgba(255,255,255,0.95)';
   const yearInactive = isCyber ? 'rgba(94, 234, 212, 0.35)' : 'rgba(255,255,255,0.35)';
-  const yearHovered  = isCyber ? '#00F5B0'              : 'rgba(255,255,255,0.75)';
+  const yearHovered  = isCyber ? '#00E5FF'              : 'rgba(255,255,255,0.75)';
 
   return (
     <div
@@ -30,7 +30,7 @@ export default function Timeline({ activeYear, setActiveYear, earthMode = 'reali
       style={{
         padding:    '0 40px 28px',
         background: isCyber
-          ? 'linear-gradient(to top, rgba(2, 8, 15, 0.75) 0%, rgba(2, 8, 15, 0.20) 70%, transparent 100%)'
+          ? 'linear-gradient(to top, rgba(10, 20, 35, 0.55) 0%, rgba(2, 8, 15, 0.20) 70%, transparent 100%)'
           : 'linear-gradient(to top, rgba(2, 8, 15, 0.72) 0%, rgba(2, 8, 15, 0.20) 70%, transparent 100%)',
         transition: 'background 1.5s ease',
         animation:  'fade-up 1s 0.8s cubic-bezier(0.22,1,0.36,1) both',
@@ -45,7 +45,7 @@ export default function Timeline({ activeYear, setActiveYear, earthMode = 'reali
           width: `${fillPct}%`,
           background: accentFill,
           transition: 'width 0.7s cubic-bezier(0.22,1,0.36,1)',
-          boxShadow: isCyber ? `0 0 12px rgba(0, 245, 176, 0.95)` : 'none',
+          boxShadow: isCyber ? `0 0 12px rgba(0, 229, 255, 0.95)` : 'none',
         }} />
 
         {/* Year markers */}
@@ -76,14 +76,14 @@ export default function Timeline({ activeYear, setActiveYear, earthMode = 'reali
                   background: isActive ? accent : (isHov ? yearHovered : 'rgba(255,255,255,0.25)'),
                   transition: 'all 0.3s ease',
                   marginTop:  isActive ? '4px' : '6px',
-                  boxShadow:  isActive && isCyber ? `0 0 10px #00F5B0, 0 0 20px #00F5B0` : 'none',
+                  boxShadow:  isActive && isCyber ? `0 0 10px #00E5FF, 0 0 20px #00E5FF` : 'none',
                 }} />
                 {/* Label */}
                 <span style={{
                   fontSize: '11px', fontWeight: isActive ? 800 : 500, letterSpacing: '0.12em',
                   color: isActive ? yearActive : (isHov ? yearHovered : yearInactive),
                   transition: 'all 0.3s ease', userSelect: 'none',
-                  textShadow: isActive && isCyber ? `0 0 12px rgba(0, 245, 176, 0.95), 0 0 24px rgba(0, 245, 176, 0.4)` : 'none',
+                  textShadow: isActive && isCyber ? `0 0 12px rgba(0, 229, 255, 0.95), 0 0 24px rgba(0, 229, 255, 0.4)` : 'none',
                   transform: isActive ? 'scale(1.15)' : 'none',
                 }}>
                   {year}
@@ -96,3 +96,4 @@ export default function Timeline({ activeYear, setActiveYear, earthMode = 'reali
     </div>
   );
 }
+
