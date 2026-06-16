@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { EarthMode } from './CesiumGlobeContent';
 
@@ -39,11 +39,11 @@ export default function CategoryCards({ activeCategory, setActiveCategory, earth
               padding: '4px 0', fontSize: '8px', fontWeight: isActive ? 400 : 300,
               letterSpacing: '0.35em', textTransform: 'uppercase',
               color: isActive
-                ? (isCyber ? '#00F5B0' : 'rgba(255,255,255,0.80)')
-                : (isCyber ? 'rgba(0, 245, 176, 0.25)' : 'rgba(255,255,255,0.25)'),
-              textShadow: isActive && isCyber ? '0 0 12px rgba(0, 245, 176, 0.60)' : 'none',
+                ? (isCyber ? '#00E5FF' : 'rgba(255,255,255,0.80)')
+                : (isCyber ? 'rgba(0, 229, 255, 0.25)' : 'rgba(255,255,255,0.25)'),
+              textShadow: isActive && isCyber ? '0 0 12px rgba(0, 229, 255, 0.60)' : 'none',
               borderBottom: isActive
-                ? `1px solid ${isCyber ? 'rgba(0, 245, 176, 0.55)' : 'rgba(255,255,255,0.40)'}`
+                ? `1px solid ${isCyber ? 'rgba(0, 229, 255, 0.55)' : 'rgba(255,255,255,0.40)'}`
                 : '1px solid transparent',
               transition: 'color 0.4s ease, border-color 0.4s ease, text-shadow 0.4s ease',
             }}
@@ -55,3 +55,4 @@ export default function CategoryCards({ activeCategory, setActiveCategory, earth
     </div>
   );
 }
+

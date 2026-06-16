@@ -1,10 +1,13 @@
 'use client';
-
 import { useState, useEffect, useRef, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import BackgroundEffects from '@/components/BackgroundEffects';
+
+
+
+
 
 // ─── TYPES & DATA ───────────────────────────────────────────────────────────
 interface ChatMessage {
@@ -566,22 +569,34 @@ function FutureChatContent() {
   const visibleMessages = messages.filter(m => !mutedUsers.has(m.author) && !blockedUsers.has(m.author));
 
   return (
-    <main className="h-screen w-screen bg-[#02060A] text-[#E2E8F0] relative overflow-hidden flex flex-col font-sans">
+    <main className="h-screen w-screen bg-[#02060B] text-[#EAF7FF] relative overflow-hidden flex flex-col font-sans">
       <BackgroundEffects earthMode="cyber" />
       <Navbar />
 
+      {/* Premium Badged Header */}
+      <div className="flex items-center justify-between px-6 py-3.5 bg-[#040B12]/70 border-b border-white/5 mt-20 z-10">
+        <div className="flex items-center gap-3">
+          <h1 className="text-lg font-bold text-white tracking-wide uppercase font-display m-0">FutureChat Beta</h1>
+          <span className="px-2 py-0.5 bg-[#00E5FF]/10 text-[#00E5FF] text-[9px] font-mono rounded uppercase tracking-wider font-semibold border border-[#00E5FF]/20">Community Preview</span>
+        </div>
+        <span className="px-2 py-0.5 bg-[#6FEAFF]/10 text-[#6FEAFF] text-[9px] font-mono rounded uppercase tracking-wider font-semibold border border-[#6FEAFF]/20 flex items-center gap-1.5 animate-pulse">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#6FEAFF]" />
+          AI Simulated Discussions Active
+        </span>
+      </div>
+
       {/* Floating feedback toast */}
       {feedbackMsg && (
-        <div className="fixed top-28 left-1/2 -translate-x-1/2 px-5 py-2.5 bg-black/90 border border-[#00F5B0] text-[#00F5B0] text-xs font-mono rounded z-50 shadow-[0_0_20px_rgba(0,245,176,0.3)] animate-fade-up">
+        <div className="fixed top-28 left-1/2 -translate-x-1/2 px-5 py-2.5 bg-black/90 border border-[#00E5FF] text-[#00E5FF] text-xs font-mono rounded z-50 shadow-[0_0_20px_rgba(0, 229, 255,0.3)] animate-fade-up">
           ⚡ {feedbackMsg}
         </div>
       )}
 
       {/* Dynamic Voice Stage Connection Overlay */}
       {isAudioConnected && (
-        <div className="fixed bottom-24 left-10 z-50 premium-glass p-4 rounded-lg flex items-center gap-4 border border-[#00F5B0]/30 shadow-[0_0_24px_rgba(0,245,176,0.15)] animate-fade-up">
+        <div className="fixed bottom-24 left-10 z-50 premium-glass p-4 rounded-lg flex items-center gap-4 border border-[#00E5FF]/30 shadow-[0_0_24px_rgba(0, 229, 255,0.15)] animate-fade-up">
           <div className="flex flex-col gap-1 font-mono">
-            <span className="text-[9px] text-[#00F5B0] uppercase font-bold tracking-widest flex items-center gap-1">
+            <span className="text-[9px] text-[#00E5FF] uppercase font-bold tracking-widest flex items-center gap-1">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
               Connected to voice stage
             </span>
@@ -591,7 +606,7 @@ function FutureChatContent() {
             <button 
               onClick={() => setIsMuted(!isMuted)} 
               className={`p-2 rounded cursor-pointer border text-xs transition-colors ${
-                isMuted ? 'bg-rose-950/40 border-rose-500/30 text-rose-400' : 'bg-[#00F5B0]/10 border-[#00F5B0]/30 text-[#00F5B0]'
+                isMuted ? 'bg-rose-950/40 border-rose-500/30 text-rose-400' : 'bg-[#00E5FF]/10 border-[#00E5FF]/30 text-[#00E5FF]'
               }`}
             >
               {isMuted ? '🎤 Muted' : '🎤 Active'}
@@ -599,7 +614,7 @@ function FutureChatContent() {
             <button 
               onClick={() => setRaisedHand(!raisedHand)} 
               className={`p-2 rounded cursor-pointer border text-xs transition-colors ${
-                raisedHand ? 'bg-[#00F5B0] border-transparent text-black font-bold' : 'bg-transparent border-white/10 text-white/60'
+                raisedHand ? 'bg-[#00E5FF] border-transparent text-black font-bold' : 'bg-transparent border-white/10 text-white/60'
               }`}
             >
               ✋
@@ -619,8 +634,8 @@ function FutureChatContent() {
         
         {/* COLUMN 1: SIDEBAR CHANNEL SELECTOR */}
         <div className="premium-glass p-5 rounded-lg flex flex-col gap-6 overflow-y-auto custom-scrollbar h-full bg-[#040B12]/85">
-          <div className="flex flex-col gap-1 border-b border-[#00F5B0]/15 pb-3">
-            <span className="text-[10px] font-mono text-[#00F5B0] uppercase tracking-widest font-semibold">FutureChat Node</span>
+          <div className="flex flex-col gap-1 border-b border-[#00E5FF]/15 pb-3">
+            <span className="text-[10px] font-mono text-[#00E5FF] uppercase tracking-widest font-semibold">FutureChat Node</span>
             <h3 className="text-sm font-bold text-white tracking-wider uppercase font-mono m-0">Planetary Rooms</h3>
           </div>
 
@@ -637,7 +652,7 @@ function FutureChatContent() {
                         onClick={() => router.push(`/futurechat?room=${room.id}`)}
                         className={`w-full flex items-center justify-between px-3 py-2 text-xs rounded font-mono transition-all text-left cursor-pointer border ${
                           isSelected
-                            ? 'bg-[#00F5B0]/10 border-[#00F5B0]/30 text-[#00F5B0] font-semibold'
+                            ? 'bg-[#00E5FF]/10 border-[#00E5FF]/30 text-[#00E5FF] font-semibold'
                             : 'bg-transparent border-transparent text-white/55 hover:bg-white/2 hover:text-white'
                         }`}
                       >
@@ -645,7 +660,7 @@ function FutureChatContent() {
                           <span className={isSelected ? 'animate-breathe' : ''}>{room.icon}</span>
                           <span>#{room.name.toLowerCase().replace(/\s+/g, '-')}</span>
                         </div>
-                        {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-[#00F5B0] animate-pulse" />}
+                        {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-[#00E5FF] animate-pulse" />}
                       </button>
                     );
                   })}
@@ -659,7 +674,7 @@ function FutureChatContent() {
         <div className="premium-glass rounded-lg flex flex-col overflow-hidden h-full bg-[#040B12]/80 border border-white/5 relative">
           
           {/* Channel Header */}
-          <div className="px-6 py-4 border-b border-[#00F5B0]/15 bg-black/40 flex justify-between items-center">
+          <div className="px-6 py-4 border-b border-[#00E5FF]/15 bg-black/40 flex justify-between items-center">
             <div className="flex flex-col gap-0.5">
               <h2 className="text-sm font-bold text-white tracking-wide m-0 flex items-center gap-2">
                 <span>{activeRoom.icon}</span>
@@ -682,7 +697,7 @@ function FutureChatContent() {
                   key={msg.id} 
                   className={`group flex gap-4 items-start p-3.5 rounded-lg border transition-all duration-300 relative ${
                     isAi 
-                      ? 'bg-[#00F5B0]/5 border-[#00F5B0]/20' 
+                      ? 'bg-[#00E5FF]/5 border-[#00E5FF]/20' 
                       : 'bg-black/30 border-transparent hover:border-white/5'
                   }`}
                 >
@@ -697,7 +712,7 @@ function FutureChatContent() {
                       <div className="flex items-center gap-2">
                         <span className="chat-username font-bold text-white font-mono">{msg.author}</span>
                         {isAi && (
-                          <span className="text-[7px] font-mono font-bold bg-[#00F5B0] text-[#02060A] px-1 rounded-sm uppercase tracking-wider">
+                          <span className="text-[7px] font-mono font-bold bg-[#00E5FF] text-[#02060A] px-1 rounded-sm uppercase tracking-wider">
                             ChronoAI
                           </span>
                         )}
@@ -710,12 +725,12 @@ function FutureChatContent() {
 
                     {/* Reply quote */}
                     {msg.replyTo && (
-                      <div className="bg-black/40 border-l-2 border-[#00F5B0]/40 pl-2.5 py-1 text-[10px] text-[#94A3B8] italic rounded mb-1">
+                      <div className="bg-black/40 border-l-2 border-[#00E5FF]/40 pl-2.5 py-1 text-[10px] text-[#94A3B8] italic rounded mb-1">
                         @{msg.replyTo.author}: "{msg.replyTo.text}"
                       </div>
                     )}
 
-                    <p className={`chat-message-body text-xs leading-relaxed m-0 font-light ${isAi ? 'text-[#00F5B0]' : 'text-[#E2E8F0]'}`}>
+                    <p className={`chat-message-body text-xs leading-relaxed m-0 font-light ${isAi ? 'text-[#00E5FF]' : 'text-[#E2E8F0]'}`}>
                       {msg.text}
                     </p>
 
@@ -726,7 +741,7 @@ function FutureChatContent() {
                           <button
                             key={emoji}
                             onClick={() => addReaction(msg.id, emoji)}
-                            className="bg-white/5 border border-white/10 rounded px-1.5 py-0.5 text-[10px] flex items-center gap-1 hover:border-[#00F5B0]/40 transition-colors cursor-pointer text-white/70"
+                            className="bg-white/5 border border-white/10 rounded px-1.5 py-0.5 text-[10px] flex items-center gap-1 hover:border-[#00E5FF]/40 transition-colors cursor-pointer text-white/70"
                           >
                             <span>{emoji}</span>
                             <span className="font-mono text-[9px] font-semibold">{count}</span>
@@ -750,7 +765,7 @@ function FutureChatContent() {
                     <div className="w-[1px] bg-white/10 mx-1" />
                     <button 
                       onClick={() => setReplyMessage(msg)}
-                      className="text-[9px] text-[#00F5B0] font-mono px-1.5 hover:underline cursor-pointer bg-transparent border-none"
+                      className="text-[9px] text-[#00E5FF] font-mono px-1.5 hover:underline cursor-pointer bg-transparent border-none"
                     >
                       [REPLY]
                     </button>
@@ -787,9 +802,9 @@ function FutureChatContent() {
                   <span className="text-xs font-bold text-white/50 font-mono">{typingUser}</span>
                   <div className="flex items-center gap-1.5 mt-1">
                     <span className="text-[10px] font-mono text-[#94A3B8] italic">is processing tensors</span>
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#00F5B0] animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#00F5B0] animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#00F5B0] animate-bounce" style={{ animationDelay: '300ms' }} />
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#00E5FF] animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#00E5FF] animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#00E5FF] animate-bounce" style={{ animationDelay: '300ms' }} />
                   </div>
                 </div>
               </div>
@@ -799,8 +814,8 @@ function FutureChatContent() {
 
           {/* Reply Quote Banner */}
           {replyMessage && (
-            <div className="px-6 py-2 bg-[#00F5B0]/5 border-t border-[#00F5B0]/15 flex justify-between items-center text-xs text-[#94A3B8]">
-              <span>Replying to <span className="text-[#00F5B0] font-mono font-semibold">@{replyMessage.author}</span>: "{replyMessage.text.slice(0, 50)}..."</span>
+            <div className="px-6 py-2 bg-[#00E5FF]/5 border-t border-[#00E5FF]/15 flex justify-between items-center text-xs text-[#94A3B8]">
+              <span>Replying to <span className="text-[#00E5FF] font-mono font-semibold">@{replyMessage.author}</span>: "{replyMessage.text.slice(0, 50)}..."</span>
               <button 
                 onClick={() => setReplyMessage(null)}
                 className="text-rose-400 hover:text-rose-500 font-mono bg-transparent border-none cursor-pointer"
@@ -811,8 +826,8 @@ function FutureChatContent() {
           )}
 
           {/* Chat Input form */}
-          <form onSubmit={handleSendMessage} className="px-6 py-4 bg-black/50 border-t border-[#00F5B0]/15 flex gap-3 items-center">
-            <span className="text-[#00F5B0] font-bold font-mono select-none">chrono_os:~$ &gt;</span>
+          <form onSubmit={handleSendMessage} className="px-6 py-4 bg-[#02060B]/70 border-t border-[#00E5FF]/15 flex gap-3 items-center">
+            <span className="text-[#00E5FF] font-bold font-mono select-none">chrono_os:~$ &gt;</span>
             <input
               type="text"
               placeholder="Synthesize forecast idea... (Ask question ending in '?' or mention @ai for ChronoAI analysis)"
@@ -826,14 +841,14 @@ function FutureChatContent() {
                   key={emoji}
                   type="button"
                   onClick={() => setInputValue(prev => prev + ` ${emoji}`)}
-                  className="bg-white/5 border border-white/10 hover:border-[#00F5B0]/40 transition-colors p-1.5 rounded text-xs cursor-pointer text-white/80"
+                  className="bg-white/5 border border-white/10 hover:border-[#00E5FF]/40 transition-colors p-1.5 rounded text-xs cursor-pointer text-white/80"
                 >
                   {emoji}
                 </button>
               ))}
               <button 
                 type="submit" 
-                className="px-4 py-1.5 bg-[#00F5B0] hover:bg-[#00D98F] text-[#02060A] text-xs font-mono font-bold rounded uppercase tracking-wider transition-all cursor-pointer shadow-[0_0_10px_rgba(0,245,176,0.3)]"
+                className="px-4 py-1.5 bg-[#00E5FF] hover:bg-[#6FEAFF] text-[#02060A] text-xs font-mono font-bold rounded uppercase tracking-wider transition-all cursor-pointer shadow-[0_0_10px_rgba(0, 229, 255,0.3)]"
               >
                 Transmit
               </button>
@@ -845,9 +860,9 @@ function FutureChatContent() {
         <div className="hidden lg:flex flex-col gap-6 overflow-y-auto custom-scrollbar h-full">
           
           {/* ChronoAI Assistant Dossier */}
-          <div className="premium-glass p-5 rounded-lg flex flex-col gap-4 bg-[#040B12]/85 border border-[#00F5B0]/10">
-            <div className="flex flex-col gap-1 border-b border-[#00F5B0]/15 pb-3">
-              <span className="text-[10px] font-mono text-[#00F5B0] uppercase tracking-widest font-semibold">Cognitive Agent</span>
+          <div className="premium-glass p-5 rounded-lg flex flex-col gap-4 bg-[#040B12]/85 border border-[#00E5FF]/10">
+            <div className="flex flex-col gap-1 border-b border-[#00E5FF]/15 pb-3">
+              <span className="text-[10px] font-mono text-[#00E5FF] uppercase tracking-widest font-semibold">Cognitive Agent</span>
               <h3 className="text-sm font-bold text-white tracking-wider uppercase font-mono m-0">ChronoAI Core</h3>
             </div>
             
@@ -866,7 +881,7 @@ function FutureChatContent() {
                   <button
                     key={idx}
                     onClick={() => setInputValue(`@ai ${txt}`)}
-                    className="text-left bg-white/2 hover:bg-[#00F5B0]/5 border border-white/5 hover:border-[#00F5B0]/20 rounded p-2 text-[10px] text-white/85 transition-colors font-mono cursor-pointer"
+                    className="text-left bg-white/2 hover:bg-[#00E5FF]/5 border border-white/5 hover:border-[#00E5FF]/20 rounded p-2 text-[10px] text-white/85 transition-colors font-mono cursor-pointer"
                   >
                     &gt; "{txt}"
                   </button>
@@ -877,8 +892,8 @@ function FutureChatContent() {
 
           {/* Voice Stages / Spaces (Future Feature Architecture Mock) */}
           <div className="premium-glass p-5 rounded-lg flex flex-col gap-4 bg-[#040B12]/85">
-            <div className="flex flex-col gap-1 border-b border-[#00F5B0]/15 pb-3">
-              <span className="text-[10px] font-mono text-[#00F5B0] uppercase tracking-widest font-semibold">Audio Channels</span>
+            <div className="flex flex-col gap-1 border-b border-[#00E5FF]/15 pb-3">
+              <span className="text-[10px] font-mono text-[#00E5FF] uppercase tracking-widest font-semibold">Audio Channels</span>
               <h3 className="text-sm font-bold text-white tracking-wider uppercase font-mono m-0">Live Voice Stages</h3>
             </div>
 
@@ -907,7 +922,7 @@ function FutureChatContent() {
                   <div className="absolute -bottom-1 -right-1 bg-emerald-500 text-[8px] p-0.5 rounded-full">🗣️</div>
                 </div>
                 <div className="relative">
-                  <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-[#00F5B0]/30">
+                  <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-[#00E5FF]/30">
                     <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80&auto=format&fit=crop&q=80" className="w-full h-full object-cover" />
                   </div>
                 </div>
@@ -924,7 +939,7 @@ function FutureChatContent() {
                   triggerFeedback('Connected to fusion voice stage.');
                 }}
                 disabled={isAudioConnected}
-                className="w-full py-2 bg-[#00F5B0]/10 border border-[#00F5B0]/30 hover:border-[#00F5B0]/70 text-[#00F5B0] hover:bg-[#00F5B0]/20 rounded text-xs font-mono font-bold transition-all uppercase tracking-wider cursor-pointer disabled:opacity-40 disabled:pointer-events-none"
+                className="w-full py-2 bg-[#00E5FF]/10 border border-[#00E5FF]/30 hover:border-[#00E5FF]/70 text-[#00E5FF] hover:bg-[#00E5FF]/20 rounded text-xs font-mono font-bold transition-all uppercase tracking-wider cursor-pointer disabled:opacity-40 disabled:pointer-events-none"
               >
                 {isAudioConnected ? '✓ Connected to Audio' : '🔊 Listen In'}
               </button>
@@ -940,7 +955,7 @@ function FutureChatContent() {
 export default function FutureChatPage() {
   return (
     <Suspense fallback={
-      <div className="h-screen w-screen bg-[#02060A] flex items-center justify-center font-mono text-[#00F5B0] text-xs">
+      <div className="h-screen w-screen bg-[#02060B] flex items-center justify-center font-mono text-[#00E5FF] text-xs">
         CONNECTING TO FUTURECHAT BROADCASTS...
       </div>
     }>
@@ -948,3 +963,4 @@ export default function FutureChatPage() {
     </Suspense>
   );
 }
+

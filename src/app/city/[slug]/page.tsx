@@ -9,13 +9,13 @@ import { getExtendedCityData, getCitySlug } from '@/data/citiesExtendedData';
 import { PREDICTIONS, Comment } from '@/data/predictionsData';
 
 const C = {
-  bg: '#02060A',
+  bg: '#02060B',
   panel: '#040B12',
-  primary: '#00F5B0',
-  secondary: '#00D98F',
+  primary: '#00E5FF',
+  secondary: '#6FEAFF',
   accent: '#FFFFFF',
   white: '#F5F7FA',
-  border: 'rgba(0, 245, 176, 0.15)',
+  border: 'rgba(0, 229, 255, 0.15)',
 };
 
 interface Params {
@@ -48,10 +48,10 @@ function CommentNode({ comment, onReply, onVote }: CommentNodeProps) {
   };
 
   return (
-    <div className="border-l border-[#00F5B0]/20 pl-5 mt-5 flex flex-col gap-2 relative">
-      <div className="absolute -left-[3px] top-1.5 w-1.5 h-1.5 rounded-full bg-[#040B12] border border-[#00F5B0]/20" />
+    <div className="border-l border-[#00E5FF]/20 pl-5 mt-5 flex flex-col gap-2 relative">
+      <div className="absolute -left-[3px] top-1.5 w-1.5 h-1.5 rounded-full bg-[#040B12] border border-[#00E5FF]/20" />
       
-      <div className="flex justify-between items-center text-xs text-[#00F5B0]">
+      <div className="flex justify-between items-center text-xs text-[#00E5FF]">
         <span className="text-white">{comment.author}</span>
         <span className="text-[#7A8694]">{new Date(comment.timestamp).toLocaleDateString()}</span>
       </div>
@@ -63,13 +63,13 @@ function CommentNode({ comment, onReply, onVote }: CommentNodeProps) {
       <div className="flex items-center gap-4 text-xs mt-1">
         <button 
           onClick={() => onVote(comment.id)} 
-          className="text-[#00F5B0] hover:text-[#00D98F] transition-colors font-mono"
+          className="text-[#00E5FF] hover:text-[#6FEAFF] transition-colors font-mono"
         >
           ▲ {comment.votes}
         </button>
         <button 
           onClick={() => setReplyOpen(!replyOpen)} 
-          className="text-[#00F5B0] hover:underline transition-all"
+          className="text-[#00E5FF] hover:underline transition-all"
         >
           {replyOpen ? 'Close reply' : 'Reply'}
         </button>
@@ -82,19 +82,19 @@ function CommentNode({ comment, onReply, onVote }: CommentNodeProps) {
             placeholder="Identity alias..."
             value={replyAuthor}
             onChange={e => setReplyAuthor(e.target.value)}
-            className="bg-transparent border-b border-[#00F5B0]/15 text-xs text-white py-1.5 outline-none focus:border-[#00F5B0]"
+            className="bg-transparent border-b border-[#00E5FF]/15 text-xs text-white py-1.5 outline-none focus:border-[#00E5FF]"
             required
           />
           <textarea
             placeholder="Synthesize transmission reply..."
             value={replyContent}
             onChange={e => setReplyContent(e.target.value)}
-            className="bg-transparent border border-[#00F5B0]/15 text-xs text-slate-300 p-2 outline-none focus:border-[#00F5B0] rounded min-h-[60px] leading-relaxed"
+            className="bg-transparent border border-[#00E5FF]/15 text-xs text-slate-300 p-2 outline-none focus:border-[#00E5FF] rounded min-h-[60px] leading-relaxed"
             required
           />
           <div className="flex gap-2 justify-end text-xs">
             <button type="button" onClick={() => setReplyOpen(false)} className="text-slate-500 px-2 hover:text-white">Cancel</button>
-            <button type="submit" className="text-[#00F5B0] border border-[#00F5B0]/20 hover:border-transparent hover:bg-[#00F5B0] hover:text-[#02060A] bg-transparent px-3 py-1">Reply</button>
+            <button type="submit" className="text-[#00E5FF] border border-[#00E5FF]/20 hover:border-transparent hover:bg-[#00E5FF] hover:text-[#02060A] bg-transparent px-3 py-1">Reply</button>
           </div>
         </form>
       )}
@@ -181,9 +181,9 @@ export default function CityDetailPage({ params }: { params: Promise<Params> }) 
 
   if (!city || !cityExtended) {
     return (
-      <main className="h-screen w-screen bg-[#02060A] flex flex-col items-center justify-center text-white gap-4">
+      <main className="h-screen w-screen bg-[#02060B] flex flex-col items-center justify-center text-white gap-4">
         <div>City archive access corrupted</div>
-        <Link href="/" className="text-[#00F5B0] hover:underline">← Return to main grid</Link>
+        <Link href="/" className="text-[#00E5FF] hover:underline">← Return to main grid</Link>
       </main>
     );
   }
@@ -255,7 +255,7 @@ export default function CityDetailPage({ params }: { params: Promise<Params> }) 
   };
 
   return (
-    <main className="h-screen w-screen overflow-y-auto bg-[#02060A] text-[#e2e8f0] relative custom-scrollbar">
+    <main className="h-screen w-screen overflow-y-auto bg-[#02060B] text-[#e2e8f0] relative custom-scrollbar">
       <BackgroundEffects earthMode="cyber" />
       <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-[rgba(2, 8, 15, 0.9)] to-transparent pointer-events-none z-10" />
 
@@ -264,7 +264,7 @@ export default function CityDetailPage({ params }: { params: Promise<Params> }) 
       <div className="reading-container pt-36 pb-24 relative z-20 flex flex-col gap-12 animate-fade-up">
         
         {/* Navigation Link */}
-        <div className="flex items-center gap-2 text-xs text-[#00F5B0] mb-2 select-none">
+        <div className="flex items-center gap-2 text-xs text-[#00E5FF] mb-2 select-none">
           <Link href="/" className="hover:text-white transition-colors">Orbit scanner</Link>
           <span>/</span>
           <span className="text-[#7A8694]">{city.name} briefing</span>
@@ -282,14 +282,14 @@ export default function CityDetailPage({ params }: { params: Promise<Params> }) 
           </div>
 
           {/* Year Selector */}
-          <div className="flex border border-[#00F5B0]/15 p-1 rounded backdrop-blur bg-black/25 self-start md:self-auto">
+          <div className="flex border border-[#00E5FF]/15 p-1 rounded backdrop-blur bg-black/25 self-start md:self-auto">
             {([2030, 2040, 2050] as const).map(yr => (
               <button
                 key={yr}
                 onClick={() => setActiveYear(yr)}
                 className={`px-5 py-1.5 text-xs rounded-sm transition-all ${
                   activeYear === yr
-                    ? 'bg-[#00F5B0] text-[#02060A] font-medium'
+                    ? 'bg-[#00E5FF] text-[#02060A] font-medium'
                     : 'text-[#7A8694] hover:text-white'
                 }`}
               >
@@ -300,12 +300,12 @@ export default function CityDetailPage({ params }: { params: Promise<Params> }) 
         </div>
 
         {/* Large Cover Image (Beneath name and brief) */}
-        <div className="w-full h-[360px] overflow-hidden rounded border border-[#00F5B0]/15 relative bg-black/40">
+        <div className="w-full h-[360px] overflow-hidden rounded border border-[#00E5FF]/15 relative bg-black/40">
           {imageError ? (
-            <div className="w-full h-full flex flex-col items-center justify-center relative overflow-hidden bg-gradient-to-br from-[#040B12] to-[#02060A]">
-              <div className="absolute inset-0 opacity-10 bg-[linear-gradient(rgba(0,245,176,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(0,245,176,0.1)_1px,transparent_1px)] bg-[size:20px_20px]" />
-              <div className="absolute w-48 h-48 rounded-full border border-[#00F5B0]/10 animate-breathe" />
-              <span className="text-xs font-mono text-[#00F5B0]/60 uppercase tracking-[0.25em] z-10">Telemetry Feed Offline</span>
+            <div className="w-full h-full flex flex-col items-center justify-center relative overflow-hidden bg-gradient-to-br from-[#040B12] to-[#02060B]">
+              <div className="absolute inset-0 opacity-10 bg-[linear-gradient(rgba(0, 229, 255,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(0, 229, 255,0.1)_1px,transparent_1px)] bg-[size:20px_20px]" />
+              <div className="absolute w-48 h-48 rounded-full border border-[#00E5FF]/10 animate-breathe" />
+              <span className="text-xs font-mono text-[#00E5FF]/60 uppercase tracking-[0.25em] z-10">Telemetry Feed Offline</span>
             </div>
           ) : (
             <img 
@@ -316,13 +316,13 @@ export default function CityDetailPage({ params }: { params: Promise<Params> }) 
               className="w-full h-full object-cover filter brightness-[0.70] contrast-[1.02]" 
             />
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#02060A]/80 via-transparent to-transparent pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#02060B]/80 via-transparent to-transparent pointer-events-none" />
         </div>
 
         {/* 3 Key Metrics directly below cover image */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="card-tier-2 flex flex-col gap-3 p-5">
-            <span className="text-xs text-[#00F5B0]">AI integration</span>
+            <span className="text-xs text-[#00E5FF]">AI integration</span>
             <span className="text-4xl font-light text-white font-mono">{aiAdoption.toFixed(0)}%</span>
             <p className="text-xs text-[#7A8694] leading-relaxed">
               Autonomous municipal systems manage transit pathways, microgrids, and local safety meshes, achieving high-efficiency resource routing.
@@ -330,7 +330,7 @@ export default function CityDetailPage({ params }: { params: Promise<Params> }) 
           </div>
           
           <div className="card-tier-2 flex flex-col gap-3 p-5">
-            <span className="text-xs text-[#00F5B0]">Climate stability</span>
+            <span className="text-xs text-[#00E5FF]">Climate stability</span>
             <span className="text-4xl font-light text-white font-mono">{climateStability.toFixed(0)}%</span>
             <p className="text-xs text-[#7A8694] leading-relaxed">
               Active geo-adaptive interventions, thermal cooling structures, and micro-climate management help maintain regional biological indicators.
@@ -338,7 +338,7 @@ export default function CityDetailPage({ params }: { params: Promise<Params> }) 
           </div>
 
           <div className="card-tier-2 flex flex-col gap-3 p-5">
-            <span className="text-xs text-[#00F5B0]">Renewable energy</span>
+            <span className="text-xs text-[#00E5FF]">Renewable energy</span>
             <span className="text-4xl font-light text-white font-mono">{renewableEnergy.toFixed(0)}%</span>
             <p className="text-xs text-[#7A8694] leading-relaxed">
               Localized energy harvesting—powered by thin-film photovoltaic surfaces and deep thermal conversion loops—supports the municipal power grid.
@@ -348,7 +348,7 @@ export default function CityDetailPage({ params }: { params: Promise<Params> }) 
 
         {/* Central Editorial Narrative Briefing */}
         <div className="max-w-3xl flex flex-col gap-3 my-2">
-          <h2 className="text-lg font-light text-white border-b border-[#00F5B0]/15 pb-1.5 mb-2">Planetary integration & outlook</h2>
+          <h2 className="text-lg font-light text-white border-b border-[#00E5FF]/15 pb-1.5 mb-2">Planetary integration & outlook</h2>
           <p className="text-sm text-[#7A8694] leading-relaxed font-light">
             As we approach the mid-century threshold, {city.name} undergoes a profound ecological and technological reorganization. 
             Under the guidance of planetary coordinator nodes, the metropolis faces evolving climate regimes with automated adaptive infrastructure. 
@@ -358,7 +358,7 @@ export default function CityDetailPage({ params }: { params: Promise<Params> }) 
 
         {/* Secondary Metrics Dashboard Section */}
         <div className="flex flex-col gap-6">
-          <div className="border-b border-[#00F5B0]/15 pb-2">
+          <div className="border-b border-[#00E5FF]/15 pb-2">
             <h2 className="text-base font-light text-white">
               Secondary telemetry indices ({activeYear})
             </h2>
@@ -401,19 +401,19 @@ export default function CityDetailPage({ params }: { params: Promise<Params> }) 
 
         {/* ── SECTION 3: PREDICTIONS TIMELINE ───────────────────────────────── */}
         <div className="card-tier-2 flex flex-col gap-8">
-          <div className="border-b border-[#00F5B0]/15 pb-3">
+          <div className="border-b border-[#00E5FF]/15 pb-3">
             <h2 className="text-lg font-light text-white">
               Roadmap projections
             </h2>
           </div>
 
-          <div className="relative border-l border-[#00F5B0]/15 ml-6 flex flex-col gap-10">
+          <div className="relative border-l border-[#00E5FF]/15 ml-6 flex flex-col gap-10">
             {timelinePredictions.map(({ year, pred }) => {
               if (!pred) return null;
               return (
                 <div key={year} className="relative pl-8">
                   {/* Minimal bullet indicator */}
-                  <div className="absolute -left-1 w-2 h-2 rounded-full bg-[#00F5B0] mt-2" />
+                  <div className="absolute -left-1 w-2 h-2 rounded-full bg-[#00E5FF] mt-2" />
                   
                   <div className="card-tier-3 flex flex-col gap-2">
                     <div className="flex justify-between items-center text-xs text-[#7A8694]">
@@ -424,9 +424,9 @@ export default function CityDetailPage({ params }: { params: Promise<Params> }) 
                     <h3 className="text-lg text-white font-light">{pred.title}</h3>
                     <p className="text-sm text-[#7A8694] leading-relaxed">{pred.description}</p>
                     
-                    <div className="flex justify-between items-center border-t border-[#00F5B0]/15 pt-3 mt-1 text-xs text-[#7A8694]">
+                    <div className="flex justify-between items-center border-t border-[#00E5FF]/15 pt-3 mt-1 text-xs text-[#7A8694]">
                       <span>Confidence scoring: <span className="font-mono">{pred.confidenceScore}%</span></span>
-                      <Link href={`/predictions/${pred.slug}`} className="text-[#00F5B0] hover:underline">
+                      <Link href={`/predictions/${pred.slug}`} className="text-[#00E5FF] hover:underline">
                         Read document →
                       </Link>
                     </div>
@@ -439,7 +439,7 @@ export default function CityDetailPage({ params }: { params: Promise<Params> }) 
 
         {/* ── SECTION 4: FAMOUS PLACES ──────────────────────────────────────── */}
         <div className="card-tier-2 flex flex-col gap-8">
-          <div className="border-b border-[#00F5B0]/15 pb-3">
+          <div className="border-b border-[#00E5FF]/15 pb-3">
             <h2 className="text-lg font-light text-white">
               Futuristic landmarks
             </h2>
@@ -464,7 +464,7 @@ export default function CityDetailPage({ params }: { params: Promise<Params> }) 
 
         {/* ── SECTION 5: NOTABLE PEOPLE ─────────────────────────────────────── */}
         <div className="card-tier-2 flex flex-col gap-8">
-          <div className="border-b border-[#00F5B0]/15 pb-3">
+          <div className="border-b border-[#00E5FF]/15 pb-3">
             <h2 className="text-lg font-light text-white">
               Notable system architects
             </h2>
@@ -477,7 +477,7 @@ export default function CityDetailPage({ params }: { params: Promise<Params> }) 
                 className="card-tier-3 flex gap-4 items-start"
               >
                 {failedAvatars[person.name] ? (
-                  <div className="w-14 h-14 rounded-full border border-[#00F5B0]/20 flex items-center justify-center bg-[#040B12] text-xs font-mono text-[#00F5B0] font-bold shrink-0">
+                  <div className="w-14 h-14 rounded-full border border-[#00E5FF]/20 flex items-center justify-center bg-[#040B12] text-xs font-mono text-[#00E5FF] font-bold shrink-0">
                     {person.name.split(' ').map(n => n[0]).join('')}
                   </div>
                 ) : (
@@ -486,13 +486,13 @@ export default function CityDetailPage({ params }: { params: Promise<Params> }) 
                     alt={person.name} 
                     loading="lazy"
                     onError={() => setFailedAvatars(prev => ({ ...prev, [person.name]: true }))}
-                    className="w-14 h-14 rounded-full border border-[#00F5B0]/15 object-cover shrink-0"
+                    className="w-14 h-14 rounded-full border border-[#00E5FF]/15 object-cover shrink-0"
                   />
                 )}
                 <div className="flex-1 flex flex-col gap-1 min-w-0">
                   <div className="flex justify-between items-start gap-1">
                     <h3 className="text-base font-light text-white truncate">{person.name}</h3>
-                    <span className="text-xs text-[#00F5B0] shrink-0">{person.role}</span>
+                    <span className="text-xs text-[#00E5FF] shrink-0">{person.role}</span>
                   </div>
                   <div className="text-xs text-[#7A8694] font-light">{person.specialty}</div>
                   <p className="text-xs text-[#7A8694] leading-relaxed mt-2">{person.contribution}</p>
@@ -504,7 +504,7 @@ export default function CityDetailPage({ params }: { params: Promise<Params> }) 
 
         {/* ── SECTION 6: FUTURE PROJECTS ────────────────────────────────────── */}
         <div className="card-tier-2 flex flex-col gap-8">
-          <div className="border-b border-[#00F5B0]/15 pb-3">
+          <div className="border-b border-[#00E5FF]/15 pb-3">
             <h2 className="text-lg font-light text-white">
               Metropolitan development projects
             </h2>
@@ -526,7 +526,7 @@ export default function CityDetailPage({ params }: { params: Promise<Params> }) 
         {/* ── SECTION 7: COMMUNITY INTELLIGENCE ─────────────────────────────── */}
         <div className="card-tier-2 flex flex-col gap-8">
           
-          <div className="flex justify-between items-center border-b border-[#00F5B0]/15 pb-3">
+          <div className="flex justify-between items-center border-b border-[#00E5FF]/15 pb-3">
             <h2 className="text-lg font-light text-white">
               Consensus shard thread
             </h2>
@@ -536,8 +536,8 @@ export default function CityDetailPage({ params }: { params: Promise<Params> }) 
               onClick={handleLike}
               className={`px-4 py-1.5 text-xs border transition-all duration-300 ${
                 liked 
-                  ? 'bg-[#00F5B0] text-[#02060A] border-[#00F5B0]'
-                  : 'bg-transparent border-[#00F5B0]/15 hover:border-transparent hover:bg-[#00F5B0] hover:text-[#02060A] text-[#00F5B0]'
+                  ? 'bg-[#00E5FF] text-[#02060A] border-[#00E5FF]'
+                  : 'bg-transparent border-[#00E5FF]/15 hover:border-transparent hover:bg-[#00E5FF] hover:text-[#02060A] text-[#00E5FF]'
               }`}
             >
               ♥ Support plan ({likesCount})
@@ -552,26 +552,26 @@ export default function CityDetailPage({ params }: { params: Promise<Params> }) 
               placeholder="Identity alias..."
               value={newAuthor}
               onChange={e => setNewAuthor(e.target.value)}
-              className="bg-transparent border-b border-[#00F5B0]/15 text-xs text-white py-2 outline-none focus:border-[#00F5B0] transition-colors"
+              className="bg-transparent border-b border-[#00E5FF]/15 text-xs text-white py-2 outline-none focus:border-[#00E5FF] transition-colors"
               required
             />
             <textarea
               placeholder="Synthesize observations, critiques or recommendations for this timeline target..."
               value={newContent}
               onChange={e => setNewContent(e.target.value)}
-              className="bg-transparent border border-[#00F5B0]/15 text-xs text-[#7A8694] p-3 outline-none focus:border-[#00F5B0] rounded min-h-[80px] leading-relaxed"
+              className="bg-transparent border border-[#00E5FF]/15 text-xs text-[#7A8694] p-3 outline-none focus:border-[#00E5FF] rounded min-h-[80px] leading-relaxed"
               required
             />
             <button
               type="submit"
-              className="self-end px-5 py-1.5 border border-[#00F5B0]/20 hover:border-transparent hover:bg-[#00F5B0] hover:text-[#02060A] bg-transparent text-[#00F5B0] transition-all duration-300 text-xs"
+              className="self-end px-5 py-1.5 border border-[#00E5FF]/20 hover:border-transparent hover:bg-[#00E5FF] hover:text-[#02060A] bg-transparent text-[#00E5FF] transition-all duration-300 text-xs"
             >
               Transmit feedback
             </button>
           </form>
 
           {/* Comment Threads */}
-          <div className="flex flex-col gap-5 divide-y divide-[#00F5B0]/10 mt-2">
+          <div className="flex flex-col gap-5 divide-y divide-[#00E5FF]/10 mt-2">
             {comments.length === 0 ? (
               <div className="text-center py-6 text-xs text-[#7A8694]">
                 Awaiting ledger shard data...

@@ -1,20 +1,24 @@
 'use client';
 
+import { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import BackgroundEffects from '@/components/BackgroundEffects';
+import IntroCinematic from '@/components/IntroCinematic';
 
 const C = {
-  emerald: '#00F5B0',
-  cyan: '#00D98F',
-  iceBlue: '#00D98F',
+  emerald: '#00E5FF',
+  cyan: '#6FEAFF',
+  iceBlue: '#6FEAFF',
   white: '#F5F7FA',
-  bg: 'rgba(2, 8, 15, 0.75)',
-  border: 'rgba(0, 245, 176, 0.15)',
+  bg: 'rgba(10, 20, 35, 0.55)',
+  border: 'rgba(0, 229, 255, 0.15)',
 };
 
 export default function AboutPage() {
+  const [replayIntro, setReplayIntro] = useState(false);
+
   const panelStyle: React.CSSProperties = {
-    background: 'rgba(2, 8, 15, 0.75)',
+    background: 'rgba(10, 20, 35, 0.55)',
     backdropFilter: 'blur(24px)',
     border: '1px solid rgba(255, 255, 255, 0.05)',
     borderRadius: '4px',
@@ -26,12 +30,20 @@ export default function AboutPage() {
   const cornerAccent = null;
 
   return (
-    <main className="h-screen w-screen overflow-y-auto bg-[#02060A] text-[#e2e8f0] relative custom-scrollbar">
+    <main className="h-screen w-screen overflow-y-auto bg-[#02060B] text-[#e2e8f0] relative custom-scrollbar">
+      {/* Replay cinematic intro overlay */}
+      {replayIntro && (
+        <IntroCinematic
+          forcePlay
+          onComplete={() => setReplayIntro(false)}
+        />
+      )}
+
       {/* Background Twinkling Stars */}
       <BackgroundEffects earthMode="cyber" />
 
       {/* Top Gradient Vignette */}
-      <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-[rgba(2,8,15,0.95)] to-transparent pointer-events-none z-10" />
+      <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-[rgba(10, 20, 35, 0.75)] to-transparent pointer-events-none z-10" />
 
       {/* Navigation Header */}
       <Navbar earthMode="cyber" />
@@ -40,7 +52,7 @@ export default function AboutPage() {
       <div className="reading-container pt-32 pb-20 relative z-20 flex flex-col gap-10 animate-fade-up">
         
         {/* Title Header */}
-        <div className="flex flex-col gap-3 border-b border-[#00F5B0]/15 pb-6">
+        <div className="flex flex-col gap-3 border-b border-[#00E5FF]/15 pb-6">
           <h1 className="editorial-title text-white">
             About ChronoEarth
           </h1>
@@ -52,7 +64,7 @@ export default function AboutPage() {
         {/* Section 1: Vision & Mission */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 my-4">
           <div className="flex flex-col gap-4">
-            <h2 className="text-xl font-light text-white border-b border-[#00F5B0]/15 pb-2">
+            <h2 className="text-xl font-light text-white border-b border-[#00E5FF]/15 pb-2">
               Planetary vision
             </h2>
             <p className="text-sm leading-relaxed text-[#7A8694] font-light">
@@ -61,7 +73,7 @@ export default function AboutPage() {
           </div>
 
           <div className="flex flex-col gap-4">
-            <h2 className="text-xl font-light text-white border-b border-[#00F5B0]/15 pb-2">
+            <h2 className="text-xl font-light text-white border-b border-[#00E5FF]/15 pb-2">
               Our core mission
             </h2>
             <p className="text-sm leading-relaxed text-[#7A8694] font-light">
@@ -72,25 +84,25 @@ export default function AboutPage() {
 
         {/* Section 2: Methodology */}
         <div className="flex flex-col gap-6 my-6">
-          <h2 className="text-xl font-light text-white border-b border-[#00F5B0]/15 pb-2">
+          <h2 className="text-xl font-light text-white border-b border-[#00E5FF]/15 pb-2">
             Forecasting engine methodology
           </h2>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="card-tier-2 flex flex-col gap-3 p-5">
-              <span className="text-xs text-[#00F5B0]">Sensor assimilation</span>
+              <span className="text-xs text-[#00E5FF]">Sensor assimilation</span>
               <p className="text-xs text-[#7A8694] leading-relaxed">
                 Decentralized nodes monitor global telemetry including carbon coefficients, oceanic thermal differentials, and LEO satellite arrays.
               </p>
             </div>
             <div className="card-tier-2 flex flex-col gap-3 p-5">
-              <span className="text-xs text-[#00F5B0]">Expert synthesis</span>
+              <span className="text-xs text-[#00E5FF]">Expert synthesis</span>
               <p className="text-xs text-[#7A8694] leading-relaxed">
                 Leading specialists in Quantum Intelligence, Geo-engineering, and Nanomedicine input projection parameters into the Chrono-matrix.
               </p>
             </div>
             <div className="card-tier-2 flex flex-col gap-3 p-5">
-              <span className="text-xs text-[#00F5B0]">Branch simulation</span>
+              <span className="text-xs text-[#00E5FF]">Branch simulation</span>
               <p className="text-xs text-[#7A8694] leading-relaxed">
                 Predictive neural models run continuous timelines, scoring confidence ratings based on user validation, upvotes, and environmental trends.
               </p>
@@ -100,7 +112,7 @@ export default function AboutPage() {
 
         {/* Section 3: Data Sources */}
         <div className="flex flex-col gap-6 my-6">
-          <h2 className="text-xl font-light text-white border-b border-[#00F5B0]/15 pb-2">
+          <h2 className="text-xl font-light text-white border-b border-[#00E5FF]/15 pb-2">
             Primary data feed sources
           </h2>
 
@@ -116,9 +128,9 @@ export default function AboutPage() {
                   <h3 className="text-sm font-light text-white">{source.title}</h3>
                   <p className="text-xs text-[#7A8694] leading-relaxed">{source.desc}</p>
                 </div>
-                <div className="border-t border-[#00F5B0]/10 pt-2 mt-3 flex justify-between text-xs text-[#7A8694]">
+                <div className="border-t border-[#00E5FF]/10 pt-2 mt-3 flex justify-between text-xs text-[#7A8694]">
                   <span>{source.freq}</span>
-                  <span className="text-[#00F5B0] font-mono">{source.score}</span>
+                  <span className="text-[#00E5FF] font-mono">{source.score}</span>
                 </div>
               </div>
             ))}
@@ -127,14 +139,14 @@ export default function AboutPage() {
 
         {/* Section 4: Roadmap */}
         <div className="flex flex-col gap-6 my-6">
-          <h2 className="text-xl font-light text-white border-b border-[#00F5B0]/15 pb-2">
+          <h2 className="text-xl font-light text-white border-b border-[#00E5FF]/15 pb-2">
             Forecast engine roadmap
           </h2>
           
-          <div className="relative border-l border-[#00F5B0]/15 ml-4 md:ml-6 flex flex-col gap-8 mt-4">
+          <div className="relative border-l border-[#00E5FF]/15 ml-4 md:ml-6 flex flex-col gap-8 mt-4">
             {/* Phase 1 */}
             <div className="relative pl-6">
-              <div className="absolute -left-1 w-2 h-2 rounded-full bg-[#00F5B0] mt-1.5" />
+              <div className="absolute -left-1 w-2 h-2 rounded-full bg-[#00E5FF] mt-1.5" />
               <div className="text-xs text-[#7A8694] mb-1">System foundation (current phase)</div>
               <h3 className="text-base font-light text-white mb-2">Immersive globe visualizer & routing</h3>
               <p className="text-xs text-[#7A8694] max-w-3xl leading-relaxed">
@@ -144,7 +156,7 @@ export default function AboutPage() {
 
             {/* Phase 2 */}
             <div className="relative pl-6">
-              <div className="absolute -left-1 w-2 h-2 rounded-full bg-[#00F5B0] mt-1.5" />
+              <div className="absolute -left-1 w-2 h-2 rounded-full bg-[#00E5FF] mt-1.5" />
               <div className="text-xs text-[#7A8694] mb-1">Engagement layer (Q3 2026 target)</div>
               <h3 className="text-base font-light text-white mb-2">Nested comment protocols & custom reports</h3>
               <p className="text-xs text-[#7A8694] max-w-3xl leading-relaxed">
@@ -154,7 +166,7 @@ export default function AboutPage() {
 
             {/* Phase 3 */}
             <div className="relative pl-6">
-              <div className="absolute -left-1 w-2 h-2 rounded-full bg-[#00F5B0]/40 mt-1.5" />
+              <div className="absolute -left-1 w-2 h-2 rounded-full bg-[#00E5FF]/40 mt-1.5" />
               <div className="text-xs text-[#7A8694] mb-1">Live sensor sync (Q1 2027 target)</div>
               <h3 className="text-base font-light text-white/70 mb-2">Active climate data pipeline integration</h3>
               <p className="text-xs text-[#7A8694]/70 max-w-3xl leading-relaxed">
@@ -164,7 +176,36 @@ export default function AboutPage() {
           </div>
         </div>
 
+        {/* Replay Intro Section */}
+        <div className="flex flex-col gap-4 my-8 border-t border-[#00E5FF]/15 pt-8">
+          <h2 className="text-xl font-light text-white border-b border-[#00E5FF]/15 pb-2">
+            Experience
+          </h2>
+          <div className="flex items-center gap-6">
+            <button
+              onClick={() => {
+                if (typeof window !== 'undefined') {
+                  localStorage.removeItem('chronoearth_intro_seen');
+                }
+                setReplayIntro(true);
+              }}
+              className="group flex items-center gap-3 px-6 py-3 rounded-lg border border-[#00E5FF]/20 hover:border-[#00E5FF]/50 bg-[#07111A]/50 hover:bg-[#07111A]/80 transition-all duration-300 cursor-pointer"
+            >
+              <span style={{ fontSize: '18px' }}>✦</span>
+              <div className="flex flex-col items-start">
+                <span className="text-sm font-medium text-[#EAF7FF] group-hover:text-[#6FEAFF] transition-colors">
+                  Replay Cinematic Intro
+                </span>
+                <span className="text-[10px] text-[#8CA8B8] font-mono tracking-wider">
+                  RE-EXPERIENCE THE OPENING SEQUENCE
+                </span>
+              </div>
+            </button>
+          </div>
+        </div>
+
       </div>
     </main>
   );
 }
+
