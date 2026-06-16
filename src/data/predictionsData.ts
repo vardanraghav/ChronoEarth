@@ -1,4 +1,4 @@
-export interface Comment {
+﻿export interface Comment {
   id: string;
   author: string;
   avatar?: string;
@@ -463,3 +463,4 @@ export const KB_ARTICLES: KBArticle[] = [
     impactLevel: 'High'
   }
 ];
+

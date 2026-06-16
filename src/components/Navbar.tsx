@@ -44,12 +44,9 @@ export default function Navbar({ setActiveCity }: NavbarProps) {
   return (
     <>
       <nav
-        className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between transition-all duration-300"
+        className="fixed top-4 left-6 right-6 z-50 flex items-center justify-between transition-all duration-300 premium-glass"
         style={{
-          padding: '24px 48px',
-          background: 'linear-gradient(180deg, rgba(2, 6, 10, 0.9) 0%, rgba(2, 6, 10, 0.4) 60%, transparent 100%)',
-          backdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(0, 245, 176, 0.08)',
+          padding: '16px 36px',
         }}
       >
         {/* Brand Logo - Futuristic, Sleek */}
@@ -60,9 +57,9 @@ export default function Navbar({ setActiveCity }: NavbarProps) {
         >
           <div className="flex items-center gap-1.5 font-light text-base tracking-[0.3em] text-white uppercase font-sans">
             <span>CHRONO</span>
-            <span style={{ color: '#00F5B0', textShadow: '0 0 10px rgba(0, 245, 176, 0.4)' }} className="font-semibold">EARTH</span>
+            <span style={{ color: '#00E5FF', textShadow: '0 0 10px rgba(0, 229, 255, 0.4)' }} className="font-semibold">EARTH</span>
           </div>
-          <span className="text-[9px] font-mono text-white/30 uppercase tracking-[0.15em] mt-0.5 transition-colors group-hover:text-white/50">
+          <span className="text-[9px] font-mono text-[#8CA8B8] uppercase tracking-[0.15em] mt-0.5 transition-colors group-hover:text-white/50">
             Future Intelligence Platform
           </span>
         </Link>
@@ -77,7 +74,7 @@ export default function Navbar({ setActiveCity }: NavbarProps) {
                 href={link.href}
                 className="group relative flex items-center gap-1.5 py-1.5 px-1 no-underline text-xs tracking-wider uppercase font-mono transition-colors"
                 style={{
-                  color: isActive ? '#FFFFFF' : 'rgba(255, 255, 255, 0.55)',
+                  color: isActive ? '#FFFFFF' : 'rgba(234, 247, 255, 0.55)',
                 }}
               >
                 <span className={`transition-transform duration-300 group-hover:scale-110 ${isActive ? 'animate-breathe' : ''}`}>
@@ -88,8 +85,8 @@ export default function Navbar({ setActiveCity }: NavbarProps) {
                   <span
                     className="absolute bottom-0 left-0 right-0 h-[2px] rounded-full"
                     style={{
-                      background: 'linear-gradient(90deg, transparent, #00F5B0, transparent)',
-                      boxShadow: '0 0 8px #00F5B0',
+                      background: 'linear-gradient(90deg, transparent, #00E5FF, transparent)',
+                      boxShadow: '0 0 8px #00E5FF',
                     }}
                   />
                 )}
@@ -114,9 +111,9 @@ export default function Navbar({ setActiveCity }: NavbarProps) {
           className="md:hidden flex flex-col gap-1.5 cursor-pointer bg-transparent border-none p-2 relative z-50"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
         >
-          <div className="w-6 h-[1px] bg-white transition-all duration-300" style={{ transform: mobileMenuOpen ? 'rotate(45deg) translate(5px, 5px)' : 'none', background: mobileMenuOpen ? '#00F5B0' : '#FFF' }} />
+          <div className="w-6 h-[1px] bg-white transition-all duration-300" style={{ transform: mobileMenuOpen ? 'rotate(45deg) translate(5px, 5px)' : 'none', background: mobileMenuOpen ? '#00E5FF' : '#FFF' }} />
           <div className="w-6 h-[1px] bg-white transition-all duration-300" style={{ opacity: mobileMenuOpen ? 0 : 1 }} />
-          <div className="w-6 h-[1px] bg-white transition-all duration-300" style={{ transform: mobileMenuOpen ? 'rotate(-45deg) translate(5px, -5px)' : 'none', background: mobileMenuOpen ? '#00F5B0' : '#FFF' }} />
+          <div className="w-6 h-[1px] bg-white transition-all duration-300" style={{ transform: mobileMenuOpen ? 'rotate(-45deg) translate(5px, -5px)' : 'none', background: mobileMenuOpen ? '#00E5FF' : '#FFF' }} />
         </button>
 
       </nav>
@@ -134,8 +131,8 @@ export default function Navbar({ setActiveCity }: NavbarProps) {
           {/* Close Button top-right */}
           <button
             onClick={() => setMobileMenuOpen(false)}
-            className="fixed top-6 right-6 bg-transparent border-none text-[#00F5B0] hover:text-[#00D98F] cursor-pointer text-xs font-mono uppercase tracking-widest transition-colors p-2.5 z-[100000]"
-            style={{ textShadow: '0 0 10px rgba(0, 245, 176, 0.4)' }}
+            className="fixed top-6 right-6 bg-transparent border-none text-[#00E5FF] hover:text-[#6FEAFF] cursor-pointer text-xs font-mono uppercase tracking-widest transition-colors p-2.5 z-[100000]"
+            style={{ textShadow: '0 0 10px rgba(0, 229, 255, 0.4)' }}
           >
             [✕ close]
           </button>
@@ -144,7 +141,7 @@ export default function Navbar({ setActiveCity }: NavbarProps) {
           <div className="flex flex-col items-center gap-1 mb-6">
             <div className="flex items-center gap-1.5 font-light text-lg tracking-[0.3em] text-white uppercase font-sans">
               <span>CHRONO</span>
-              <span style={{ color: '#00F5B0', textShadow: '0 0 10px rgba(0, 245, 176, 0.4)' }} className="font-semibold">EARTH</span>
+              <span style={{ color: '#00E5FF', textShadow: '0 0 10px rgba(0, 229, 255, 0.4)' }} className="font-semibold">EARTH</span>
             </div>
             <span className="text-[9px] font-mono text-white/30 uppercase tracking-[0.15em]">
               System Directory
@@ -161,8 +158,8 @@ export default function Navbar({ setActiveCity }: NavbarProps) {
                   href={link.href}
                   className="flex items-center gap-4 py-2.5 px-6 text-base tracking-[0.2em] uppercase font-mono no-underline transition-all duration-300 hover:scale-105"
                   style={{
-                    color: isActive ? '#00F5B0' : 'rgba(255, 255, 255, 0.65)',
-                    textShadow: isActive ? '0 0 12px rgba(0, 245, 176, 0.5)' : 'none',
+                    color: isActive ? '#00E5FF' : 'rgba(255, 255, 255, 0.65)',
+                    textShadow: isActive ? '0 0 12px rgba(0, 229, 255, 0.5)' : 'none',
                   }}
                   onClick={() => setMobileMenuOpen(false)}
                 >
@@ -188,19 +185,19 @@ export default function Navbar({ setActiveCity }: NavbarProps) {
 
       {/* CSS Keyframes for mobile menu slide-in */}
       <style>{`
-        @keyframes slideInRight {
-          from {
-            transform: translateX(100%);
-            opacity: 0;
-          }
-          to {
-            transform: translateX(0);
-            opacity: 1;
-          }
-        }
-        .animate-slide-in-right {
-          animation: slideInRight 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
+         @keyframes slideInRight {
+           from {
+             transform: translateX(100%);
+             opacity: 0;
+           }
+           to {
+             transform: translateX(0);
+             opacity: 1;
+           }
+         }
+         .animate-slide-in-right {
+           animation: slideInRight 0.4s cubic-bezier(0.4,0,0.2,1) forwards;
+         }
       `}</style>
 
       {/* Center Command Menu / Reusable Search Overlay */}
@@ -208,3 +205,4 @@ export default function Navbar({ setActiveCity }: NavbarProps) {
     </>
   );
 }
+

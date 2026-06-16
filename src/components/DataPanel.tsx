@@ -51,16 +51,16 @@ export default function DataPanel({ activeYear, activeCity, earthMode = 'realist
         stats.map((s, i) => (
           <div key={i} style={{
             padding: '8px 14px', minWidth: '80px',
-            background: 'rgba(2, 8, 15, 0.70)', backdropFilter: 'blur(16px)',
-            border: '1px solid rgba(0, 245, 176, 0.15)', borderRadius: '2px',
-            boxShadow: '0 0 12px rgba(0, 245, 176, 0.05)',
+            background: 'rgba(8, 20, 32, 0.55)', backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '18px',
+            boxShadow: '0 12px 40px rgba(0, 0, 0, 0.50), 0 0 30px rgba(111, 234, 255, 0.03)',
             transition: 'all 0.6s ease',
           }}>
             <div style={{ fontSize: '6px', fontWeight: 300, letterSpacing: '0.35em', color: 'rgba(0,240,255,0.45)', textTransform: 'uppercase', marginBottom: '5px' }}>
               {s.label}
             </div>
-            <div style={{ fontSize: '15px', fontWeight: 200, color: '#00F5B0', letterSpacing: '0.04em', textShadow: 'none' }}>
-              {s.value}<span style={{ fontSize: '9px', color: 'rgba(0, 245, 176, 0.50)', marginLeft: '2px' }}>{s.unit}</span>
+            <div style={{ fontSize: '15px', fontWeight: 200, color: '#00E5FF', letterSpacing: '0.04em', textShadow: 'none' }}>
+              {s.value}<span style={{ fontSize: '9px', color: 'rgba(0, 229, 255, 0.50)', marginLeft: '2px' }}>{s.unit}</span>
             </div>
           </div>
         ))
@@ -84,3 +84,4 @@ export default function DataPanel({ activeYear, activeCity, earthMode = 'realist
     </div>
   );
 }
+

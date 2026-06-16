@@ -53,10 +53,11 @@ export default function RootLayout({
           }
         `}</style>
       </head>
-      <body className="h-full overflow-hidden bg-[#060918] text-[#e8ecf4]">
+      <body className="h-full overflow-hidden bg-[#02060B] text-[#e8ecf4]">
         <Script src="/cesium/Cesium.js" strategy="beforeInteractive" />
         {children}
       </body>
     </html>
   );
 }
+

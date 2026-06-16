@@ -118,50 +118,50 @@ export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchMo
       onClick={onClose}
     >
       <div 
-        className="premium-glass w-full max-w-[660px] p-6 max-h-[85vh] flex flex-col gap-6 relative rounded-xl animate-fade-up font-mono"
+        className="premium-glass w-full max-w-[660px] p-6 max-h-[85vh] flex flex-col gap-6 relative rounded-2xl animate-fade-up font-sans"
         onClick={e => e.stopPropagation()}
         style={{
-          boxShadow: '0 24px 64px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(0, 245, 176, 0.15), inset 0 0 20px rgba(0, 245, 176, 0.02)',
-          backgroundColor: 'rgba(2, 6, 10, 0.92)'
+          boxShadow: '0 24px 64px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.08), inset 0 0 20px rgba(111, 234, 255, 0.01)',
+          backgroundColor: 'rgba(10, 20, 35, 0.55)'
         }}
       >
-        {/* Terminal Shell Header */}
-        <div className="flex justify-between items-center border-b border-[#00F5B0]/20 pb-3 text-[10px] text-[#7A8694]">
+        {/* Command Center Header */}
+        <div className="flex justify-between items-center border-b border-white/5 pb-3 text-[10px] text-[#8CA8B8]">
           <div className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#00F5B0] animate-pulse" />
-            <span className="text-[#00F5B0] uppercase tracking-wider font-semibold">CHRONO_OS v4.82 // COGNITIVE CORE</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-[#00E5FF] animate-pulse" />
+            <span className="text-[#EAF7FF] uppercase tracking-wider font-semibold">ChronoEarth Intelligence Hub</span>
           </div>
           <button 
             onClick={onClose} 
-            className="bg-transparent border-none text-[#7A8694] hover:text-white cursor-pointer tracking-wider transition-colors"
+            className="bg-transparent border-none text-[#8CA8B8] hover:text-white cursor-pointer tracking-wider transition-colors font-mono"
           >
             [ESC // CLOSE]
           </button>
         </div>
 
-        {/* AI prompt Search Bar */}
+        {/* AI command Search Bar */}
         <div className="flex flex-col gap-1.5">
-          <div className="relative flex items-center bg-black/40 border border-white/5 focus-within:border-[#00F5B0]/40 rounded px-4 py-3 transition-all">
-            <span className="text-[#00F5B0] mr-2 font-bold select-none">chrono_os:~$ &gt;</span>
+          <div className="relative flex items-center bg-black/45 border border-white/5 focus-within:border-[#00E5FF]/40 rounded-xl px-4 py-3 transition-all shadow-[inset_0_0_12px_rgba(0,0,0,0.4)] focus-within:shadow-[0_0_15px_rgba(0,229,255,0.06)]">
+            <span className="text-[#00E5FF] mr-3 font-semibold select-none text-xs">AI Query &gt;</span>
             <input
               ref={inputRef}
               type="text"
-              placeholder="Query matrix parameters..."
+              placeholder="Search countries, technologies, climate risks, future scenarios..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="w-full bg-transparent border-none outline-none text-xs text-white placeholder-white/20 font-mono tracking-wide"
+              className="w-full bg-transparent border-none outline-none text-xs text-white placeholder-white/20 font-sans tracking-wide"
             />
             {searchQuery && (
               <button 
                 onClick={() => setSearchQuery('')}
-                className="absolute right-4 text-[10px] text-[#7A8694] hover:text-white cursor-pointer bg-transparent border-none"
+                className="absolute right-4 text-[10px] text-[#8CA8B8] hover:text-white cursor-pointer bg-transparent border-none font-mono"
               >
-                [RESET]
+                [CLEAR]
               </button>
             )}
           </div>
-          <div className="flex justify-between items-center px-1 text-[9px] text-[#7A8694]">
-            <span>Status: {isAnalyzing ? 'Analyzing cognitive tensors...' : 'Terminal ready'}</span>
+          <div className="flex justify-between items-center px-1 text-[9px] font-mono text-[#8CA8B8]">
+            <span>Status: {isAnalyzing ? 'Analyzing planetary indices...' : 'Ready for query'}</span>
             {searchQuery && <span>Matches: {totalResultsCount} nodes</span>}
           </div>
         </div>
@@ -171,36 +171,36 @@ export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchMo
           {q.length === 0 ? (
             /* AI prompt Suggestions */
             <div className="flex flex-col gap-4 py-2">
-              <span className="text-[10px] text-[#7A8694] uppercase tracking-wider font-semibold border-b border-white/5 pb-2">
-                Executive Prompt Signals
+              <span className="text-[10px] text-[#8CA8B8] uppercase tracking-wider font-semibold border-b border-white/5 pb-2">
+                Executive Query Suggestions
               </span>
               <div className="flex flex-col gap-2">
                 {promptSuggestions.map((p, idx) => (
                   <button
                     key={idx}
                     onClick={() => handlePromptClick(p.query)}
-                    className="group text-left px-4 py-3 bg-white/2 hover:bg-[#00F5B0]/5 border border-white/5 hover:border-[#00F5B0]/20 rounded transition-all duration-300 font-mono cursor-pointer flex justify-between items-center text-xs text-white/80"
+                    className="group text-left px-4 py-3 bg-white/2 hover:bg-[#00E5FF]/5 border border-white/5 hover:border-[#00E5FF]/20 rounded-lg transition-all duration-300 cursor-pointer flex justify-between items-center text-xs text-white/80"
                   >
                     <span className="group-hover:text-white transition-colors">&gt; "{p.text}"</span>
-                    <span className="text-[#7A8694] group-hover:text-[#00F5B0] text-[9px] font-semibold tracking-wider font-mono">
-                      [EXECUTE PROMPT]
+                    <span className="text-[#8CA8B8] group-hover:text-[#00E5FF] text-[9px] font-semibold tracking-wider font-mono">
+                      [EXECUTE QUERY]
                     </span>
                   </button>
                 ))}
               </div>
-              <p className="text-[10px] text-[#7A8694] leading-relaxed mt-4 font-mono font-light">
-                * Terminal searches full planetary index files including 2030/2040/2050 timeline targets, cities data records, knowledge sheets, and strategic vulnerability indexes.
+              <p className="text-[10px] text-[#8CA8B8] leading-relaxed mt-4 font-mono font-light">
+                * Dynamic search maps timeline parameters, structural city profiles, technology codex shards, and futurologists databases.
               </p>
             </div>
           ) : isAnalyzing ? (
             /* Simulated Loading State */
-            <div className="py-20 flex flex-col items-center justify-center gap-3 text-[#00F5B0] text-xs">
-              <div className="w-8 h-8 rounded-full border border-t-[#00F5B0] border-[#00F5B0]/15 animate-spin" />
-              <span>ALIGNING QUANTUM COGNITIVE TENSORS...</span>
+            <div className="py-20 flex flex-col items-center justify-center gap-3 text-[#00E5FF] text-xs font-mono">
+              <div className="w-8 h-8 rounded-full border border-t-[#00E5FF] border-white/10 animate-spin" />
+              <span>SEARCHING PLANETARY SCENARIOS...</span>
             </div>
           ) : !hasResults ? (
-            <div className="py-16 text-center text-xs text-[#FF0055] font-mono font-light border border-white/5 bg-black/20 rounded">
-              &gt; ERROR: NO INTEL CHANNELS CORRESPONDING TO VECTOR "{q.toUpperCase()}"
+            <div className="py-16 text-center text-xs text-rose-400 font-mono font-light border border-white/5 bg-black/20 rounded">
+              &gt; ERROR: NO INTEL NODES MATCHING VECTOR "{q.toUpperCase()}"
             </div>
           ) : (
             /* Dossier Results Grid */
@@ -209,7 +209,7 @@ export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchMo
               {/* Predictions Shards */}
               {predMatches.length > 0 && (
                 <div className="flex flex-col gap-2">
-                  <span className="text-[10px] text-[#7A8694] uppercase tracking-wider font-semibold">
+                  <span className="text-[10px] text-[#8CA8B8] uppercase tracking-wider font-semibold">
                     Dossier // Forecast Shards ({predMatches.length})
                   </span>
                   {predMatches.map(p => (
@@ -219,16 +219,16 @@ export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchMo
                         onClose();
                         router.push(`/predictions/${p.slug}`);
                       }}
-                      className="group p-4 bg-black/20 hover:bg-[#00F5B0]/5 border border-white/5 hover:border-[#00F5B0]/25 rounded flex flex-col gap-2 cursor-pointer transition-all duration-300"
+                      className="group p-4 bg-[#07111A]/40 hover:bg-[#00E5FF]/5 border border-white/5 hover:border-[#00E5FF]/25 rounded-lg flex flex-col gap-2 cursor-pointer transition-all duration-300"
                     >
-                      <div className="flex justify-between items-center text-[9px]">
-                        <span className="text-[#00F5B0] font-semibold uppercase">{p.category} // {p.city.toUpperCase()}</span>
-                        <span className="text-white/40">{p.year} FORECAST</span>
+                      <div className="flex justify-between items-center text-[9px] font-mono">
+                        <span className="text-[#00E5FF] font-semibold uppercase">{p.category} // {p.city.toUpperCase()}</span>
+                        <span className="text-[#8CA8B8]">{p.year} FORECAST</span>
                       </div>
-                      <h4 className="text-xs font-semibold text-white group-hover:text-[#00F5B0] transition-colors leading-snug tracking-wide m-0">
+                      <h4 className="text-xs font-semibold text-white group-hover:text-[#00E5FF] transition-colors leading-snug tracking-wide m-0">
                         {p.title}
                       </h4>
-                      <p className="text-[10px] text-[#7A8694] leading-relaxed line-clamp-2 m-0 font-light">
+                      <p className="text-[10px] text-[#8CA8B8] leading-relaxed line-clamp-2 m-0 font-light">
                         {p.description}
                       </p>
                     </div>
@@ -239,7 +239,7 @@ export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchMo
               {/* Cities Nodes */}
               {cityMatches.length > 0 && (
                 <div className="flex flex-col gap-2">
-                  <span className="text-[10px] text-[#7A8694] uppercase tracking-wider font-semibold">
+                  <span className="text-[10px] text-[#8CA8B8] uppercase tracking-wider font-semibold">
                     Dossier // City Nodes ({cityMatches.length})
                   </span>
                   {cityMatches.map(c => (
@@ -249,13 +249,13 @@ export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchMo
                         onClose();
                         router.push(`/dashboard?city=${encodeURIComponent(c.name)}`);
                       }}
-                      className="group p-3 bg-black/20 hover:bg-[#0A84FF]/5 border border-white/5 hover:border-[#0A84FF]/25 rounded flex justify-between items-center cursor-pointer transition-all duration-300"
+                      className="group p-3 bg-[#07111A]/40 hover:bg-[#00E5FF]/5 border border-white/5 hover:border-[#00E5FF]/25 rounded-lg flex justify-between items-center cursor-pointer transition-all duration-300"
                     >
                       <div className="flex flex-col gap-0.5">
                         <span className="text-xs text-white font-semibold">{c.name}</span>
-                        <span className="text-[9px] text-[#7A8694] uppercase tracking-wider">{c.country}</span>
+                        <span className="text-[9px] text-[#8CA8B8] uppercase tracking-wider">{c.country}</span>
                       </div>
-                      <span className="text-[9px] text-[#0A84FF] font-semibold tracking-wider">[LOCATE GLOBE]</span>
+                      <span className="text-[9px] text-[#00E5FF] font-semibold tracking-wider font-mono">[LOCATE GLOBE]</span>
                     </div>
                   ))}
                 </div>
@@ -264,7 +264,7 @@ export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchMo
               {/* Project Shards */}
               {projectMatches.length > 0 && (
                 <div className="flex flex-col gap-2">
-                  <span className="text-[10px] text-[#7A8694] uppercase tracking-wider font-semibold">
+                  <span className="text-[10px] text-[#8CA8B8] uppercase tracking-wider font-semibold">
                     Dossier // Project Systems ({projectMatches.length})
                   </span>
                   {projectMatches.map((proj, idx) => (
@@ -274,15 +274,15 @@ export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchMo
                         onClose();
                         router.push(`/city/${proj.citySlug}`);
                       }}
-                      className="group p-4 bg-black/20 hover:bg-[#BF5AF2]/5 border border-white/5 hover:border-[#BF5AF2]/25 rounded flex flex-col gap-2 cursor-pointer transition-all duration-300"
+                      className="group p-4 bg-[#07111A]/40 hover:bg-[#6FEAFF]/5 border border-white/5 hover:border-[#6FEAFF]/25 rounded-lg flex flex-col gap-2 cursor-pointer transition-all duration-300"
                     >
-                      <div className="flex justify-between items-center text-[9px]">
-                        <span className="text-[#BF5AF2] font-semibold uppercase">{proj.type} // {proj.cityName.toUpperCase()}</span>
+                      <div className="flex justify-between items-center text-[9px] font-mono">
+                        <span className="text-[#6FEAFF] font-semibold uppercase">{proj.type} // {proj.cityName.toUpperCase()}</span>
                       </div>
-                      <h4 className="text-xs font-semibold text-white group-hover:text-[#BF5AF2] transition-colors leading-snug tracking-wide m-0">
+                      <h4 className="text-xs font-semibold text-white group-hover:text-[#6FEAFF] transition-colors leading-snug tracking-wide m-0">
                         {proj.name}
                       </h4>
-                      <p className="text-[10px] text-[#7A8694] leading-relaxed line-clamp-2 m-0 font-light">
+                      <p className="text-[10px] text-[#8CA8B8] leading-relaxed line-clamp-2 m-0 font-light">
                         {proj.desc}
                       </p>
                     </div>
@@ -293,7 +293,7 @@ export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchMo
               {/* Technology Shards */}
               {techMatches.length > 0 && (
                 <div className="flex flex-col gap-2">
-                  <span className="text-[10px] text-[#7A8694] uppercase tracking-wider font-semibold">
+                  <span className="text-[10px] text-[#8CA8B8] uppercase tracking-wider font-semibold">
                     Dossier // Codex Shards ({techMatches.length})
                   </span>
                   {techMatches.map(t => (
@@ -303,16 +303,16 @@ export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchMo
                         onClose();
                         router.push(`/knowledge?article=${t.id}`);
                       }}
-                      className="group p-4 bg-black/20 hover:bg-[#00F5B0]/5 border border-white/5 hover:border-[#00F5B0]/25 rounded flex flex-col gap-2 cursor-pointer transition-all duration-300"
+                      className="group p-4 bg-[#07111A]/40 hover:bg-[#00E5FF]/5 border border-white/5 hover:border-[#00E5FF]/25 rounded-lg flex flex-col gap-2 cursor-pointer transition-all duration-300"
                     >
-                      <div className="flex justify-between items-center text-[9px]">
-                        <span className="text-[#00F5B0] font-semibold uppercase">CODEX // {t.category.toUpperCase()}</span>
-                        <span className="text-white/40">READINESS: {t.readinessIndex}%</span>
+                      <div className="flex justify-between items-center text-[9px] font-mono">
+                        <span className="text-[#00E5FF] font-semibold uppercase">CODEX // {t.category.toUpperCase()}</span>
+                        <span className="text-[#8CA8B8]">READINESS: {t.readinessIndex}%</span>
                       </div>
-                      <h4 className="text-xs font-semibold text-white group-hover:text-[#00F5B0] transition-colors leading-snug tracking-wide m-0">
+                      <h4 className="text-xs font-semibold text-white group-hover:text-[#00E5FF] transition-colors leading-snug tracking-wide m-0">
                         {t.title}
                       </h4>
-                      <p className="text-[10px] text-[#7A8694] leading-relaxed line-clamp-2 m-0 font-light">
+                      <p className="text-[10px] text-[#8CA8B8] leading-relaxed line-clamp-2 m-0 font-light">
                         {t.shortDesc}
                       </p>
                     </div>
@@ -323,7 +323,7 @@ export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchMo
               {/* Futurologist Shards */}
               {(futurologistMatches.length > 0 || architectMatches.length > 0) && (
                 <div className="flex flex-col gap-2">
-                  <span className="text-[10px] text-[#7A8694] uppercase tracking-wider font-semibold">
+                  <span className="text-[10px] text-[#8CA8B8] uppercase tracking-wider font-semibold">
                     Dossier // Personnel Files ({futurologistMatches.length + architectMatches.length})
                   </span>
                   
@@ -335,13 +335,13 @@ export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchMo
                         onClose();
                         router.push(`/futurologists/${f.slug}`);
                       }}
-                      className="group p-3 bg-black/20 hover:bg-[#FFB300]/5 border border-white/5 hover:border-[#FFB300]/25 rounded flex justify-between items-center cursor-pointer transition-all duration-300"
+                      className="group p-3 bg-[#07111A]/40 hover:bg-[#FFB300]/5 border border-white/5 hover:border-[#FFB300]/25 rounded-lg flex justify-between items-center cursor-pointer transition-all duration-300"
                     >
                       <div className="flex flex-col gap-0.5">
                         <span className="text-xs text-white font-semibold">{f.name}</span>
-                        <span className="text-[9px] text-[#7A8694] uppercase tracking-wider">{f.role} // {f.specialization}</span>
+                        <span className="text-[9px] text-[#8CA8B8] uppercase tracking-wider">{f.role} // {f.specialization}</span>
                       </div>
-                      <span className="text-[9px] text-[#FFB300] font-semibold tracking-wider">[DOSSIER PROFILE]</span>
+                      <span className="text-[9px] text-[#FFB300] font-semibold tracking-wider font-mono">[DOSSIER PROFILE]</span>
                     </div>
                   ))}
 
@@ -353,13 +353,13 @@ export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchMo
                         onClose();
                         router.push(`/city/${arch.citySlug}`);
                       }}
-                      className="group p-3 bg-black/20 hover:bg-[#FFB300]/5 border border-white/5 hover:border-[#FFB300]/25 rounded flex justify-between items-center cursor-pointer transition-all duration-300"
+                      className="group p-3 bg-[#07111A]/40 hover:bg-[#FFB300]/5 border border-white/5 hover:border-[#FFB300]/25 rounded-lg flex justify-between items-center cursor-pointer transition-all duration-300"
                     >
                       <div className="flex flex-col gap-0.5">
                         <span className="text-xs text-white font-semibold">{arch.name}</span>
-                        <span className="text-[9px] text-[#7A8694] uppercase tracking-wider">{arch.role} // {arch.cityName.toUpperCase()} NODE</span>
+                        <span className="text-[9px] text-[#8CA8B8] uppercase tracking-wider">{arch.role} // {arch.cityName.toUpperCase()} NODE</span>
                       </div>
-                      <span className="text-[9px] text-[#7A8694] font-semibold tracking-wider">[METROPOLIS]</span>
+                      <span className="text-[9px] text-[#8CA8B8] font-semibold tracking-wider font-mono">[METROPOLIS]</span>
                     </div>
                   ))}
                 </div>
@@ -372,3 +372,4 @@ export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchMo
     </div>
   );
 }
+

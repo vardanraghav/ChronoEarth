@@ -4,6 +4,8 @@ import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Navbar            from '@/components/Navbar';
+import { OnboardingModal } from '@/components/OnboardingModal';
+import MobileDashboard   from '@/components/MobileDashboard';
 import CesiumGlobe       from '@/components/CesiumGlobe';
 import BackgroundEffects from '@/components/BackgroundEffects';
 import CityPreviewCard   from '@/components/CityPreviewCard';
@@ -34,19 +36,19 @@ const generateSparkline = (baseVal: number, growthRate: number) => {
     <svg className="w-full h-8" viewBox="0 0 100 30" style={{ overflow: 'visible' }}>
       <defs>
         <linearGradient id="glowGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#00F5B0" stopOpacity="0.2" />
-          <stop offset="100%" stopColor="#00F5B0" stopOpacity="0" />
+          <stop offset="0%" stopColor="#00E5FF" stopOpacity="0.2" />
+          <stop offset="100%" stopColor="#00E5FF" stopOpacity="0" />
         </linearGradient>
       </defs>
-      <polyline points={svgPoints} fill="none" stroke="#00F5B0" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <polyline points={svgPoints} fill="none" stroke="#00E5FF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
       <polygon points={`0,30 ${svgPoints} 100,30`} fill="url(#glowGrad)" />
     </svg>
   );
 };
 
 const ProgressBar = ({ value, label, isRisk = false }: { value: number; label: string; isRisk?: boolean }) => {
-  const color = isRisk ? (value > 70 ? '#F43F5E' : (value > 45 ? '#FFB800' : '#00F5B0')) : '#00F5B0';
-  const shadowColor = isRisk ? (value > 70 ? 'rgba(244, 63, 94, 0.4)' : (value > 45 ? 'rgba(255, 184, 0, 0.4)' : 'rgba(0, 245, 176, 0.4)')) : 'rgba(0, 245, 176, 0.4)';
+  const color = isRisk ? (value > 70 ? '#F43F5E' : (value > 45 ? '#FFB800' : '#00E5FF')) : '#00E5FF';
+  const shadowColor = isRisk ? (value > 70 ? 'rgba(244, 63, 94, 0.4)' : (value > 45 ? 'rgba(255, 184, 0, 0.4)' : 'rgba(0, 229, 255, 0.4)')) : 'rgba(0, 229, 255, 0.4)';
   return (
     <div className="flex flex-col gap-1.5">
       <div className="flex justify-between items-center text-[10px] font-mono tracking-wider text-[#7A8694]">
@@ -82,6 +84,33 @@ function DashboardContent() {
   const [selectedDossier, setSelectedDossier] = useState<string | null>(null);
   const [isLeftPanelCollapsed, setIsLeftPanelCollapsed] = useState(false);
   const [isRightPanelCollapsed, setIsRightPanelCollapsed] = useState(false);
+  // Mobile detection state
+  const [isMobile, setIsMobile] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  // Check onboarding flag on mount
+  useEffect(() => {
+    const visited = localStorage.getItem('chronoeath_onboarded');
+    if (!visited) {
+      setShowOnboarding(true);
+    }
+  }, []);
+
+  const handleOnboardingStart = () => {
+    localStorage.setItem('chronoeath_onboarded', 'true');
+    setShowOnboarding(false);
+  };
+
+  const handleOnboardingSkip = () => {
+    localStorage.setItem('chronoeath_onboarded', 'true');
+    setShowOnboarding(false);
+  };
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
 
   const [countryChatMessages, setCountryChatMessages] = useState<Record<string, Array<{ author: string; text: string; time: string }>>>({
     'IND': [
@@ -184,40 +213,12 @@ function DashboardContent() {
   };
 
   return (
-    <main className="relative h-screen w-screen overflow-hidden" style={{ background: '#02060A' }}>
-      {/* Top Navigation */}
-      <Navbar setActiveCity={handleSelectCity} />
-
-      {/* Full screen Globe */}
-      <div 
-        style={{
-          position: 'absolute',
-          left: 0,
-          top: 0,
-          width: '100vw',
-          height: '100%',
-          zIndex: 0,
-          overflow: 'hidden',
-        }}
-      >
-        <BackgroundEffects earthMode="cyber" />
-        <CesiumGlobe
-          activeYear={activeYear}
-          activeCategory="AI"
-          activeCity={activeCity}
-          setActiveCity={handleSelectCity}
-          activeCountry={activeCountry}
-          setActiveCountry={handleSelectCountry}
-          overlays={DEFAULT_OVERLAYS}
-          earthMode="cyber"
-          activeLayers={activeLayers}
-          activeSimulations={activeSimulations}
-        />
-      </div>
-
-      {/* Depth Vignettes */}
-      <div
-        style={{
+    <>
+      {showOnboarding && (
+        <OnboardingModal onStart={handleOnboardingStart} onSkip={handleOnboardingSkip} />
+      )}
+      <main className="relative h-screen w-screen overflow-hidden" style={{ background: '#02060B' }}>
+        <div style={{
           position: 'fixed',
           top: 0,
           left: 0,
@@ -264,12 +265,12 @@ function DashboardContent() {
             e.stopPropagation();
             setIsLeftPanelCollapsed(!isLeftPanelCollapsed);
           }}
-          className="absolute top-0 -right-6 w-6 h-12 bg-[#02060A]/85 backdrop-blur-md border-y border-r border-[#00F5B0]/30 hover:border-[#00F5B0]/60 rounded-r-md text-[10px] text-[#00F5B0] flex items-center justify-center transition-all duration-300 cursor-pointer shadow-[5px_0_15px_rgba(0,245,176,0.15)] focus:outline-none"
+          className="absolute top-0 -right-6 w-6 h-12 bg-[#040B12]/85 backdrop-blur-md border-y border-r border-[#00E5FF]/30 hover:border-[#00E5FF]/60 rounded-r-md text-[10px] text-[#00E5FF] flex items-center justify-center transition-all duration-300 cursor-pointer shadow-[5px_0_15px_rgba(0, 229, 255,0.15)] focus:outline-none"
         >
           {isLeftPanelCollapsed ? '❯' : '❮'}
         </button>
-        <div className="flex flex-col gap-1 border-b border-[#00F5B0]/15 pb-3">
-          <span className="text-[10px] font-mono text-[#00F5B0] uppercase tracking-widest font-semibold">Intelligence</span>
+        <div className="flex flex-col gap-1 border-b border-[#00E5FF]/15 pb-3">
+          <span className="text-[10px] font-mono text-[#00E5FF] uppercase tracking-widest font-semibold">Intelligence</span>
           <h3 className="text-sm font-light text-white tracking-wider uppercase font-mono m-0">Planetary Layers</h3>
         </div>
 
@@ -291,9 +292,9 @@ function DashboardContent() {
                 onClick={() => setActiveLayers(prev => ({ ...prev, [key]: !prev[key] }))}
                 className="relative w-9 h-5 rounded-full transition-colors duration-300 focus:outline-none cursor-pointer"
                 style={{
-                  background: activeLayers[key] ? '#00F5B0' : 'rgba(255, 255, 255, 0.1)',
+                  background: activeLayers[key] ? '#00E5FF' : 'rgba(255, 255, 255, 0.1)',
                   border: '1px solid rgba(255, 255, 255, 0.05)',
-                  boxShadow: activeLayers[key] ? '0 0 10px rgba(0, 245, 176, 0.4)' : 'none',
+                  boxShadow: activeLayers[key] ? '0 0 10px rgba(0, 229, 255, 0.4)' : 'none',
                 }}
               >
                 <span
@@ -330,10 +331,10 @@ function DashboardContent() {
                 {index > 0 && (
                   <div className="w-16 h-[1px] bg-white/10 mx-3 relative">
                     <div 
-                      className="absolute inset-0 bg-[#00F5B0] transition-all duration-500"
+                      className="absolute inset-0 bg-[#00E5FF] transition-all duration-500"
                       style={{
                         opacity: activeYear >= year ? 0.35 : 0,
-                        boxShadow: activeYear >= year ? '0 0 4px #00F5B0' : 'none'
+                        boxShadow: activeYear >= year ? '0 0 4px #00E5FF' : 'none'
                       }}
                     />
                   </div>
@@ -346,9 +347,9 @@ function DashboardContent() {
                     cursor: 'pointer',
                     fontSize: '12px',
                     fontWeight: isActive ? 600 : 300,
-                    color: isActive ? '#00F5B0' : 'rgba(255, 255, 255, 0.45)',
+                    color: isActive ? '#00E5FF' : 'rgba(255, 255, 255, 0.45)',
                     transition: 'all 0.3s ease',
-                    textShadow: isActive ? '0 0 10px rgba(0,245,176,0.6)' : 'none',
+                    textShadow: isActive ? '0 0 10px rgba(0, 229, 255,0.6)' : 'none',
                     fontFamily: 'monospace'
                   }}
                   className={`hover:text-white flex flex-col items-center gap-1 ${isActive ? 'timeline-dot-pulse font-bold' : ''}`}
@@ -386,7 +387,7 @@ function DashboardContent() {
             e.stopPropagation();
             setIsRightPanelCollapsed(!isRightPanelCollapsed);
           }}
-          className="absolute top-0 -left-6 w-6 h-12 bg-[#02060A]/85 backdrop-blur-md border-y border-l border-[#00F5B0]/30 hover:border-[#00F5B0]/60 rounded-l-md text-[10px] text-[#00F5B0] flex items-center justify-center transition-all duration-300 cursor-pointer shadow-[-5px_0_15px_rgba(0,245,176,0.15)] focus:outline-none"
+          className="absolute top-0 -left-6 w-6 h-12 bg-[#040B12]/85 backdrop-blur-md border-y border-l border-[#00E5FF]/30 hover:border-[#00E5FF]/60 rounded-l-md text-[10px] text-[#00E5FF] flex items-center justify-center transition-all duration-300 cursor-pointer shadow-[-5px_0_15px_rgba(0, 229, 255,0.15)] focus:outline-none"
         >
           {isRightPanelCollapsed ? '❮' : '❯'}
         </button>
@@ -397,8 +398,8 @@ function DashboardContent() {
             const cityGdp = cityStats.population * 0.045 * (cityStats.smartCityIndex / 100);
             return (
               <div className="flex flex-col gap-5">
-                <div className="border-b border-[#00F5B0]/15 pb-3">
-                  <span className="text-[10px] font-mono text-[#00F5B0] uppercase tracking-widest font-semibold">City Dossier</span>
+                <div className="border-b border-[#00E5FF]/15 pb-3">
+                  <span className="text-[10px] font-mono text-[#00E5FF] uppercase tracking-widest font-semibold">City Dossier</span>
                   <h2 className="text-lg font-light text-white m-0 mt-0.5 tracking-wide">{activeCity.name}</h2>
                   <span className="text-[10px] text-[#7A8694] font-mono uppercase tracking-wider">{activeCity.country}</span>
                 </div>
@@ -427,7 +428,7 @@ function DashboardContent() {
                 <div className="flex flex-col gap-2.5 mt-auto">
                   <Link
                     href={`/city/${getCitySlug(activeCity.name)}`}
-                    className="w-full py-2.5 bg-[#00F5B0] hover:bg-[#00D98F] text-[#02060A] text-xs font-semibold rounded text-center transition-all duration-300 no-underline cursor-pointer tracking-wider uppercase font-mono shadow-[0_0_15px_rgba(0,245,176,0.2)] hover:shadow-[0_0_20px_rgba(0,245,176,0.4)]"
+                    className="w-full py-2.5 bg-[#00E5FF] hover:bg-[#6FEAFF] text-[#02060A] text-xs font-semibold rounded text-center transition-all duration-300 no-underline cursor-pointer tracking-wider uppercase font-mono shadow-[0_0_15px_rgba(0, 229, 255,0.2)] hover:shadow-[0_0_20px_rgba(0, 229, 255,0.4)]"
                   >
                     Open Full Briefing →
                   </Link>
@@ -439,7 +440,7 @@ function DashboardContent() {
                   </button>
                   <Link
                     href="/"
-                    className="w-full py-2 border border-[#00F5B0]/30 hover:border-[#00F5B0]/60 text-[#00F5B0] hover:text-[#00F5B0]/80 text-xs rounded transition-all duration-300 cursor-pointer font-mono uppercase tracking-wider text-center no-underline"
+                    className="w-full py-2 border border-[#00E5FF]/30 hover:border-[#00E5FF]/60 text-[#00E5FF] hover:text-[#00E5FF]/80 text-xs rounded transition-all duration-300 cursor-pointer font-mono uppercase tracking-wider text-center no-underline"
                   >
                     ← Return to Orbit
                   </Link>
@@ -453,8 +454,8 @@ function DashboardContent() {
             const countryProfile = generateCountryProjections(activeCountry, activeYear, activeSimulations);
             return (
               <div className="flex flex-col gap-5">
-                <div className="border-b border-[#00F5B0]/15 pb-3">
-                  <span className="text-[10px] font-mono text-[#00F5B0] uppercase tracking-widest font-semibold">Country Dossier</span>
+                <div className="border-b border-[#00E5FF]/15 pb-3">
+                  <span className="text-[10px] font-mono text-[#00E5FF] uppercase tracking-widest font-semibold">Country Dossier</span>
                   <h2 className="text-lg font-light text-white m-0 mt-0.5 tracking-wide">{countryProfile.name}</h2>
                   <span className="text-[10px] text-[#7A8694] font-mono uppercase tracking-wider">Timeline {activeYear}</span>
                 </div>
@@ -492,9 +493,9 @@ function DashboardContent() {
                 </div>
 
                 {/* Future Community Live Feed */}
-                <div className="flex flex-col gap-3 bg-black/35 border border-[#00F5B0]/20 rounded-lg p-3">
-                  <div className="flex justify-between items-center border-b border-[#00F5B0]/15 pb-1.5">
-                    <span className="text-[10px] text-[#00F5B0] font-mono uppercase tracking-wider font-bold">Future Community</span>
+                <div className="flex flex-col gap-3 bg-black/35 border border-[#00E5FF]/20 rounded-lg p-3">
+                  <div className="flex justify-between items-center border-b border-[#00E5FF]/15 pb-1.5">
+                    <span className="text-[10px] text-[#00E5FF] font-mono uppercase tracking-wider font-bold">Future Community</span>
                     <span className="text-[9px] text-emerald-400 font-mono flex items-center gap-1">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                       {Math.floor(((countryProfile.stats.population * 17) % 5) + 5)} Online
@@ -542,7 +543,7 @@ function DashboardContent() {
                       onChange={(e) => setNewDossierMsg(e.target.value)}
                       className="flex-1 bg-black/40 border-none outline-none text-[10px] text-white px-2 py-1 font-mono placeholder-white/20"
                     />
-                    <button type="submit" className="px-2 bg-[#00F5B0]/10 border-l border-white/10 text-[#00F5B0] text-[9px] font-mono hover:bg-[#00F5B0] hover:text-black transition-colors font-bold uppercase cursor-pointer">
+                    <button type="submit" className="px-2 bg-[#00E5FF]/10 border-l border-white/10 text-[#00E5FF] text-[9px] font-mono hover:bg-[#00E5FF] hover:text-black transition-colors font-bold uppercase cursor-pointer">
                       Send
                     </button>
                   </form>
@@ -551,7 +552,7 @@ function DashboardContent() {
                 <div className="flex flex-col gap-2.5 mt-auto">
                   <Link
                     href={`/futurechat?room=${activeCountry}`}
-                    className="w-full py-2.5 bg-[#00F5B0] hover:bg-[#00D98F] text-[#02060A] text-xs font-semibold rounded text-center transition-all duration-300 cursor-pointer tracking-wider uppercase font-mono shadow-[0_0_15px_rgba(0,245,176,0.2)] no-underline"
+                    className="w-full py-2.5 bg-[#00E5FF] hover:bg-[#6FEAFF] text-[#02060A] text-xs font-semibold rounded text-center transition-all duration-300 cursor-pointer tracking-wider uppercase font-mono shadow-[0_0_15px_rgba(0, 229, 255,0.2)] no-underline"
                   >
                     ⚡ Join Live Debate Stage
                   </Link>
@@ -569,7 +570,7 @@ function DashboardContent() {
                   </button>
                   <Link
                     href="/"
-                    className="w-full py-2 border border-[#00F5B0]/30 hover:border-[#00F5B0]/60 text-[#00F5B0] hover:text-[#00F5B0]/80 text-xs rounded transition-all duration-300 cursor-pointer font-mono uppercase tracking-wider text-center no-underline"
+                    className="w-full py-2 border border-[#00E5FF]/30 hover:border-[#00E5FF]/60 text-[#00E5FF] hover:text-[#00E5FF]/80 text-xs rounded transition-all duration-300 cursor-pointer font-mono uppercase tracking-wider text-center no-underline"
                   >
                     ← Return to Orbit
                   </Link>
@@ -582,8 +583,8 @@ function DashboardContent() {
           (scalePrediction => {
             return (
               <div className="flex flex-col gap-5">
-                <div className="border-b border-[#00F5B0]/15 pb-3">
-                  <span className="text-[10px] font-mono text-[#00F5B0] uppercase tracking-widest font-semibold">Event Dossier</span>
+                <div className="border-b border-[#00E5FF]/15 pb-3">
+                  <span className="text-[10px] font-mono text-[#00E5FF] uppercase tracking-widest font-semibold">Event Dossier</span>
                   <h2 className="text-lg font-light text-white m-0 mt-0.5 tracking-wide">{activePrediction.title}</h2>
                   <span className="text-[10px] text-[#7A8694] font-mono uppercase tracking-wider">{activePrediction.category} • {activePrediction.city}</span>
                 </div>
@@ -597,7 +598,7 @@ function DashboardContent() {
                   <span className="text-[9px] text-[#7A8694] uppercase tracking-wider font-mono">Futurologist Vector</span>
                   <div className="flex justify-between items-center text-xs font-mono text-white/90 mt-1">
                     <span>{activePrediction.author}</span>
-                    <span className="text-[#00F5B0]">{activePrediction.votes} Votes</span>
+                    <span className="text-[#00E5FF]">{activePrediction.votes} Votes</span>
                   </div>
                 </div>
 
@@ -619,7 +620,7 @@ function DashboardContent() {
                 <div className="flex flex-col gap-2.5 mt-auto">
                   <Link
                     href={`/predictions/${activePrediction.slug}`}
-                    className="w-full py-2.5 bg-[#00F5B0] hover:bg-[#00D98F] text-[#02060A] text-xs font-semibold rounded text-center transition-all duration-300 no-underline cursor-pointer tracking-wider uppercase font-mono shadow-[0_0_15px_rgba(0,245,176,0.2)]"
+                    className="w-full py-2.5 bg-[#00E5FF] hover:bg-[#6FEAFF] text-[#02060A] text-xs font-semibold rounded text-center transition-all duration-300 no-underline cursor-pointer tracking-wider uppercase font-mono shadow-[0_0_15px_rgba(0, 229, 255,0.2)]"
                   >
                     Open Deep Analysis →
                   </Link>
@@ -631,7 +632,7 @@ function DashboardContent() {
                   </button>
                   <Link
                     href="/"
-                    className="w-full py-2 border border-[#00F5B0]/30 hover:border-[#00F5B0]/60 text-[#00F5B0] hover:text-[#00F5B0]/80 text-xs rounded transition-all duration-300 cursor-pointer font-mono uppercase tracking-wider text-center no-underline"
+                    className="w-full py-2 border border-[#00E5FF]/30 hover:border-[#00E5FF]/60 text-[#00E5FF] hover:text-[#00E5FF]/80 text-xs rounded transition-all duration-300 cursor-pointer font-mono uppercase tracking-wider text-center no-underline"
                   >
                     ← Return to Orbit
                   </Link>
@@ -664,8 +665,8 @@ function DashboardContent() {
 
             return (
               <div className="flex flex-col gap-5">
-                <div className="border-b border-[#00F5B0]/15 pb-3">
-                  <span className="text-[10px] font-mono text-[#00F5B0] uppercase tracking-widest font-semibold">Planetary Dossier</span>
+                <div className="border-b border-[#00E5FF]/15 pb-3">
+                  <span className="text-[10px] font-mono text-[#00E5FF] uppercase tracking-widest font-semibold">Planetary Dossier</span>
                   <h2 className="text-lg font-light text-white m-0 mt-0.5 tracking-wide">Planet Earth</h2>
                   <span className="text-[10px] text-[#7A8694] font-mono uppercase tracking-wider">Simulation Timeline {activeYear}</span>
                 </div>
@@ -673,7 +674,7 @@ function DashboardContent() {
                 <div className="flex flex-col gap-2 bg-black/30 border border-white/5 rounded-lg p-3">
                   <div className="flex justify-between items-center text-[10px] font-mono text-[#7A8694]">
                     <span>Global GDP Projection</span>
-                    <span className="text-[#00F5B0] font-semibold">${baseGdp.toFixed(0)}T</span>
+                    <span className="text-[#00E5FF] font-semibold">${baseGdp.toFixed(0)}T</span>
                   </div>
                   {generateSparkline(baseGdp, 1.04)}
                 </div>
@@ -709,7 +710,7 @@ function DashboardContent() {
                       <button
                         key={c.code}
                         onClick={() => handleSelectCountry(c.code)}
-                        className="py-1.5 px-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#00F5B0]/30 rounded text-left text-[11px] text-white/90 hover:text-white transition-all cursor-pointer font-mono truncate"
+                        className="py-1.5 px-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#00E5FF]/30 rounded text-left text-[11px] text-white/90 hover:text-white transition-all cursor-pointer font-mono truncate"
                       >
                         {c.name}
                       </button>
@@ -720,7 +721,7 @@ function DashboardContent() {
                 <div className="flex flex-col gap-2 mt-auto pt-4 border-t border-white/5">
                   <Link
                     href="/"
-                    className="w-full py-2.5 border border-[#00F5B0]/30 hover:border-[#00F5B0]/60 text-[#00F5B0] hover:text-[#00F5B0]/80 text-xs rounded transition-all duration-300 cursor-pointer font-mono uppercase tracking-wider text-center no-underline"
+                    className="w-full py-2.5 border border-[#00E5FF]/30 hover:border-[#00E5FF]/60 text-[#00E5FF] hover:text-[#00E5FF]/80 text-xs rounded transition-all duration-300 cursor-pointer font-mono uppercase tracking-wider text-center no-underline"
                   >
                     ← Return to Orbit
                   </Link>
@@ -747,13 +748,13 @@ function DashboardContent() {
             fontSize: '10px',
             fontWeight: 300,
             letterSpacing: '0.3em',
-            color: 'rgba(0, 245, 176, 0.5)',
+            color: 'rgba(0, 229, 255, 0.5)',
             textTransform: 'uppercase',
             padding: '8px 16px',
             transition: 'color 0.3s ease',
           }}
-          onMouseEnter={e => (e.currentTarget.style.color = '#00F5B0')}
-          onMouseLeave={e => (e.currentTarget.style.color = 'rgba(0, 245, 176, 0.5)')}
+          onMouseEnter={e => (e.currentTarget.style.color = '#00E5FF')}
+          onMouseLeave={e => (e.currentTarget.style.color = 'rgba(0, 229, 255, 0.5)')}
         >
           esc · reset focus
         </button>
@@ -780,7 +781,7 @@ function DashboardContent() {
             >
               <div 
                 onClick={(e) => e.stopPropagation()}
-                style={{ maxWidth: '500px', background: 'rgba(4, 11, 18, 0.96)', border: '1px solid rgba(0, 245, 176, 0.3)', boxShadow: '0 0 40px rgba(0, 245, 176, 0.25)' }}
+                style={{ maxWidth: '500px', background: 'rgba(10, 20, 35, 0.75)', border: '1px solid rgba(0, 229, 255, 0.3)', boxShadow: '0 0 40px rgba(0, 229, 255, 0.25)' }}
                 className="card-tier-1 w-full max-h-[85vh] overflow-y-auto flex flex-col gap-4 p-6 relative rounded-lg animate-fade-up custom-scrollbar"
               >
                 <button
@@ -790,10 +791,10 @@ function DashboardContent() {
                   [✕]
                 </button>
                 <div>
-                  <span className="text-[10px] font-mono text-[#00F5B0] uppercase tracking-widest font-semibold">{card.category}</span>
+                  <span className="text-[10px] font-mono text-[#00E5FF] uppercase tracking-widest font-semibold">{card.category}</span>
                   <h2 className="text-xl font-light text-white m-0 mt-0.5 tracking-wide">{card.title}</h2>
                 </div>
-                <div className="border border-[#00F5B0]/20 bg-black/40 rounded p-3">
+                <div className="border border-[#00E5FF]/20 bg-black/40 rounded p-3">
                   <table className="w-full text-xs text-left font-mono">
                     <tbody>
                       {Object.entries(card.stats).map(([k, v]) => (
@@ -811,7 +812,7 @@ function DashboardContent() {
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <span className="text-[10px] text-[#7A8694] uppercase tracking-wider font-mono">Foresight Projections</span>
-                  <p className="text-xs text-[#00F5B0]/95 leading-relaxed font-light m-0">{card.forecast}</p>
+                  <p className="text-xs text-[#00E5FF]/95 leading-relaxed font-light m-0">{card.forecast}</p>
                 </div>
                 <div className="grid grid-cols-2 gap-4 border-t border-white/5 pt-3">
                   <div className="flex flex-col gap-1.5">
@@ -826,11 +827,11 @@ function DashboardContent() {
                     </ul>
                   </div>
                   <div className="flex flex-col gap-1.5">
-                    <span className="text-[10px] text-[#00F5B0] uppercase tracking-wider font-mono">Strategic Opportunities</span>
+                    <span className="text-[10px] text-[#00E5FF] uppercase tracking-wider font-mono">Strategic Opportunities</span>
                     <ul className="list-none p-0 m-0 flex flex-col gap-1 text-[11px] text-white/70 font-light">
                       {card.opportunities.map((opp, idx) => (
                         <li key={idx} className="flex gap-1.5 items-start leading-relaxed text-left">
-                          <span className="text-[#00F5B0] select-none">•</span>
+                          <span className="text-[#00E5FF] select-none">•</span>
                           <span>{opp}</span>
                         </li>
                       ))}
@@ -845,14 +846,15 @@ function DashboardContent() {
           );
         })()
       )}
-    </main>
+      </main>
+    </>
   );
 }
 
 export default function DashboardPage() {
   return (
     <Suspense fallback={
-      <div className="h-screen w-screen bg-[#02060A] flex items-center justify-center font-mono text-[#00F5B0] text-xs">
+      <div className="h-screen w-screen bg-[#02060B] flex items-center justify-center font-mono text-[#00E5FF] text-xs">
         CONNECTING TO ORBITAL ANALYTICS...
       </div>
     }>
@@ -860,3 +862,4 @@ export default function DashboardPage() {
     </Suspense>
   );
 }
+

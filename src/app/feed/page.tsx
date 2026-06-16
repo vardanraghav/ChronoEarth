@@ -33,14 +33,14 @@ export default function FeedPage() {
 
   const getCategoryStyle = (category: string) => {
     const cat = category.toLowerCase();
-    if (cat.includes('ai')) return { color: '#00F5D4', shadow: 'rgba(0, 245, 212, 0.18)', bg: 'rgba(0, 245, 212, 0.04)', border: 'rgba(0, 245, 212, 0.25)' };
+    if (cat.includes('ai')) return { color: '#00E5FF', shadow: 'rgba(0, 245, 212, 0.18)', bg: 'rgba(0, 245, 212, 0.04)', border: 'rgba(0, 245, 212, 0.25)' };
     if (cat.includes('climate')) return { color: '#FF0055', shadow: 'rgba(255, 0, 85, 0.18)', bg: 'rgba(255, 0, 85, 0.04)', border: 'rgba(255, 0, 85, 0.25)' };
-    if (cat.includes('energy')) return { color: '#00F5B0', shadow: 'rgba(0, 245, 176, 0.18)', bg: 'rgba(0, 245, 176, 0.04)', border: 'rgba(0, 245, 176, 0.25)' };
+    if (cat.includes('energy')) return { color: '#00E5FF', shadow: 'rgba(0, 229, 255, 0.18)', bg: 'rgba(0, 229, 255, 0.04)', border: 'rgba(0, 229, 255, 0.25)' };
     if (cat.includes('space')) return { color: '#BF5AF2', shadow: 'rgba(191, 90, 242, 0.18)', bg: 'rgba(191, 90, 242, 0.04)', border: 'rgba(191, 90, 242, 0.25)' };
     if (cat.includes('cities')) return { color: '#0A84FF', shadow: 'rgba(10, 132, 255, 0.18)', bg: 'rgba(10, 132, 255, 0.04)', border: 'rgba(10, 132, 255, 0.25)' };
     if (cat.includes('transport')) return { color: '#CCFF00', shadow: 'rgba(204, 255, 0, 0.18)', bg: 'rgba(204, 255, 0, 0.04)', border: 'rgba(204, 255, 0, 0.25)' };
     if (cat.includes('healthcare')) return { color: '#00E5FF', shadow: 'rgba(0, 229, 255, 0.18)', bg: 'rgba(0, 229, 255, 0.04)', border: 'rgba(0, 229, 255, 0.25)' };
-    return { color: '#00F5B0', shadow: 'rgba(0, 245, 176, 0.18)', bg: 'rgba(0, 245, 176, 0.04)', border: 'rgba(0, 245, 176, 0.25)' };
+    return { color: '#00E5FF', shadow: 'rgba(0, 229, 255, 0.18)', bg: 'rgba(0, 229, 255, 0.04)', border: 'rgba(0, 229, 255, 0.25)' };
   };
 
   // Filter and sort predictions
@@ -63,7 +63,7 @@ export default function FeedPage() {
   }, [selectedCategory]);
 
   return (
-    <main className="h-screen w-screen overflow-y-auto bg-[#02060A] text-[#e2e8f0] relative custom-scrollbar">
+    <main className="h-screen w-screen overflow-y-auto bg-[#02060B] text-[#e2e8f0] relative custom-scrollbar">
       <BackgroundEffects earthMode="cyber" />
       <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-[rgba(2,6,10,0.95)] to-transparent pointer-events-none z-10" />
       <Navbar />
@@ -71,11 +71,11 @@ export default function FeedPage() {
       <div className="content-container pt-32 pb-24 relative z-20 flex flex-col gap-8 animate-fade-up">
         {/* Page Header */}
         <div className="flex flex-col gap-3 border-b border-white/5 pb-6">
-          <span className="text-[10px] font-mono text-[#00F5B0] uppercase tracking-[0.25em] font-semibold">
+          <span className="text-[10px] font-mono text-[#00E5FF] uppercase tracking-[0.25em] font-semibold">
             System Stream
           </span>
           <h1 className="editorial-title text-white tracking-tight m-0 text-3xl font-light">
-            Future Intelligence <span style={{ color: '#00F5B0' }} className="font-normal">Feed</span>
+            Future Intelligence <span style={{ color: '#00E5FF' }} className="font-normal">Feed</span>
           </h1>
           <p className="text-[#7A8694] font-light text-sm max-w-2xl leading-relaxed m-0">
             Real-time tracking of critical technological, geopolitical, and ecological milestones. Projections are updated via planetary simulation algorithms.
@@ -128,7 +128,7 @@ export default function FeedPage() {
                   key={p.id}
                   className="group premium-glass p-6 rounded-lg flex flex-col justify-between min-h-[300px] border border-white/5 hover:translate-y-[-4px] transition-all duration-300"
                   style={{
-                    backgroundColor: 'rgba(4, 11, 18, 0.75)',
+                    backgroundColor: 'rgba(10, 20, 35, 0.55)',
                     '--glow-color': style.color
                   } as any}
                 >
@@ -217,9 +217,9 @@ export default function FeedPage() {
             <button
               onClick={handleLoadMore}
               disabled={loadingMore}
-              className="px-6 py-2.5 border border-[#00F5B0]/30 hover:border-[#00F5B0] text-[#00F5B0] font-mono text-xs rounded transition-all duration-300 bg-transparent cursor-pointer tracking-wider uppercase font-semibold disabled:opacity-50"
+              className="px-6 py-2.5 border border-[#00E5FF]/30 hover:border-[#00E5FF] text-[#00E5FF] font-mono text-xs rounded transition-all duration-300 bg-transparent cursor-pointer tracking-wider uppercase font-semibold disabled:opacity-50"
               style={{
-                boxShadow: '0 0 10px rgba(0, 245, 176, 0.05)',
+                boxShadow: '0 0 10px rgba(0, 229, 255, 0.05)',
               }}
             >
               {loadingMore ? 'Decrypting Additional Streams...' : 'Load More Forecasts ↓'}
@@ -230,10 +230,11 @@ export default function FeedPage() {
 
       <style jsx global>{`
         .group:hover {
-          border-color: var(--glow-color, rgba(0, 245, 176, 0.3)) !important;
-          box-shadow: 0 0 20px var(--glow-color, rgba(0, 245, 176, 0.1)) !important;
+          border-color: var(--glow-color, rgba(0, 229, 255, 0.3)) !important;
+          box-shadow: 0 0 20px var(--glow-color, rgba(0, 229, 255, 0.1)) !important;
         }
       `}</style>
     </main>
   );
 }
+

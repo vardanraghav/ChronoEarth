@@ -5,13 +5,13 @@ import Navbar from '@/components/Navbar';
 import BackgroundEffects from '@/components/BackgroundEffects';
 
 const C = {
-  bg: '#02060A',
+  bg: '#02060B',
   panel: '#040B12',
-  primary: '#00F5B0',
-  secondary: '#00D98F',
+  primary: '#00E5FF',
+  secondary: '#6FEAFF',
   accent: '#FFFFFF',
   white: '#F5F7FA',
-  border: 'rgba(0, 245, 176, 0.15)',
+  border: 'rgba(0, 229, 255, 0.15)',
 };
 
 interface FeedbackItem {
@@ -122,7 +122,7 @@ export default function FeedbackPage() {
   const sortedFeatures = [...PRESEEDED_FEATURES].sort((a, b) => getFeatureVotes(b) - getFeatureVotes(a));
 
   const panelStyle: React.CSSProperties = {
-    background: 'rgba(2, 8, 15, 0.75)',
+    background: 'rgba(10, 20, 35, 0.55)',
     backdropFilter: 'blur(24px)',
     border: '1px solid rgba(255, 255, 255, 0.05)',
     borderRadius: '4px',
@@ -134,7 +134,7 @@ export default function FeedbackPage() {
   const cornerAccent = null;
 
   return (
-    <main className="h-screen w-screen overflow-y-auto bg-[#02060A] text-[#e2e8f0] relative custom-scrollbar">
+    <main className="h-screen w-screen overflow-y-auto bg-[#02060B] text-[#e2e8f0] relative custom-scrollbar">
       <BackgroundEffects earthMode="cyber" />
       <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-[rgba(2, 8, 15, 0.9)] to-transparent pointer-events-none z-10" />
 
@@ -143,7 +143,7 @@ export default function FeedbackPage() {
       <div className="content-container pt-32 pb-20 relative z-20 flex flex-col gap-10 animate-fade-up">
         
         {/* Page Header */}
-        <div className="flex flex-col gap-3 border-b border-[#00F5B0]/15 pb-6">
+        <div className="flex flex-col gap-3 border-b border-[#00E5FF]/15 pb-6">
           <h1 className="editorial-title text-white">
             Feedback & Intelligence Portal
           </h1>
@@ -159,7 +159,7 @@ export default function FeedbackPage() {
           <div className="lg:col-span-1 flex flex-col gap-6">
             <div className="card-tier-3 flex flex-col gap-5">
               
-              <div className="flex items-center gap-3 border-b border-[#00F5B0]/15 pb-3">
+              <div className="flex items-center gap-3 border-b border-[#00E5FF]/15 pb-3">
                 <span className="text-xs text-white">Submit transmission</span>
               </div>
 
@@ -169,7 +169,7 @@ export default function FeedbackPage() {
                   <select
                     value={category}
                     onChange={e => setCategory(e.target.value as any)}
-                    className="bg-[#03050a] border-b border-[#00F5B0]/15 py-2 text-xs text-white outline-none focus:border-[#00F5B0] transition-colors"
+                    className="bg-[#040B12] border-b border-[#00E5FF]/15 py-2 text-xs text-white outline-none focus:border-[#00E5FF] transition-colors"
                   >
                     <option value="General Feedback">General Feedback</option>
                     <option value="Bug Report">Bug Report</option>
@@ -186,7 +186,7 @@ export default function FeedbackPage() {
                     value={author}
                     onChange={e => setAuthor(e.target.value)}
                     placeholder="E.g., User_Node_412"
-                    className="bg-transparent border-b border-[#00F5B0]/15 py-2 text-xs text-white outline-none focus:border-[#00F5B0] transition-colors"
+                    className="bg-transparent border-b border-[#00E5FF]/15 py-2 text-xs text-white outline-none focus:border-[#00E5FF] transition-colors"
                     required
                   />
                 </div>
@@ -198,7 +198,7 @@ export default function FeedbackPage() {
                     value={title}
                     onChange={e => setTitle(e.target.value)}
                     placeholder="Brief description..."
-                    className="bg-transparent border-b border-[#00F5B0]/15 py-2 text-xs text-white outline-none focus:border-[#00F5B0] transition-colors"
+                    className="bg-transparent border-b border-[#00E5FF]/15 py-2 text-xs text-white outline-none focus:border-[#00E5FF] transition-colors"
                     required
                   />
                 </div>
@@ -209,14 +209,14 @@ export default function FeedbackPage() {
                     value={content}
                     onChange={e => setContent(e.target.value)}
                     placeholder="Enter analytical details..."
-                    className="bg-transparent border border-[#00F5B0]/15 rounded p-3 text-xs text-[#7A8694] outline-none focus:border-[#00F5B0] transition-colors min-h-[120px] leading-relaxed"
+                    className="bg-transparent border border-[#00E5FF]/15 rounded p-3 text-xs text-[#7A8694] outline-none focus:border-[#00E5FF] transition-colors min-h-[120px] leading-relaxed"
                     required
                   />
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full py-2 border border-[#00F5B0]/20 hover:border-transparent hover:bg-[#00F5B0] hover:text-[#02060A] bg-transparent text-[#00F5B0] text-xs transition-all duration-300"
+                  className="w-full py-2 border border-[#00E5FF]/20 hover:border-transparent hover:bg-[#00E5FF] hover:text-[#02060A] bg-transparent text-[#00E5FF] text-xs transition-all duration-300"
                 >
                   Transmit feedback
                 </button>
@@ -229,7 +229,7 @@ export default function FeedbackPage() {
           <div className="lg:col-span-1 flex flex-col gap-6">
             <div className="card-tier-2 h-full flex flex-col gap-5">
 
-              <div className="flex items-center gap-3 border-b border-[#00F5B0]/15 pb-3">
+              <div className="flex items-center gap-3 border-b border-[#00E5FF]/15 pb-3">
                 <span className="text-xs text-white">Recent transmissions</span>
               </div>
 
@@ -240,7 +240,7 @@ export default function FeedbackPage() {
                     className="card-tier-3 flex flex-col gap-2"
                   >
                     <div className="flex justify-between items-center text-xs text-[#7A8694]">
-                      <span className="px-1.5 py-0.5 rounded border border-[#00F5B0]/15 text-[#00F5B0]">
+                      <span className="px-1.5 py-0.5 rounded border border-[#00E5FF]/15 text-[#00E5FF]">
                         {item.category}
                       </span>
                       <span>{new Date(item.timestamp).toLocaleDateString()}</span>
@@ -263,13 +263,13 @@ export default function FeedbackPage() {
             {/* Feature Votes - Tier 2 */}
             <div className="card-tier-2 flex flex-col gap-4">
 
-              <div className="flex items-center gap-3 border-b border-[#00F5B0]/15 pb-3">
+              <div className="flex items-center gap-3 border-b border-[#00E5FF]/15 pb-3">
                 <span className="text-xs text-white">Most requested features</span>
               </div>
 
               <div className="flex flex-col gap-4">
                 {sortedFeatures.map(feat => (
-                  <div key={feat.id} className="flex gap-3 justify-between items-start border-b border-[#00F5B0]/15 pb-3 last:border-b-0 last:pb-0">
+                  <div key={feat.id} className="flex gap-3 justify-between items-start border-b border-[#00E5FF]/15 pb-3 last:border-b-0 last:pb-0">
                     <div className="flex-1 flex flex-col gap-1">
                       <h4 className="text-xs font-light text-white">{feat.title}</h4>
                       <p className="text-xs text-[#7A8694] leading-normal">{feat.desc}</p>
@@ -277,7 +277,7 @@ export default function FeedbackPage() {
                     
                     <button
                       onClick={() => handleVoteFeature(feat.id)}
-                      className="px-2 py-1.5 border border-[#00F5B0]/15 hover:border-transparent hover:bg-[#00F5B0] hover:text-[#02060A] rounded text-xs text-[#00F5B0] bg-transparent font-mono transition-colors flex flex-col items-center justify-center w-12"
+                      className="px-2 py-1.5 border border-[#00E5FF]/15 hover:border-transparent hover:bg-[#00E5FF] hover:text-[#02060A] rounded text-xs text-[#00E5FF] bg-transparent font-mono transition-colors flex flex-col items-center justify-center w-12"
                     >
                       <span>▲</span>
                       <span>{getFeatureVotes(feat)}</span>
@@ -290,7 +290,7 @@ export default function FeedbackPage() {
             {/* Contributor Rankings - Tier 2 */}
             <div className="card-tier-2 flex flex-col gap-4">
 
-              <div className="flex items-center gap-3 border-b border-[#00F5B0]/15 pb-3">
+              <div className="flex items-center gap-3 border-b border-[#00E5FF]/15 pb-3">
                 <span className="text-xs text-white">Top forecast contributors</span>
               </div>
 
@@ -303,9 +303,9 @@ export default function FeedbackPage() {
                   { name: 'User_Aura_Monitor', role: 'Community Node', shards: 64 },
                   { name: 'Operator_Nexus', role: 'System Sync', shards: 49 },
                 ].map((item, idx) => (
-                  <div key={item.name} className="flex justify-between items-center border-b border-[#00F5B0]/15 pb-2 last:border-0 last:pb-0">
+                  <div key={item.name} className="flex justify-between items-center border-b border-[#00E5FF]/15 pb-2 last:border-0 last:pb-0">
                     <div className="flex gap-2">
-                      <span className="text-[#00F5B0]/40 font-mono w-3">{idx + 1}.</span>
+                      <span className="text-[#00E5FF]/40 font-mono w-3">{idx + 1}.</span>
                       <div>
                         <span className="text-white block">{item.name}</span>
                         <span className="text-[#7A8694] text-xs">{item.role}</span>
@@ -325,3 +325,4 @@ export default function FeedbackPage() {
     </main>
   );
 }
+
