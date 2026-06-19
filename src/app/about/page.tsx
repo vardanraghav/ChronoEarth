@@ -48,7 +48,10 @@ export default function AboutPage() {
               <span className="w-1.5 h-1.5 rounded-full bg-[#00E5FF] animate-pulse" />
             </div>
             <button
-              onClick={() => window.dispatchEvent(new CustomEvent('start-chronoearth-tour'))}
+              onClick={() => {
+                localStorage.removeItem('chronoearth-tour-completed');
+                window.dispatchEvent(new CustomEvent('start-chronoearth-tour'));
+              }}
               className="premium-glass px-4 py-1.5 rounded text-[10px] font-mono tracking-wider border border-[#00E5FF]/20 hover:border-[#00E5FF] hover:text-[#00E5FF] hover:shadow-[0_0_12px_rgba(0,229,255,0.25)] transition-all cursor-pointer uppercase font-semibold"
             >
               🔄 Restart Tour

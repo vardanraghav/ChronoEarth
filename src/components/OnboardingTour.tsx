@@ -67,13 +67,14 @@ export default function OnboardingTour() {
 
   // Check if first-time visitor
   useEffect(() => {
-    const completed = localStorage.getItem('chronoearth_tour_completed');
-    if (!completed) {
+    const completed = localStorage.getItem('chronoearth-tour-completed');
+    if (completed !== 'true') {
       setIsActive(true);
     }
 
     // Listen to manual restart events
     const handleRestart = () => {
+      localStorage.removeItem('chronoearth-tour-completed');
       setCurrentStep(0);
       setIsActive(true);
     };
@@ -163,7 +164,7 @@ export default function OnboardingTour() {
   };
 
   const completeTour = () => {
-    localStorage.setItem('chronoearth_tour_completed', 'true');
+    localStorage.setItem('chronoearth-tour-completed', 'true');
     setIsActive(false);
   };
 
