@@ -115,7 +115,12 @@ export default function SemiconductorBloombergTerminal() {
   };
 
   const processedSignals = (semiData?.marketPulse || []).map((sig: any, idx) => {
-    const headlineLower = sig.headline.toLowerCase();
+    const headline = sig?.headline || sig?.title || sig?.message || '';
+    const category = sig?.category || 'General';
+    const trend = sig?.trend || 'stable';
+    const severity = sig?.severity || 'low';
+    
+    const headlineLower = headline.toLowerCase();
     let company = 'Semiconductor';
     const companies = ['NVIDIA', 'AMD', 'Intel', 'TSMC', 'Samsung', 'ASML', 'Micron', 'Qualcomm', 'Broadcom'];
     for (const comp of companies) {
@@ -125,25 +130,29 @@ export default function SemiconductorBloombergTerminal() {
       }
     }
 
-    const score = calculateScore(sig.headline, sig.category, sig.trend, sig.severity);
+    const score = calculateScore(headline, category, trend, severity);
     
     // Dynamic Strategic Impact rating based on importance & severity details
     let strategicImpact = 'Moderate manufacturing adjustments.';
     if (score >= 82) {
       strategicImpact = 'High-priority reallocation of supply node limits.';
-    } else if (sig.trend === 'up') {
+    } else if (trend === 'up') {
       strategicImpact = 'Enhanced technology capability yield output.';
-    } else if (sig.trend === 'down') {
+    } else if (trend === 'down') {
       strategicImpact = 'Logistical disruptions targeting fab operations.';
     }
 
     // Resolve priority mapping: 1. API image -> 2. Company image mapping -> 3. Topic image mapping -> 4. Category image mapping
-    const apiImage = sig.image_url || sig.image; 
-    const resolvedImage = getCompanyImage(company, sig.category + ' ' + sig.headline, apiImage);
+    const apiImage = sig?.image_url || sig?.image; 
+    const resolvedImage = getCompanyImage(company, category + ' ' + headline, apiImage);
 
     return {
       ...sig,
       id: `sig-${idx}`,
+      headline,
+      category,
+      trend,
+      severity,
       company,
       importanceScore: score,
       strategicImpact,
@@ -190,7 +199,7 @@ export default function SemiconductorBloombergTerminal() {
             </div>
             <span className="text-[10px] text-white/50">Source: Silicon Analysts API</span>
             <span className="text-[9px] text-[#7A8694]">
-              Feed Synchronized: {semiData?.lastUpdated ? new Date(semiData.lastUpdated).toLocaleTimeString() : new Date().toLocaleTimeString()}
+              Feed Synchronized: {semiData?.lastUpdated ? new Date(semiData.lastUpdated).toLocaleTimeString() : 'Pending Sync'}
             </span>
           </div>
         </div>

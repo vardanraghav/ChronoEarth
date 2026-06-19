@@ -1348,7 +1348,7 @@ function DashboardContent() {
 
                       {/* Last updated and packaging trend info */}
                       <div className="flex justify-between items-center text-[8px] font-mono text-white/30 border-t border-white/5 pt-2">
-                        <span>Last Updated: {semiData?.lastUpdated ? new Date(semiData.lastUpdated).toLocaleTimeString() : new Date().toLocaleTimeString()}</span>
+                        <span>Last Updated: {semiData?.lastUpdated ? new Date(semiData.lastUpdated).toLocaleTimeString() : 'Pending Sync'}</span>
                         <span className="text-[#00F5B0] uppercase">Live Feeds Active</span>
                       </div>
                     </div>

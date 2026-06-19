@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
 import Navbar from '@/components/Navbar';
 import BackgroundEffects from '@/components/BackgroundEffects';
 import { useSpaceEvents } from '@/hooks/useSpaceEvents';
@@ -70,13 +69,13 @@ export default function SpaceDashboard() {
                   </div>
                   {epicEvent.image_url && (
                     <div className="relative h-96 w-full overflow-hidden bg-black/40">
-                      <Image
+                      {/* Using <img> instead of next/image to avoid domain allowlist issues with epic.gsfc.nasa.gov in production */}
+                      <img
                         src={epicEvent.image_url}
                         alt="EPIC Earth"
-                        fill
-                        sizes="(max-width: 768px) 100vw, 768px"
-                        className="object-cover opacity-80 group-hover:scale-105 transition-transform duration-700"
+                        className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-700"
                         loading="lazy"
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-[#02060A] via-transparent to-black/30" />
                     </div>
@@ -97,13 +96,13 @@ export default function SpaceDashboard() {
                   </div>
                   {apodEvent.image_url && (
                     <div className="relative h-80 w-full overflow-hidden bg-black/30">
-                      <Image
+                      {/* Using <img> instead of next/image to avoid domain allowlist issues with api.nasa.gov/apod in production */}
+                      <img
                         src={apodEvent.image_url}
                         alt={apodEvent.title}
-                        fill
-                        sizes="(max-width: 768px) 100vw, 768px"
-                        className="object-cover opacity-75"
+                        className="absolute inset-0 w-full h-full object-cover opacity-75"
                         loading="lazy"
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-[#02060A] to-transparent" />
                     </div>

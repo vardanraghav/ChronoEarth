@@ -246,7 +246,7 @@ export function HomeContent() {
                     >
                       <div className="flex justify-between items-center text-[9px] font-mono text-[#BF5AF2]">
                         <span>🚀 ORBITAL EVENT SPEC</span>
-                        <span>{new Date(latestSpaceEvent.event_date).toLocaleDateString()}</span>
+                        <span>{latestSpaceEvent.event_date?.split('T')[0] || ''}</span>
                       </div>
                       <h4 className="text-xs font-bold text-white group-hover:text-[#BF5AF2] transition-colors truncate m-0 font-mono">
                         {latestSpaceEvent.title}
