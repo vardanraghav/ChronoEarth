@@ -160,8 +160,10 @@ export default function FutureChatCore() {
 
   // ── Load last 50 chat messages from Supabase on auth change ──────────────
   const loadChatHistory = useCallback(async (uid: string) => {
+    console.log('[FutureChat Debug] Load requested. Target UID:', uid);
     setHistoryLoading(true);
     try {
+      console.log('[FutureChat Debug] Querying database for user_id =', uid);
       const { data, error } = await supabase
         .from('futurechat_conversations')
         .select('id, role, content, created_at')
@@ -170,30 +172,40 @@ export default function FutureChatCore() {
         .limit(50);
 
       if (error) {
-        console.error('Failed to load chat history:', error.message);
+        console.error('[FutureChat Debug] Supabase SELECT query error:', error.message);
         return;
       }
 
+      console.log('[FutureChat Debug] Loaded raw conversation records:', data ? data.length : 0);
       if (data && data.length > 0) {
-        setMessages(data.map((item: any) => ({
+        const parsed = data.map((item: any) => ({
           id: item.id,
           text: item.content,
           isAi: item.role === 'assistant',
-        })));
+        }));
+        console.log('[FutureChat Debug] Mapped messages for UI rendering pipeline:', parsed.length);
+        setMessages(parsed);
+      } else {
+        console.log('[FutureChat Debug] No previous conversation found in database for user:', uid);
+        setMessages([]);
       }
     } catch (err) {
-      console.error('Exception loading chat history:', err);
+      console.error('[FutureChat Debug] Exception occurred loading chat history:', err);
     } finally {
       setHistoryLoading(false);
     }
   }, []);
 
   useEffect(() => {
+    console.log('[FutureChat Debug] Auth state trigger. Active user object:', user);
     if (!user) {
+      console.log('[FutureChat Debug] User not loaded or logged out. Purging local UI messages.');
       setMessages([]);
       return;
     }
-    loadChatHistory(user.uid ?? user.id);
+    const resolvedUid = user.uid ?? user.id;
+    console.log('[FutureChat Debug] Auth state resolved. User UID:', resolvedUid, 'Email:', user.email);
+    loadChatHistory(resolvedUid);
   }, [user, loadChatHistory]);
 
   // ── Scroll helpers ───────────────────────────────────────────────────────
@@ -230,11 +242,16 @@ export default function FutureChatCore() {
 
   // ── Persist a single message row ─────────────────────────────────────────
   const persistMessage = (uid: string, role: 'user' | 'assistant', content: string) => {
+    console.log(`[FutureChat Debug] Storing ${role} message. UID: ${uid}, Session: ${sessionId}`);
     supabase
       .from('futurechat_conversations')
       .insert({ user_id: uid, session_id: sessionId, role, content })
       .then(({ error }: { error: any }) => {
-        if (error) console.error(`Failed to persist ${role} message:`, error.message);
+        if (error) {
+          console.error(`[FutureChat Debug] Database write failed for ${role} message:`, error.message);
+        } else {
+          console.log(`[FutureChat Debug] Database write success for ${role} message.`);
+        }
       });
   };
 

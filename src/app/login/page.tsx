@@ -64,7 +64,14 @@ function LoginForm() {
         console.log('[ChronoEarth Auth] Email login failed:', result.error.code);
         setMessage({ text: `Decryption Failed: ${errorMsg}`, type: 'error' });
       } else {
-        console.log('[ChronoEarth Auth] Email login SUCCESS — navigating to', redirect);
+        console.log('[ChronoEarth Auth] Email login SUCCESS — setting cookies immediately.');
+        // Set cookies immediately before navigation to prevent race condition with middleware
+        const isSelfAdmin = email === 'admin@chronoearth.ai';
+        const initialRole = isSelfAdmin ? 'admin' : 'user';
+        document.cookie = `fb-access-token=authenticated; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax; Secure`;
+        document.cookie = `fb-user-role=${initialRole}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax; Secure`;
+
+        console.log('[ChronoEarth Auth] Navigating to', redirect);
         setMessage({ text: 'Access Granted. Redirecting to system coordinates...', type: 'success' });
         setAwaitingRedirect(true);
         // Immediate hard navigation — do not wait for auth state listener
@@ -87,7 +94,13 @@ function LoginForm() {
         console.log('[ChronoEarth Auth] Google login failed:', result.error.message);
         setMessage({ text: `Google Auth Error: ${result.error.message}`, type: 'error' });
       } else {
-        console.log('[ChronoEarth Auth] Google login SUCCESS — navigating to', redirect);
+        console.log('[ChronoEarth Auth] Google login SUCCESS — writing cookies immediately.');
+        // Write auth session cookies immediately to satisfy middleware redirection queries
+        document.cookie = `fb-access-token=authenticated; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax; Secure`;
+        // Safe default role setup for fresh Google Logins (Firestore/Supabase triggers will adjust if admin)
+        document.cookie = `fb-user-role=user; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax; Secure`;
+
+        console.log('[ChronoEarth Auth] Navigating to', redirect);
         setMessage({ text: 'Authorization Handshake Complete. Redirecting...', type: 'success' });
         setAwaitingRedirect(true);
         // Immediate hard navigation

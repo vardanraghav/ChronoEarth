@@ -117,15 +117,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(normUser);
           setRole(userRole);
 
-          // 3. Set cookies for middleware
+          // 3. Set cookies for middleware synchronously before state resolves
+          console.log('[AuthContext] Writing auth cookies: authenticated token and role:', userRole);
           document.cookie = `fb-access-token=authenticated; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax; Secure`;
           document.cookie = `fb-user-role=${userRole}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax; Secure`;
 
         } catch (err) {
-          console.error('Auth state change resolution error:', err);
+          console.error('[AuthContext] Auth state change resolution error:', err);
           clearState();
         }
       } else {
+        console.log('[AuthContext] No authenticated user detected, purging state and cookies.');
         clearState();
       }
       setLoading(false);

@@ -56,7 +56,14 @@ export default function SignupPage() {
         console.log('[ChronoEarth Auth] Signup failed:', result.error.code);
         setMessage({ text: `Registration Failed: ${errorMsg}`, type: 'error' });
       } else {
-        console.log('[ChronoEarth Auth] Signup SUCCESS — navigating to /dashboard');
+        console.log('[ChronoEarth Auth] Signup SUCCESS — setting session cookies immediately.');
+        // Set session cookies immediately before redirect to prevent race condition
+        const isSelfAdmin = email === 'admin@chronoearth.ai';
+        const initialRole = isSelfAdmin ? 'admin' : 'user';
+        document.cookie = `fb-access-token=authenticated; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax; Secure`;
+        document.cookie = `fb-user-role=${initialRole}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax; Secure`;
+
+        console.log('[ChronoEarth Auth] Redirecting to /dashboard');
         setMessage({ text: 'Ledger Created. Activating profile node...', type: 'success' });
         setAwaitingRedirect(true);
         doRedirect('/dashboard');
@@ -77,6 +84,11 @@ export default function SignupPage() {
         console.log('[ChronoEarth Auth] Google login failed:', result.error.message);
         setMessage({ text: `Google Auth Error: ${result.error.message}`, type: 'error' });
       } else {
+        console.log('[ChronoEarth Auth] Google login SUCCESS — writing cookies immediately.');
+        // Set session cookies immediately
+        document.cookie = `fb-access-token=authenticated; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax; Secure`;
+        document.cookie = `fb-user-role=user; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax; Secure`;
+
         console.log('[ChronoEarth Auth] Google login SUCCESS — navigating to /dashboard');
         setMessage({ text: 'Authorization Handshake Complete. Redirecting...', type: 'success' });
         setAwaitingRedirect(true);
