@@ -7,6 +7,16 @@ const nextConfig: NextConfig = {
     buildActivity: false,
   } as any,
 
+  // Enable all remote image patterns for Unsplash, NASA, Dicebear, etc.
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+    ],
+  },
+
   // ── Turbopack config (Next.js 16 dev default) ─────────────────────────
   // Empty config silences the "webpack config but no turbopack config" warning.
   turbopack: {},

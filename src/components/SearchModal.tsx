@@ -2,8 +2,10 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { citiesRawData } from '../data/citiesData';
-import { PREDICTIONS, KB_ARTICLES, FUTUROLOGISTS } from '../data/predictionsData';
+import { useCities } from '@/hooks/useCities';
+import { usePredictions } from '@/hooks/usePredictions';
+import { useKnowledgeBase } from '@/hooks/useKnowledgeBase';
+import { useFuturologists } from '@/hooks/useFuturologists';
 import { CITIES_EXTENDED_DATA, getCitySlug } from '../data/citiesExtendedData';
 
 interface SearchModalProps {
@@ -12,25 +14,54 @@ interface SearchModalProps {
   setActiveCity?: (city: any) => void;
 }
 
+interface SearchResult {
+  id: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  category: 'City' | 'Prediction' | 'Knowledge' | 'Futurologist' | 'Climate Record' | 'Market Signal';
+  route: string;
+  score: number;
+}
+
 export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchModalProps) {
+  const { cities } = useCities();
+  const { predictions } = usePredictions();
+  const { kbArticles } = useKnowledgeBase();
+  const { futurologists } = useFuturologists();
   const [searchQuery, setSearchQuery] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [activeIndex, setActiveIndex] = useState<number>(-1);
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Load recent searches on mount
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
+    try {
+      const saved = localStorage.getItem('chrono_recent_searches');
+      if (saved) {
+        setRecentSearches(JSON.parse(saved));
+      }
+    } catch (e) {}
+  }, []);
+
+  const addToRecentSearches = (query: string) => {
+    if (!query.trim()) return;
+    const next = [query, ...recentSearches.filter(q => q !== query)].slice(0, 5);
+    setRecentSearches(next);
+    try {
+      localStorage.setItem('chrono_recent_searches', JSON.stringify(next));
+    } catch (e) {}
+  };
+
+  useEffect(() => {
     if (isOpen) {
-      window.addEventListener('keydown', handleKeyDown);
-      // Auto-focus input on mount
       setTimeout(() => inputRef.current?.focus(), 100);
     }
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
-  // Simulate a quick cognitive query analysis when user types
+  // Simulate cognitive query analysis
   useEffect(() => {
     if (searchQuery) {
       setIsAnalyzing(true);
@@ -41,64 +72,220 @@ export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchMo
     }
   }, [searchQuery]);
 
-  if (!isOpen) return null;
-
   const q = searchQuery.toLowerCase().trim();
+  const results: SearchResult[] = [];
 
-  // Search Match Categories
-  const cityMatches = q ? citiesRawData.filter(c => c.name.toLowerCase().includes(q) || c.country.toLowerCase().includes(q)) : [];
-  const techMatches = q ? KB_ARTICLES.filter(t => t.title.toLowerCase().includes(q) || t.shortDesc.toLowerCase().includes(q)) : [];
-  const predMatches = q ? PREDICTIONS.filter(p => p.title.toLowerCase().includes(q) || p.description.toLowerCase().includes(q)) : [];
-
-  // Match Futurologists & City Architects
-  const futurologistMatches = q ? FUTUROLOGISTS.filter(f => f.name.toLowerCase().includes(q) || f.specialization.toLowerCase().includes(q) || f.role.toLowerCase().includes(q)) : [];
-  
-  const architectMatches: { name: string; role: string; citySlug: string; cityName: string }[] = [];
   if (q) {
-    Object.entries(CITIES_EXTENDED_DATA).forEach(([citySlug, data]) => {
-      data.notablePeople.forEach(p => {
-        if (p.name.toLowerCase().includes(q) || p.role.toLowerCase().includes(q) || p.specialty?.toLowerCase().includes(q) || (p as any).specialization?.toLowerCase().includes(q)) {
-          const cityName = citiesRawData.find(c => getCitySlug(c.name) === citySlug)?.name || citySlug;
-          architectMatches.push({ name: p.name, role: p.role, citySlug, cityName });
-        }
-      });
-    });
-  }
-
-  // Match Famous Places & Future Projects
-  const projectMatches: { name: string; desc: string; type: 'Landmark' | 'Project'; citySlug: string; cityName: string }[] = [];
-  if (q) {
-    Object.entries(CITIES_EXTENDED_DATA).forEach(([citySlug, data]) => {
-      const cityName = citiesRawData.find(c => getCitySlug(c.name) === citySlug)?.name || citySlug;
+    // 1. Cities
+    cities.forEach(c => {
+      let score = 0;
+      const nameLower = c.name.toLowerCase();
+      const countryLower = c.country.toLowerCase();
       
-      data.famousPlaces.forEach(p => {
-        if (p.name.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q)) {
-          projectMatches.push({ name: p.name, desc: p.desc, type: 'Landmark', citySlug, cityName });
-        }
-      });
-      data.futureProjects.forEach(p => {
-        if (p.name.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q)) {
-          projectMatches.push({ name: p.name, desc: p.desc, type: 'Project', citySlug, cityName });
-        }
-      });
+      if (nameLower === q || countryLower === q) score += 98;
+      else if (nameLower.startsWith(q) || countryLower.startsWith(q)) score += 85;
+      else if (nameLower.includes(q) || countryLower.includes(q)) score += 65;
+      
+      if (score > 0) {
+        const carryingCapacity = (c.offsets.population * 1000 * c.offsets.popGrowth).toFixed(1) + "M";
+        results.push({
+          id: `city-${c.name}`,
+          title: c.name,
+          subtitle: `${c.country} // carrying capacity: ${carryingCapacity}`,
+          description: `Metropolis node status. Carrying capacity: ${carryingCapacity}. Target year 2050 simulated data.`,
+          category: 'City',
+          route: `/city/${getCitySlug(c.name)}`,
+          score
+        });
+      }
+    });
+
+    // 2. Predictions
+    predictions.forEach(p => {
+      let score = 0;
+      const titleLower = p.title.toLowerCase();
+      const descLower = p.description.toLowerCase();
+      const tagsLower = p.tags.map(t => t.toLowerCase());
+      
+      if (titleLower === q) score += 100;
+      else if (titleLower.startsWith(q)) score += 90;
+      else if (titleLower.includes(q)) score += 70;
+      else if (descLower.includes(q)) score += 45;
+      else if (tagsLower.some(t => t.includes(q))) score += 60;
+      
+      if (score > 0) {
+        results.push({
+          id: `pred-${p.id}`,
+          title: p.title,
+          subtitle: `${p.category} // ${p.year} FORECAST // focus: ${p.city}`,
+          description: p.description,
+          category: 'Prediction',
+          route: `/predictions/${p.slug}`,
+          score
+        });
+      }
+    });
+
+    // 3. Knowledge Base / Codex Shards
+    kbArticles.forEach(t => {
+      let score = 0;
+      const titleLower = t.title.toLowerCase();
+      const descLower = t.shortDesc.toLowerCase();
+      const contentLower = t.content.toLowerCase();
+      
+      if (titleLower === q) score += 98;
+      else if (titleLower.startsWith(q)) score += 85;
+      else if (titleLower.includes(q)) score += 65;
+      else if (descLower.includes(q)) score += 50;
+      else if (contentLower.includes(q)) score += 35;
+      
+      if (score > 0) {
+        results.push({
+          id: `kb-${t.id}`,
+          title: t.title,
+          subtitle: `Foresight Codex // ${t.category.toUpperCase()}`,
+          description: t.shortDesc,
+          category: 'Knowledge',
+          route: `/knowledge?article=${t.id}`,
+          score
+        });
+      }
+    });
+
+    // 4. Futurologists
+    futurologists.forEach(f => {
+      let score = 0;
+      const nameLower = f.name.toLowerCase();
+      const bioLower = f.bio.toLowerCase();
+      const specLower = f.specialization.toLowerCase();
+      
+      if (nameLower === q) score += 95;
+      else if (nameLower.startsWith(q)) score += 80;
+      else if (nameLower.includes(q)) score += 60;
+      else if (bioLower.includes(q) || specLower.includes(q)) score += 45;
+      
+      if (score > 0) {
+        results.push({
+          id: `fut-${f.slug}`,
+          title: f.name,
+          subtitle: `${f.role} // focus: ${f.specialization}`,
+          description: f.bio,
+          category: 'Futurologist',
+          route: `/futurologists/${f.slug}`,
+          score
+        });
+      }
+    });
+
+    // 5. Climate Records
+    cities.forEach(c => {
+      let score = 0;
+      const nameLower = c.name.toLowerCase();
+      const countryLower = c.country.toLowerCase();
+      
+      if (nameLower.includes(q) || countryLower.includes(q)) score += 55;
+      else if ('climate records weather stress risk outlook 2050'.includes(q)) score += 35;
+      
+      if (score > 0) {
+        const heatRiskVal = Math.round(Math.min(99, c.offsets.tempRise * 65));
+        const waterStressVal = c.offsets.seaLevel > 0 ? Math.round(Math.min(99, c.offsets.seaLevel * 45 + 35)) : (c.name === 'New Delhi' || c.name === 'Cairo' || c.name === 'Nairobi' ? 88 : 42);
+        const carryingCapVal = (c.offsets.population * 1000 * c.offsets.popGrowth).toFixed(1) + "M";
+
+        results.push({
+          id: `climate-${c.name}`,
+          title: `${c.name} 2050 Climate Outlook`,
+          subtitle: `carrying capacity: ${carryingCapVal} // heat risk: ${heatRiskVal}% // water stress: ${waterStressVal}%`,
+          description: `Projected carrying capacity, heat stress index, water scarcity telemetry, and adaptation parameters for ${c.name} in 2050.`,
+          category: 'Climate Record',
+          route: `/city/${getCitySlug(c.name)}#climate`,
+          score
+        });
+      }
+    });
+
+    // 6. Market Signals / Stocks
+    const SEMI_COMPANIES = [
+      { name: 'NVIDIA', ticker: 'NVDA', desc: 'AI hardware accelerator grids, tensor processing units, and quantum simulators.' },
+      { name: 'AMD', ticker: 'AMD', desc: 'Enterprise high-performance computing, neural processors, and server matrices.' },
+      { name: 'Intel', ticker: 'INTC', desc: 'Planetary lithography node developments, sub-2nm fabrication corridors.' },
+      { name: 'TSMC', ticker: 'TSM', desc: 'Fabrication foundry hubs, extreme ultraviolet lithography wafer yields.' },
+      { name: 'ASML', ticker: 'ASML', desc: 'High-NA EUV lithography systems, process tool chains, and chip alliances.' },
+      { name: 'Qualcomm', ticker: 'QCOM', desc: 'System-on-chip network modems, mobile hardware, and edge computing architectures.' }
+    ];
+    
+    SEMI_COMPANIES.forEach(comp => {
+      let score = 0;
+      const nameLower = comp.name.toLowerCase();
+      const tickLower = comp.ticker.toLowerCase();
+      const descLower = comp.desc.toLowerCase();
+      
+      if (nameLower === q || tickLower === q) score += 95;
+      else if (nameLower.includes(q) || tickLower.includes(q)) score += 75;
+      else if (descLower.includes(q) || 'semiconductor hardware stocks chip'.includes(q)) score += 40;
+      
+      if (score > 0) {
+        results.push({
+          id: `market-${comp.ticker}`,
+          title: `${comp.name} (${comp.ticker})`,
+          subtitle: `Silicon Market Signal // Semiconductor Supply Chain`,
+          description: comp.desc,
+          category: 'Market Signal',
+          route: `/markets`,
+          score
+        });
+      }
     });
   }
 
-  const hasResults = 
-    cityMatches.length > 0 || 
-    techMatches.length > 0 || 
-    predMatches.length > 0 || 
-    futurologistMatches.length > 0 ||
-    architectMatches.length > 0 ||
-    projectMatches.length > 0;
+  results.sort((a, b) => b.score - a.score);
 
-  const totalResultsCount = 
-    cityMatches.length + 
-    techMatches.length + 
-    predMatches.length + 
-    futurologistMatches.length +
-    architectMatches.length +
-    projectMatches.length;
+  // Reset activeIndex when query or results change
+  useEffect(() => {
+    setActiveIndex(results.length > 0 ? 0 : -1);
+  }, [searchQuery, results.length]);
+
+  const handleSelectResult = (res: SearchResult) => {
+    addToRecentSearches(searchQuery);
+    onClose();
+    if (res.category === 'City' && setActiveCity) {
+      const cityObj = cities.find(c => c.name === res.title);
+      if (cityObj) setActiveCity(cityObj);
+    }
+    router.push(res.route);
+  };
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+        return;
+      }
+      
+      if (results.length > 0) {
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          setActiveIndex(prev => (prev + 1) % results.length);
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          setActiveIndex(prev => (prev - 1 + results.length) % results.length);
+        } else if (e.key === 'Enter') {
+          e.preventDefault();
+          if (activeIndex >= 0 && activeIndex < results.length) {
+            handleSelectResult(results[activeIndex]);
+          } else {
+            handleSelectResult(results[0]);
+          }
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [results, activeIndex]);
+
+  const totalResultsCount = results.length;
+  const hasResults = totalResultsCount > 0;
 
   const promptSuggestions = [
     { text: 'What happens if AGI arrives in 2040?', query: 'AGI' },
@@ -109,8 +296,11 @@ export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchMo
 
   const handlePromptClick = (queryVal: string) => {
     setSearchQuery(queryVal);
+    addToRecentSearches(queryVal);
     inputRef.current?.focus();
   };
+
+  if (!isOpen) return null;
 
   return (
     <div 
@@ -118,253 +308,177 @@ export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchMo
       onClick={onClose}
     >
       <div 
-        className="premium-glass w-full max-w-[660px] p-6 max-h-[85vh] flex flex-col gap-6 relative rounded-2xl animate-fade-up font-sans"
+        className="premium-glass w-full max-w-[660px] p-6 max-h-[85vh] flex flex-col gap-6 relative rounded-xl animate-fade-up font-mono"
         onClick={e => e.stopPropagation()}
         style={{
-          boxShadow: '0 24px 64px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.08), inset 0 0 20px rgba(111, 234, 255, 0.01)',
-          backgroundColor: 'rgba(10, 20, 35, 0.55)'
+          boxShadow: '0 24px 64px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(0, 245, 176, 0.15), inset 0 0 20px rgba(0, 245, 176, 0.02)',
+          backgroundColor: 'rgba(2, 6, 10, 0.92)'
         }}
       >
-        {/* Command Center Header */}
-        <div className="flex justify-between items-center border-b border-white/5 pb-3 text-[10px] text-[#8CA8B8]">
+        {/* Terminal Shell Header */}
+        <div className="flex justify-between items-center border-b border-[#00F5B0]/20 pb-3 text-[10px] text-[#7A8694]">
           <div className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#00E5FF] animate-pulse" />
-            <span className="text-[#EAF7FF] uppercase tracking-wider font-semibold">ChronoEarth Intelligence Hub</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-[#00F5B0] animate-pulse" />
+            <span className="text-[#00F5B0] uppercase tracking-wider font-semibold">CHRONO_OS v4.82 // COGNITIVE CORE</span>
           </div>
           <button 
             onClick={onClose} 
-            className="bg-transparent border-none text-[#8CA8B8] hover:text-white cursor-pointer tracking-wider transition-colors font-mono"
+            className="bg-transparent border-none text-[#7A8694] hover:text-white cursor-pointer tracking-wider transition-colors"
           >
             [ESC // CLOSE]
           </button>
         </div>
 
-        {/* AI command Search Bar */}
+        {/* AI prompt Search Bar */}
         <div className="flex flex-col gap-1.5">
-          <div className="relative flex items-center bg-black/45 border border-white/5 focus-within:border-[#00E5FF]/40 rounded-xl px-4 py-3 transition-all shadow-[inset_0_0_12px_rgba(0,0,0,0.4)] focus-within:shadow-[0_0_15px_rgba(0,229,255,0.06)]">
-            <span className="text-[#00E5FF] mr-3 font-semibold select-none text-xs">AI Query &gt;</span>
+          <div className="relative flex items-center bg-black/40 border border-white/5 focus-within:border-[#00F5B0]/40 rounded px-4 py-3 transition-all">
+            <span className="text-[#00F5B0] mr-2 font-bold select-none">chrono_os:~$ &gt;</span>
             <input
               ref={inputRef}
               type="text"
-              placeholder="Search countries, technologies, climate risks, future scenarios..."
+              placeholder="Query matrix parameters..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="w-full bg-transparent border-none outline-none text-xs text-white placeholder-white/20 font-sans tracking-wide"
+              className="w-full bg-transparent border-none outline-none text-xs text-white placeholder-white/20 font-mono tracking-wide"
             />
             {searchQuery && (
               <button 
                 onClick={() => setSearchQuery('')}
-                className="absolute right-4 text-[10px] text-[#8CA8B8] hover:text-white cursor-pointer bg-transparent border-none font-mono"
+                className="absolute right-4 text-[10px] text-[#7A8694] hover:text-white cursor-pointer bg-transparent border-none"
               >
-                [CLEAR]
+                [RESET]
               </button>
             )}
           </div>
-          <div className="flex justify-between items-center px-1 text-[9px] font-mono text-[#8CA8B8]">
-            <span>Status: {isAnalyzing ? 'Analyzing planetary indices...' : 'Ready for query'}</span>
+          <div className="flex justify-between items-center px-1 text-[9px] text-[#7A8694]">
+            <span>Status: {isAnalyzing ? 'Analyzing cognitive tensors...' : 'Terminal ready'}</span>
             {searchQuery && <span>Matches: {totalResultsCount} nodes</span>}
           </div>
         </div>
 
         {/* Dynamic Display Area */}
-        <div className="custom-scrollbar flex-1 overflow-y-auto flex flex-col gap-5 pr-1 min-h-[200px]">
+        <div className="custom-scrollbar flex-1 overflow-y-auto flex flex-col gap-4 pr-1 min-h-[200px]">
           {q.length === 0 ? (
-            /* AI prompt Suggestions */
+            /* AI prompt Suggestions & Recent Searches */
             <div className="flex flex-col gap-4 py-2">
-              <span className="text-[10px] text-[#8CA8B8] uppercase tracking-wider font-semibold border-b border-white/5 pb-2">
-                Executive Query Suggestions
+              {recentSearches.length > 0 && (
+                <div className="flex flex-col gap-2">
+                  <span className="text-[10px] text-[#7A8694] uppercase tracking-wider font-semibold border-b border-white/5 pb-1.5 flex justify-between items-center">
+                    <span>Recent Searches</span>
+                    <button 
+                      onClick={() => {
+                        setRecentSearches([]);
+                        try { localStorage.removeItem('chrono_recent_searches'); } catch (e) {}
+                      }} 
+                      className="text-[8px] text-red-400 hover:underline bg-transparent border-none cursor-pointer"
+                    >
+                      [CLEAR ALL]
+                    </button>
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {recentSearches.map((s, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => handlePromptClick(s)}
+                        className="px-2 py-0.5 bg-white/5 hover:bg-[#00F5B0]/15 border border-white/10 hover:border-[#00F5B0]/40 rounded text-[9px] text-white/70 hover:text-white transition-all cursor-pointer font-mono"
+                      >
+                        🔍 {s}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <span className="text-[10px] text-[#7A8694] uppercase tracking-wider font-semibold border-b border-white/5 pb-2">
+                Executive Prompt Signals
               </span>
               <div className="flex flex-col gap-2">
                 {promptSuggestions.map((p, idx) => (
                   <button
                     key={idx}
                     onClick={() => handlePromptClick(p.query)}
-                    className="group text-left px-4 py-3 bg-white/2 hover:bg-[#00E5FF]/5 border border-white/5 hover:border-[#00E5FF]/20 rounded-lg transition-all duration-300 cursor-pointer flex justify-between items-center text-xs text-white/80"
+                    className="group text-left px-4 py-3 bg-white/2 hover:bg-[#00F5B0]/5 border border-white/5 hover:border-[#00F5B0]/20 rounded transition-all duration-300 font-mono cursor-pointer flex justify-between items-center text-xs text-white/80"
                   >
-                    <span className="group-hover:text-white transition-colors">&gt; "{p.text}"</span>
-                    <span className="text-[#8CA8B8] group-hover:text-[#00E5FF] text-[9px] font-semibold tracking-wider font-mono">
-                      [EXECUTE QUERY]
+                    <span className="group-hover:text-white transition-colors">&gt; &quot;{p.text}&quot;</span>
+                    <span className="text-[#7A8694] group-hover:text-[#00F5B0] text-[9px] font-semibold tracking-wider font-mono">
+                      [EXECUTE PROMPT]
                     </span>
                   </button>
                 ))}
               </div>
-              <p className="text-[10px] text-[#8CA8B8] leading-relaxed mt-4 font-mono font-light">
-                * Dynamic search maps timeline parameters, structural city profiles, technology codex shards, and futurologists databases.
+              <p className="text-[10px] text-[#7A8694] leading-relaxed mt-4 font-mono font-light">
+                * Terminal searches full planetary index files including 2030/2040/2050 timeline targets, cities data records, knowledge sheets, and strategic vulnerability indexes.
               </p>
             </div>
           ) : isAnalyzing ? (
             /* Simulated Loading State */
-            <div className="py-20 flex flex-col items-center justify-center gap-3 text-[#00E5FF] text-xs font-mono">
-              <div className="w-8 h-8 rounded-full border border-t-[#00E5FF] border-white/10 animate-spin" />
-              <span>SEARCHING PLANETARY SCENARIOS...</span>
+            <div className="py-20 flex flex-col items-center justify-center gap-3 text-[#00F5B0] text-xs">
+              <div className="w-8 h-8 rounded-full border border-t-[#00F5B0] border-[#00F5B0]/15 animate-spin" />
+              <span>ALIGNING QUANTUM COGNITIVE TENSORS...</span>
             </div>
           ) : !hasResults ? (
-            <div className="py-16 text-center text-xs text-rose-400 font-mono font-light border border-white/5 bg-black/20 rounded">
-              &gt; ERROR: NO INTEL NODES MATCHING VECTOR "{q.toUpperCase()}"
+            <div className="py-16 text-center text-xs text-[#FF0055] font-mono font-light border border-white/5 bg-black/20 rounded">
+              &gt; ERROR: NO INTEL CHANNELS CORRESPONDING TO VECTOR &quot;{q.toUpperCase()}&quot;
             </div>
           ) : (
-            /* Dossier Results Grid */
-            <div className="flex flex-col gap-5">
-              
-              {/* Predictions Shards */}
-              {predMatches.length > 0 && (
-                <div className="flex flex-col gap-2">
-                  <span className="text-[10px] text-[#8CA8B8] uppercase tracking-wider font-semibold">
-                    Dossier // Forecast Shards ({predMatches.length})
-                  </span>
-                  {predMatches.map(p => (
-                    <div 
-                      key={p.id}
-                      onClick={() => {
-                        onClose();
-                        router.push(`/predictions/${p.slug}`);
-                      }}
-                      className="group p-4 bg-[#07111A]/40 hover:bg-[#00E5FF]/5 border border-white/5 hover:border-[#00E5FF]/25 rounded-lg flex flex-col gap-2 cursor-pointer transition-all duration-300"
-                    >
-                      <div className="flex justify-between items-center text-[9px] font-mono">
-                        <span className="text-[#00E5FF] font-semibold uppercase">{p.category} // {p.city.toUpperCase()}</span>
-                        <span className="text-[#8CA8B8]">{p.year} FORECAST</span>
-                      </div>
-                      <h4 className="text-xs font-semibold text-white group-hover:text-[#00E5FF] transition-colors leading-snug tracking-wide m-0">
-                        {p.title}
-                      </h4>
-                      <p className="text-[10px] text-[#8CA8B8] leading-relaxed line-clamp-2 m-0 font-light">
-                        {p.description}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              )}
+            /* Unified Ranked Results List */
+            <div className="flex flex-col gap-3">
+              {results.map((res, idx) => {
+                let neonColor = '#00F5B0';
+                if (res.category === 'City') neonColor = '#0A84FF';
+                else if (res.category === 'Knowledge') neonColor = '#00E5FF';
+                else if (res.category === 'Futurologist') neonColor = '#BF5AF2';
+                else if (res.category === 'Climate Record') neonColor = '#FF0055';
+                else if (res.category === 'Market Signal') neonColor = '#FFB300';
 
-              {/* Cities Nodes */}
-              {cityMatches.length > 0 && (
-                <div className="flex flex-col gap-2">
-                  <span className="text-[10px] text-[#8CA8B8] uppercase tracking-wider font-semibold">
-                    Dossier // City Nodes ({cityMatches.length})
-                  </span>
-                  {cityMatches.map(c => (
-                    <div 
-                      key={c.name}
-                      onClick={() => {
-                        onClose();
-                        router.push(`/dashboard?city=${encodeURIComponent(c.name)}`);
-                      }}
-                      className="group p-3 bg-[#07111A]/40 hover:bg-[#00E5FF]/5 border border-white/5 hover:border-[#00E5FF]/25 rounded-lg flex justify-between items-center cursor-pointer transition-all duration-300"
-                    >
-                      <div className="flex flex-col gap-0.5">
-                        <span className="text-xs text-white font-semibold">{c.name}</span>
-                        <span className="text-[9px] text-[#8CA8B8] uppercase tracking-wider">{c.country}</span>
-                      </div>
-                      <span className="text-[9px] text-[#00E5FF] font-semibold tracking-wider font-mono">[LOCATE GLOBE]</span>
-                    </div>
-                  ))}
-                </div>
-              )}
+                const isHighlighted = idx === activeIndex;
 
-              {/* Project Shards */}
-              {projectMatches.length > 0 && (
-                <div className="flex flex-col gap-2">
-                  <span className="text-[10px] text-[#8CA8B8] uppercase tracking-wider font-semibold">
-                    Dossier // Project Systems ({projectMatches.length})
-                  </span>
-                  {projectMatches.map((proj, idx) => (
-                    <div 
-                      key={idx}
-                      onClick={() => {
-                        onClose();
-                        router.push(`/city/${proj.citySlug}`);
-                      }}
-                      className="group p-4 bg-[#07111A]/40 hover:bg-[#6FEAFF]/5 border border-white/5 hover:border-[#6FEAFF]/25 rounded-lg flex flex-col gap-2 cursor-pointer transition-all duration-300"
-                    >
-                      <div className="flex justify-between items-center text-[9px] font-mono">
-                        <span className="text-[#6FEAFF] font-semibold uppercase">{proj.type} // {proj.cityName.toUpperCase()}</span>
-                      </div>
-                      <h4 className="text-xs font-semibold text-white group-hover:text-[#6FEAFF] transition-colors leading-snug tracking-wide m-0">
-                        {proj.name}
-                      </h4>
-                      <p className="text-[10px] text-[#8CA8B8] leading-relaxed line-clamp-2 m-0 font-light">
-                        {proj.desc}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              )}
+                // Relevance Badges setup
+                const getRelevanceBadge = (score: number) => {
+                  if (score >= 90) return { label: 'CORE INTEL', class: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' };
+                  if (score >= 70) return { label: 'STRONG NODE', class: 'bg-orange-500/10 text-orange-400 border border-orange-500/20' };
+                  return { label: 'CORRELATION', class: 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20' };
+                };
+                const badge = getRelevanceBadge(res.score);
 
-              {/* Technology Shards */}
-              {techMatches.length > 0 && (
-                <div className="flex flex-col gap-2">
-                  <span className="text-[10px] text-[#8CA8B8] uppercase tracking-wider font-semibold">
-                    Dossier // Codex Shards ({techMatches.length})
-                  </span>
-                  {techMatches.map(t => (
-                    <div 
-                      key={t.id}
-                      onClick={() => {
-                        onClose();
-                        router.push(`/knowledge?article=${t.id}`);
-                      }}
-                      className="group p-4 bg-[#07111A]/40 hover:bg-[#00E5FF]/5 border border-white/5 hover:border-[#00E5FF]/25 rounded-lg flex flex-col gap-2 cursor-pointer transition-all duration-300"
-                    >
-                      <div className="flex justify-between items-center text-[9px] font-mono">
-                        <span className="text-[#00E5FF] font-semibold uppercase">CODEX // {t.category.toUpperCase()}</span>
-                        <span className="text-[#8CA8B8]">READINESS: {t.readinessIndex}%</span>
+                return (
+                  <div
+                    key={res.id}
+                    onClick={() => handleSelectResult(res)}
+                    className={`group p-4 rounded-lg cursor-pointer transition-all duration-200 flex flex-col gap-1.5 border-y border-r ${
+                      isHighlighted 
+                        ? 'bg-[#00F5B0]/10 border-t-[#00F5B0]/30 border-b-[#00F5B0]/30 border-r-[#00F5B0]/30 scale-[1.01] shadow-[0_0_15px_rgba(0,245,176,0.08)]' 
+                        : 'bg-black/30 hover:bg-[#00F5B0]/5 border-t-white/5 border-b-white/5 border-r-white/5 hover:border-white/20'
+                    }`}
+                    style={{
+                      borderLeft: `3px solid ${isHighlighted ? '#00F5B0' : neonColor}`
+                    }}
+                  >
+                    <div className="flex justify-between items-center text-[9px] font-mono">
+                      <div className="flex items-center gap-2">
+                        <span style={{ color: isHighlighted ? '#00F5B0' : neonColor }} className="font-semibold uppercase tracking-wider">
+                          {res.category}
+                        </span>
+                        <span className={`px-1.5 py-0.5 rounded text-[7px] font-bold ${badge.class}`}>
+                          {badge.label} ({res.score}%)
+                        </span>
                       </div>
-                      <h4 className="text-xs font-semibold text-white group-hover:text-[#00E5FF] transition-colors leading-snug tracking-wide m-0">
-                        {t.title}
-                      </h4>
-                      <p className="text-[10px] text-[#8CA8B8] leading-relaxed line-clamp-2 m-0 font-light">
-                        {t.shortDesc}
-                      </p>
+                      <span className={`uppercase tracking-widest ${isHighlighted ? 'text-[#00F5B0]' : 'text-white/30'}`}>
+                        {isHighlighted ? '[PRESS ENTER]' : '[INSPECT NODE]'}
+                      </span>
                     </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Futurologist Shards */}
-              {(futurologistMatches.length > 0 || architectMatches.length > 0) && (
-                <div className="flex flex-col gap-2">
-                  <span className="text-[10px] text-[#8CA8B8] uppercase tracking-wider font-semibold">
-                    Dossier // Personnel Files ({futurologistMatches.length + architectMatches.length})
-                  </span>
-                  
-                  {/* Futurologists */}
-                  {futurologistMatches.map(f => (
-                    <div 
-                      key={f.slug}
-                      onClick={() => {
-                        onClose();
-                        router.push(`/futurologists/${f.slug}`);
-                      }}
-                      className="group p-3 bg-[#07111A]/40 hover:bg-[#FFB300]/5 border border-white/5 hover:border-[#FFB300]/25 rounded-lg flex justify-between items-center cursor-pointer transition-all duration-300"
-                    >
-                      <div className="flex flex-col gap-0.5">
-                        <span className="text-xs text-white font-semibold">{f.name}</span>
-                        <span className="text-[9px] text-[#8CA8B8] uppercase tracking-wider">{f.role} // {f.specialization}</span>
-                      </div>
-                      <span className="text-[9px] text-[#FFB300] font-semibold tracking-wider font-mono">[DOSSIER PROFILE]</span>
-                    </div>
-                  ))}
-
-                  {/* City Architects */}
-                  {architectMatches.map((arch, idx) => (
-                    <div 
-                      key={idx}
-                      onClick={() => {
-                        onClose();
-                        router.push(`/city/${arch.citySlug}`);
-                      }}
-                      className="group p-3 bg-[#07111A]/40 hover:bg-[#FFB300]/5 border border-white/5 hover:border-[#FFB300]/25 rounded-lg flex justify-between items-center cursor-pointer transition-all duration-300"
-                    >
-                      <div className="flex flex-col gap-0.5">
-                        <span className="text-xs text-white font-semibold">{arch.name}</span>
-                        <span className="text-[9px] text-[#8CA8B8] uppercase tracking-wider">{arch.role} // {arch.cityName.toUpperCase()} NODE</span>
-                      </div>
-                      <span className="text-[9px] text-[#8CA8B8] font-semibold tracking-wider font-mono">[METROPOLIS]</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-
+                    <h4 className={`text-xs font-semibold m-0 tracking-wide font-mono transition-colors ${isHighlighted ? 'text-[#00F5B0]' : 'text-white group-hover:text-[#00F5B0]'}`}>
+                      {res.title}
+                    </h4>
+                    <span className="text-[10px] text-white/50 font-mono font-medium">
+                      {res.subtitle}
+                    </span>
+                    <p className="text-[10px] text-white/40 leading-relaxed font-sans font-light m-0 line-clamp-2">
+                      {res.description}
+                    </p>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
@@ -372,4 +486,3 @@ export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchMo
     </div>
   );
 }
-

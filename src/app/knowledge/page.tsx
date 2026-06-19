@@ -2,32 +2,16 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import BackgroundEffects from '@/components/BackgroundEffects';
-import { KB_ARTICLES } from '@/data/predictionsData';
+import { useKnowledgeBase } from '@/hooks/useKnowledgeBase';
+import { usePredictions } from '@/hooks/usePredictions';
+import { useFuturologists } from '@/hooks/useFuturologists';
+import Footer from '@/components/Footer';
+import SafeImage from '@/components/SafeImage';
+import { getKnowledgeCardImage, getKnowledgeCategoryFallback } from '@/lib/imageUtils';
 
-// Extended database articles to support Geopolitics and Economics sections
-const ALL_KB_ARTICLES = [
-  ...KB_ARTICLES,
-  {
-    id: 'kb-8',
-    title: 'Global Semiconductor Alliance',
-    category: 'Geopolitics',
-    shortDesc: 'Decentralized fabrication nodes and shipping corridors across trade blocks.',
-    content: 'Global silicon production has shifted away from centralized coastal nodes to secure, decentralized alliances. Allied regions construct high-yield fabrication centers inland, connected by secure rail networks and defended by orbital monitoring constellations to protect hardware supply lines against disruption vectors.',
-    readinessIndex: 85,
-    impactLevel: 'Critical' as const
-  },
-  {
-    id: 'kb-9',
-    title: 'Lifecycle Carbon Tariffs',
-    category: 'Economics',
-    shortDesc: 'Algorithmic border tax adjustments based on lifecycle carbon emissions.',
-    content: 'Enforces carbon taxation dynamically at regional borders using digital ledgers. The carbon footprint of every imported raw material or finished pod is calculated using real-time sensor metrics and taxed instantly, funding geo-engineering cooling grids and incentivizing clean local manufacturing.',
-    readinessIndex: 90,
-    impactLevel: 'High' as const
-  }
-];
 
 // Rich technical details for each article (Stats, Opportunities, Risks, Outlook, Sources)
 const ARTICLE_DETAILS: Record<string, {
@@ -130,6 +114,7 @@ const ARTICLE_DETAILS: Record<string, {
 };
 
 function KnowledgeBaseContent() {
+  const { kbArticles } = useKnowledgeBase();
   const searchParams = useSearchParams();
   const articleParam = searchParams.get('article');
 
@@ -162,21 +147,23 @@ function KnowledgeBaseContent() {
 
   const getCategoryStyle = (category: string) => {
     const cat = category.toLowerCase();
-    if (cat.includes('ai')) return { color: '#00E5FF', shadow: 'rgba(0, 245, 212, 0.18)' };
+    if (cat.includes('ai')) return { color: '#00F5D4', shadow: 'rgba(0, 245, 212, 0.18)' };
     if (cat.includes('climate')) return { color: '#FF0055', shadow: 'rgba(255, 0, 85, 0.18)' };
-    if (cat.includes('energy')) return { color: '#00E5FF', shadow: 'rgba(0, 229, 255, 0.18)' };
+    if (cat.includes('energy')) return { color: '#00F5B0', shadow: 'rgba(0, 245, 176, 0.18)' };
     if (cat.includes('space')) return { color: '#BF5AF2', shadow: 'rgba(191, 90, 242, 0.18)' };
     if (cat.includes('cities')) return { color: '#0A84FF', shadow: 'rgba(10, 132, 255, 0.18)' };
     if (cat.includes('geopolitics')) return { color: '#FFB300', shadow: 'rgba(255, 179, 0, 0.18)' };
-    return { color: '#00E5FF', shadow: 'rgba(0, 229, 255, 0.18)' };
+    return { color: '#00F5B0', shadow: 'rgba(0, 245, 176, 0.18)' };
   };
 
-  const filteredArticles = ALL_KB_ARTICLES.filter(art => {
+  const filteredArticles = kbArticles.filter(art => {
     const mapped = getMappedCategory(art.category, art.id);
     return selectedCategory === 'ALL' || mapped.toLowerCase() === selectedCategory.toLowerCase();
   });
 
-  const activeArticle = ALL_KB_ARTICLES.find(x => x.id === expandedArticleId);
+  const { predictions } = usePredictions();
+  const { futurologists } = useFuturologists();
+  const activeArticle = kbArticles.find(x => x.id === expandedArticleId);
   const activeDetails = activeArticle ? (ARTICLE_DETAILS[activeArticle.id] || {
     stats: {},
     opportunities: [],
@@ -185,17 +172,35 @@ function KnowledgeBaseContent() {
     sources: []
   }) : null;
 
+  // Find related predictions
+  const getRelatedPredictions = (category: string) => {
+    return predictions.filter(p => {
+      return p.category.toLowerCase() === category.toLowerCase() ||
+        p.tags.some(t => activeArticle?.title.toLowerCase().includes(t.toLowerCase()));
+    }).slice(0, 3);
+  };
+
+  // Find related futurologists
+  const getRelatedFuturologists = (category: string) => {
+    return futurologists.filter(f => {
+      const cat = category.toLowerCase();
+      const spec = f.specialization.toLowerCase();
+      const bio = f.bio.toLowerCase();
+      return spec.includes(cat) || bio.includes(cat) || f.role.toLowerCase().includes(cat);
+    }).slice(0, 2);
+  };
+
   return (
     <div className={`${activeArticle ? 'reading-container' : 'content-container'} pt-32 pb-24 relative z-20 flex flex-col gap-8 animate-fade-up`}>
       
       {/* Page Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-white/5 pb-6">
         <div className="flex flex-col gap-3">
-          <span className="text-[10px] font-mono text-[#00E5FF] uppercase tracking-[0.25em] font-semibold">
+          <span className="text-[10px] font-mono text-[#00F5B0] uppercase tracking-[0.25em] font-semibold">
             Foresight Codex
           </span>
           <h1 className="editorial-title text-white tracking-tight m-0 text-3xl font-light">
-            Planetary <span style={{ color: '#00E5FF' }} className="font-normal">Knowledge Base</span>
+            Planetary <span style={{ color: '#00F5B0' }} className="font-normal">Knowledge Base</span>
           </h1>
           <p className="text-[#7A8694] font-light text-sm max-w-2xl leading-relaxed m-0">
             Technical specifications, biological/geological coefficients, and deployment parameters for futuristic technologies.
@@ -205,7 +210,7 @@ function KnowledgeBaseContent() {
         {activeArticle && (
           <button
             onClick={() => setExpandedArticleId(null)}
-            className="self-start md:self-auto px-4 py-2 border border-[#00E5FF]/30 hover:border-[#00E5FF] text-[#00E5FF] text-xs font-mono rounded transition-all duration-300 bg-transparent cursor-pointer tracking-wider uppercase font-semibold hover:shadow-[0_0_10px_rgba(0, 229, 255, 0.15)]"
+            className="self-start md:self-auto px-4 py-2 border border-[#00F5B0]/30 hover:border-[#00F5B0] text-[#00F5B0] text-xs font-mono rounded transition-all duration-300 bg-transparent cursor-pointer tracking-wider uppercase font-semibold hover:shadow-[0_0_10px_rgba(0, 245, 176, 0.15)]"
           >
             ← Return to Database
           </button>
@@ -224,8 +229,8 @@ function KnowledgeBaseContent() {
                 onClick={() => setSelectedCategory(cat)}
                 className={`px-3.5 py-1.5 text-xs rounded transition-all duration-300 font-mono cursor-pointer border ${
                   isSelected 
-                    ? 'bg-[#00E5FF] text-[#02060A] border-transparent font-semibold shadow-[0_0_10px_rgba(0, 229, 255,0.3)]'
-                    : 'bg-transparent border-white/5 text-[#7A8694] hover:bg-white/5 hover:border-[#00E5FF]/30 hover:text-white'
+                    ? 'bg-[#00F5B0] text-[#02060A] border-transparent font-semibold shadow-[0_0_10px_rgba(0,245,176,0.3)]'
+                    : 'bg-transparent border-white/5 text-[#7A8694] hover:bg-white/5 hover:border-[#00F5B0]/30 hover:text-white'
                 }`}
                 style={isSelected ? { backgroundColor: style.color, boxShadow: `0 0 10px ${style.shadow}` } : {}}
               >
@@ -239,12 +244,45 @@ function KnowledgeBaseContent() {
       {/* Dynamic Main Body Content */}
       <div className="min-h-[400px]">
         {activeArticle && activeDetails ? (
-          
-          /* Detailed View - Tier 1 Container */
-          <div 
-            className="premium-glass p-8 rounded-lg grid grid-cols-1 lg:grid-cols-3 gap-8"
-            style={{ backgroundColor: 'rgba(10, 20, 35, 0.55)' }}
-          >
+          <div className="flex flex-col gap-6 w-full animate-fade-in">
+            {/* Hero Banner */}
+            {getKnowledgeCardImage(activeArticle) ? (
+              <div className="w-full h-[200px] md:h-[280px] rounded-lg overflow-hidden relative border border-white/5 shadow-[0_0_15px_rgba(0,0,0,0.3)]">
+                <SafeImage
+                  src={getKnowledgeCardImage(activeArticle) as string}
+                  fallbackSrc={getKnowledgeCategoryFallback(activeArticle.category, activeArticle.id)}
+                  alt={activeArticle.title}
+                  fill
+                  priority
+                  sizes="(max-width: 1200px) 100vw, 1200px"
+                  className="object-cover transition-transform duration-700 hover:scale-102"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#02060A]/95 via-transparent to-[#02060A]/20" />
+                <div className="absolute bottom-4 left-6 right-6 flex flex-col gap-1.5 z-10 font-mono">
+                  <span className="text-[9px] text-[#00F5B0] uppercase tracking-[0.2em] font-semibold bg-[#02060A]/85 border border-[#00F5B0]/20 px-2 py-0.5 rounded self-start">
+                    {getMappedCategory(activeArticle.category, activeArticle.id).toUpperCase()} SECTOR
+                  </span>
+                  <h2 className="text-xl md:text-2xl font-light text-white tracking-tight m-0 drop-shadow-md">
+                    {activeArticle.title}
+                  </h2>
+                </div>
+              </div>
+            ) : (
+              <div className="w-full p-6 rounded-lg border border-white/5 bg-black/40 flex flex-col gap-2 font-mono">
+                <span className="text-[9px] text-[#00F5B0] uppercase tracking-[0.2em] font-semibold bg-white/5 border border-[#00F5B0]/20 px-2 py-0.5 rounded self-start">
+                  {getMappedCategory(activeArticle.category, activeArticle.id).toUpperCase()} SECTOR
+                </span>
+                <h2 className="text-xl md:text-2xl font-light text-white tracking-tight m-0">
+                  {activeArticle.title}
+                </h2>
+              </div>
+            )}
+
+            {/* Detailed View - Tier 1 Container */}
+            <div 
+              className="premium-glass p-8 rounded-lg grid grid-cols-1 lg:grid-cols-3 gap-8"
+              style={{ backgroundColor: 'rgba(4, 11, 18, 0.8)' }}
+            >
             
             {/* Left Metrics Column */}
             <div className="lg:col-span-1 border-b lg:border-b-0 lg:border-r border-white/5 pb-6 lg:pb-0 lg:pr-8 flex flex-col gap-6">
@@ -280,7 +318,7 @@ function KnowledgeBaseContent() {
                 <span className={`px-2 py-0.5 text-[10px] font-mono rounded font-semibold inline-block ${
                   activeArticle.impactLevel === 'Critical' 
                     ? 'bg-rose-950/40 text-rose-400 border border-rose-500/30' 
-                    : 'bg-[#040B12] text-[#00E5FF] border border-[#00E5FF]/15'
+                    : 'bg-[#040B12] text-[#00F5B0] border border-[#00F5B0]/15'
                 }`}>
                   {activeArticle.impactLevel.toUpperCase()}
                 </span>
@@ -305,7 +343,7 @@ function KnowledgeBaseContent() {
 
               <div className="mt-auto pt-4 flex flex-col gap-1.5 text-[9px] font-mono text-[#7A8694]">
                 <span>Database Ref: <span className="text-white">KB-{activeArticle.id.toUpperCase()}</span></span>
-                <span className="text-[#00E5FF] font-semibold">Status: Verified protocol</span>
+                <span className="text-[#00F5B0] font-semibold">Status: Verified protocol</span>
               </div>
             </div>
 
@@ -313,7 +351,7 @@ function KnowledgeBaseContent() {
             <div className="lg:col-span-2 flex flex-col gap-6">
               <div>
                 <h2 className="text-xl font-light text-white mb-1 tracking-wide">{activeArticle.title}</h2>
-                <p className="text-[#6FEAFF] text-xs font-mono tracking-wider">{activeArticle.shortDesc}</p>
+                <p className="text-[#00D98F] text-xs font-mono tracking-wider">{activeArticle.shortDesc}</p>
               </div>
 
               <div className="bg-black/35 border border-white/5 rounded-lg p-5 text-xs text-[#A8B3BC] leading-relaxed font-light">
@@ -335,11 +373,11 @@ function KnowledgeBaseContent() {
                 </div>
                 
                 <div className="flex flex-col gap-3">
-                  <span className="text-[10px] text-[#00E5FF] font-mono uppercase tracking-wider font-semibold">Strategic Opportunities</span>
+                  <span className="text-[10px] text-[#00F5B0] font-mono uppercase tracking-wider font-semibold">Strategic Opportunities</span>
                   <ul className="list-none p-0 m-0 flex flex-col gap-2.5 text-xs text-[#7A8694] font-light">
                     {activeDetails.opportunities.map((opp, idx) => (
                       <li key={idx} className="flex gap-2 items-start leading-relaxed text-left">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#00E5FF] mt-1.5 flex-shrink-0" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#00F5B0] mt-1.5 flex-shrink-0" />
                         <span>{opp}</span>
                       </li>
                     ))}
@@ -350,9 +388,68 @@ function KnowledgeBaseContent() {
               {/* Future Outlook */}
               <div className="flex flex-col gap-2 border-t border-white/5 pt-4">
                 <span className="text-[10px] text-[#7A8694] font-mono uppercase tracking-wider font-semibold">Future Outlook</span>
-                <p className="text-xs text-[#00E5FF]/95 font-mono italic m-0 bg-[#00E5FF]/5 border border-[#00E5FF]/10 rounded p-3">
+                <p className="text-xs text-[#00F5B0]/95 font-mono italic m-0 bg-[#00F5B0]/5 border border-[#00F5B0]/10 rounded p-3">
                   {activeDetails.outlook}
                 </p>
+              </div>
+
+              {/* Related Predictions & Specialists */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-t border-white/5 pt-4">
+                {/* Related Predictions */}
+                <div className="flex flex-col gap-3">
+                  <span className="text-[10px] text-[#00E5FF] font-mono uppercase tracking-wider font-semibold">Related Predictions</span>
+                  <div className="flex flex-col gap-2">
+                    {getRelatedPredictions(getMappedCategory(activeArticle.category, activeArticle.id)).length === 0 ? (
+                      <span className="text-xs text-[#7A8694] font-light">No direct target timeline anomalies.</span>
+                    ) : (
+                      getRelatedPredictions(getMappedCategory(activeArticle.category, activeArticle.id)).map(p => (
+                        <Link 
+                          key={p.id}
+                          href={`/predictions/${p.slug}`}
+                          className="p-3 bg-black/40 border border-white/5 hover:border-[#00E5FF]/30 rounded flex flex-col gap-1 no-underline group transition-all"
+                        >
+                          <div className="flex justify-between items-center text-[9px] font-mono text-white/40">
+                            <span>{p.year} FORECAST</span>
+                            <span className="text-[#00E5FF]">{p.city}</span>
+                          </div>
+                          <span className="text-xs font-semibold text-white group-hover:text-[#00E5FF] transition-colors truncate">
+                            {p.title}
+                          </span>
+                        </Link>
+                      ))
+                    )}
+                  </div>
+                </div>
+
+                {/* Related Futurologists */}
+                <div className="flex flex-col gap-3">
+                  <span className="text-[10px] text-[#BF5AF2] font-mono uppercase tracking-wider font-semibold">Assigned Specialists</span>
+                  <div className="flex flex-col gap-2">
+                    {getRelatedFuturologists(getMappedCategory(activeArticle.category, activeArticle.id)).length === 0 ? (
+                      <span className="text-xs text-[#7A8694] font-light">No specialist portfolio assigned to this matrix.</span>
+                    ) : (
+                      getRelatedFuturologists(getMappedCategory(activeArticle.category, activeArticle.id)).map(f => (
+                        <Link 
+                          key={f.slug}
+                          href={`/futurologists/${f.slug}`}
+                          className="p-3 bg-black/40 border border-white/5 hover:border-[#BF5AF2]/30 rounded flex items-center gap-3 no-underline group transition-all"
+                        >
+                          <div className="w-8 h-8 rounded-full border border-white/10 overflow-hidden shrink-0">
+                            <img src={f.avatar} alt={f.name} className="w-full h-full object-cover" />
+                          </div>
+                          <div className="flex flex-col min-w-0">
+                            <span className="text-xs font-semibold text-white group-hover:text-[#BF5AF2] transition-colors truncate">
+                              {f.name}
+                            </span>
+                            <span className="text-[9px] font-mono text-[#7A8694] truncate">
+                              {f.role}
+                            </span>
+                          </div>
+                        </Link>
+                      ))
+                    )}
+                  </div>
+                </div>
               </div>
 
               {/* Sources Bibliography */}
@@ -369,12 +466,10 @@ function KnowledgeBaseContent() {
                 </div>
               )}
             </div>
-
           </div>
-        ) : (
-          
-          /* Database Grid View - 3 columns */
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredArticles.length === 0 ? (
               <div className="col-span-3 text-center py-20 text-xs text-[#7A8694] premium-glass rounded-lg">
                 No resource shards compiled in this sector.
@@ -389,11 +484,27 @@ function KnowledgeBaseContent() {
                     onClick={() => setExpandedArticleId(art.id)}
                     className="group premium-glass cursor-pointer flex flex-col justify-between p-6 min-h-[260px] border border-white/5 hover:translate-y-[-4px] transition-all duration-300"
                     style={{
-                      backgroundColor: 'rgba(10, 20, 35, 0.55)',
+                      backgroundColor: 'rgba(4, 11, 18, 0.75)',
                       '--glow-color': style.color
                     } as any}
                   >
                     <div className="flex flex-col gap-4 flex-1">
+                      {/* Card Thumbnail Image */}
+                      {getKnowledgeCardImage(art) ? (
+                        <div className="w-full h-32 rounded overflow-hidden relative border border-white/5 shrink-0">
+                          <SafeImage
+                            src={getKnowledgeCardImage(art) as string}
+                            fallbackSrc={getKnowledgeCategoryFallback(art.category, art.id)}
+                            alt={art.title}
+                            fill
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 350px"
+                            loading="lazy"
+                            className="object-cover transition-transform duration-500 group-hover:scale-105"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                        </div>
+                      ) : null}
+
                       <div className="flex justify-between items-center text-[10px] font-mono tracking-wider">
                         <span className="font-semibold uppercase" style={{ color: style.color }}>{mappedCategory}</span>
                         <span className={art.impactLevel === 'Critical' ? 'text-rose-400 font-semibold' : 'text-[#7A8694]'}>
@@ -428,8 +539,8 @@ function KnowledgeBaseContent() {
 
       <style jsx global>{`
         .group:hover {
-          border-color: var(--glow-color, rgba(0, 229, 255, 0.3)) !important;
-          box-shadow: 0 0 20px var(--glow-color, rgba(0, 229, 255, 0.1)) !important;
+          border-color: var(--glow-color, rgba(0, 245, 176, 0.3)) !important;
+          box-shadow: 0 0 20px var(--glow-color, rgba(0, 245, 176, 0.1)) !important;
         }
       `}</style>
     </div>
@@ -438,18 +549,18 @@ function KnowledgeBaseContent() {
 
 export default function KnowledgePage() {
   return (
-    <main className="h-screen w-screen overflow-y-auto bg-[#02060B] text-[#e2e8f0] relative custom-scrollbar">
+    <main className="min-h-screen w-full bg-[#02060A] text-[#e2e8f0] relative">
       <BackgroundEffects earthMode="cyber" />
       <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-[rgba(2,6,10,0.95)] to-transparent pointer-events-none z-10" />
       <Navbar />
       <Suspense fallback={
-        <div className="h-full w-full flex items-center justify-center font-mono text-[#00E5FF] text-xs">
+        <div className="h-full w-full flex items-center justify-center font-mono text-[#00F5B0] text-xs">
           DECRYPTING KNOWLEDGE SHEETS...
         </div>
       }>
         <KnowledgeBaseContent />
       </Suspense>
+      <Footer />
     </main>
   );
 }
-

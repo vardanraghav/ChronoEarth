@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import SearchModal from './SearchModal';
+import { useAuth } from '@/hooks/useAuth';
 
 interface NavbarProps {
   onSearchClick?: () => void;
@@ -17,6 +18,24 @@ export default function Navbar({ setActiveCity }: NavbarProps) {
   const pathname = usePathname();
   const [searchOpen, setSearchOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [hubsDropdownOpen, setHubsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const { user, role, loading, logout } = useAuth();
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const userDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Ctrl+K Global key binding
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    };
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, []);
 
   // Disable body scroll when mobile menu is open
   useEffect(() => {
@@ -33,12 +52,37 @@ export default function Navbar({ setActiveCity }: NavbarProps) {
     };
   }, [mobileMenuOpen]);
 
-  const navLinks = [
+  // Click outside handler for dropdowns
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setHubsDropdownOpen(false);
+      }
+      if (userDropdownRef.current && !userDropdownRef.current.contains(event.target as Node)) {
+        setUserDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const primaryLinks = [
     { href: '/', label: 'Map', icon: '🌍', activePattern: /^\/$/ },
-    { href: '/feed', label: 'Feed', icon: '📰', activePattern: /^\/feed/ },
-    { href: '/predictions', label: 'Predictions', icon: '🔮', activePattern: /^\/predictions/ },
+    { href: '/dashboard', label: 'Dashboard', icon: '📊', activePattern: /^\/dashboard/ },
+    { href: '/feed', label: 'Intel Feed', icon: '📰', activePattern: /^\/feed/ },
     { href: '/knowledge', label: 'Knowledge', icon: '📚', activePattern: /^\/knowledge/ },
-    { href: '/futurechat', label: 'FutureChat', icon: '💬', activePattern: /^\/futurechat/ },
+    { href: '/about', label: 'About', icon: 'ℹ️', activePattern: /^\/about/ },
+  ];
+
+  const secondaryLinks = [
+    { href: '/climate', label: 'Climate Core', icon: '🌡️', description: 'Real-time weather & sea anomalies' },
+    { href: '/space', label: 'Space Center', icon: '🚀', description: 'Orbit tracking & solar forecast' },
+    { href: '/earthquakes', label: 'Seismic Core', icon: '🌋', description: 'Global earthquake telemetry' },
+    { href: '/markets', label: 'Markets Matrix', icon: '📈', description: 'Securities & indices data' },
+    { href: '/futurologists', label: 'Futurologists', icon: '🧠', description: 'System architects & designers' },
+    { href: '/about', label: 'System Codex', icon: 'ℹ️', description: 'About the ChronoEarth grid' },
+    { href: '/sources', label: 'Sources & Credits', icon: '📚', description: 'Attributions & tech providers' },
+    { href: '/feedback', label: 'Comms Uplink', icon: '📡', description: 'Submit diagnostic telemetry' }
   ];
 
   return (
@@ -46,33 +90,36 @@ export default function Navbar({ setActiveCity }: NavbarProps) {
       <nav
         className="fixed top-4 left-6 right-6 z-50 flex items-center justify-between transition-all duration-300 premium-glass"
         style={{
-          padding: '16px 36px',
+          padding: '12px 30px',
+          border: '1px solid rgba(0, 229, 255, 0.15)',
+          boxShadow: '0 8px 32px 0 rgba(0, 6, 12, 0.5), inset 0 0 12px rgba(0, 229, 255, 0.05)',
         }}
       >
         {/* Brand Logo - Futuristic, Sleek */}
         <Link
           href="/"
-          className="group flex flex-col no-underline"
+          className="group flex flex-col no-underline mr-4"
           style={{ letterSpacing: '0.25em' }}
         >
           <div className="flex items-center gap-1.5 font-light text-base tracking-[0.3em] text-white uppercase font-sans">
             <span>CHRONO</span>
             <span style={{ color: '#00E5FF', textShadow: '0 0 10px rgba(0, 229, 255, 0.4)' }} className="font-semibold">EARTH</span>
           </div>
-          <span className="text-[9px] font-mono text-[#8CA8B8] uppercase tracking-[0.15em] mt-0.5 transition-colors group-hover:text-white/50">
+          <span className="text-[8px] font-mono text-[#8CA8B8] uppercase tracking-[0.15em] mt-0.5 transition-colors group-hover:text-white/50">
             Future Intelligence Platform
           </span>
         </Link>
 
         {/* Minimalist Centered Navigation Links */}
-        <div className="hidden md:flex items-center gap-10">
-          {navLinks.map((link) => {
+        <div className="hidden lg:flex items-center gap-6">
+          {primaryLinks.map((link) => {
             const isActive = link.activePattern.test(pathname);
             return (
               <Link
                 key={link.href}
                 href={link.href}
-                className="group relative flex items-center gap-1.5 py-1.5 px-1 no-underline text-xs tracking-wider uppercase font-mono transition-colors"
+                id={`nav-${link.label.toLowerCase().replace(/\s+/g, '')}`}
+                className="group relative flex items-center gap-1 py-1 px-1.5 no-underline text-xs tracking-wider uppercase font-mono transition-colors"
                 style={{
                   color: isActive ? '#FFFFFF' : 'rgba(234, 247, 255, 0.55)',
                 }}
@@ -83,7 +130,7 @@ export default function Navbar({ setActiveCity }: NavbarProps) {
                 <span className="group-hover:text-white transition-colors">{link.label}</span>
                 {isActive && (
                   <span
-                    className="absolute bottom-0 left-0 right-0 h-[2px] rounded-full"
+                    className="absolute bottom-[-14px] left-0 right-0 h-[2px] rounded-full"
                     style={{
                       background: 'linear-gradient(90deg, transparent, #00E5FF, transparent)',
                       boxShadow: '0 0 8px #00E5FF',
@@ -94,91 +141,368 @@ export default function Navbar({ setActiveCity }: NavbarProps) {
             );
           })}
 
+          {/* Hubs Dropdown Trigger */}
+          <div className="relative" ref={dropdownRef}>
+            <button
+              onClick={() => setHubsDropdownOpen(!hubsDropdownOpen)}
+              id="nav-sensors"
+              className="group flex items-center gap-1 py-1 px-1.5 bg-transparent border-none cursor-pointer text-xs tracking-wider uppercase font-mono transition-colors text-white/55 hover:text-white"
+            >
+              <span>⚙️</span>
+              <span>Sensors</span>
+              <span className={`text-[8px] transition-transform duration-300 ${hubsDropdownOpen ? 'rotate-180 text-[#00E5FF]' : ''}`}>▼</span>
+            </button>
+
+            {/* Dropdown Menu */}
+            {hubsDropdownOpen && (
+              <div 
+                className="absolute top-8 right-0 w-64 p-3 flex flex-col gap-2 rounded-lg premium-glass border"
+                style={{
+                  backgroundColor: 'rgba(2, 6, 12, 0.95)',
+                  borderColor: 'rgba(0, 229, 255, 0.2)',
+                  boxShadow: '0 10px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 229, 255, 0.1)',
+                }}
+              >
+                <div className="text-[9px] font-mono text-[#8CA8B8] border-b border-white/5 pb-1 uppercase tracking-widest mb-1">
+                  INTELLIGENCE SYSTEMS
+                </div>
+                {secondaryLinks.map((link) => {
+                  const isActive = pathname === link.href;
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className="group flex items-start gap-2.5 p-2 rounded no-underline transition-all hover:bg-white/5"
+                      onClick={() => setHubsDropdownOpen(false)}
+                    >
+                      <span className="text-sm mt-0.5 group-hover:scale-110 transition-transform">{link.icon}</span>
+                      <div className="flex flex-col">
+                        <span 
+                          className="text-xs uppercase font-mono tracking-wide"
+                          style={{ color: isActive ? '#00E5FF' : 'rgba(255, 255, 255, 0.85)' }}
+                        >
+                          {link.label}
+                        </span>
+                        <span className="text-[9px] text-white/40 group-hover:text-white/60 font-mono transition-colors mt-0.5">
+                          {link.description}
+                        </span>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
           {/* Search Trigger */}
           <button
             onClick={() => setSearchOpen(true)}
-            className="group flex items-center gap-1.5 py-1.5 px-1 bg-transparent border-none cursor-pointer text-xs tracking-wider uppercase font-mono transition-colors text-white/55 hover:text-white"
+            className="group flex items-center gap-1.5 py-1 px-2.5 bg-white/5 hover:bg-[#00E5FF]/10 rounded border border-[#00E5FF]/20 cursor-pointer text-xs tracking-wider uppercase font-mono transition-all text-white/70 hover:text-whitemr-2"
+            title="Search database (Ctrl+K)"
           >
-            <span className="transition-transform duration-300 group-hover:scale-110">
-              🔍
-            </span>
+            <span>🔍</span>
             <span>Search</span>
+            <kbd className="text-[9px] font-sans px-1.5 py-0.5 rounded bg-black/40 text-[#8CA8B8] border border-white/10 ml-1">
+              Ctrl+K
+            </kbd>
           </button>
+
+          {/* Auth Section */}
+          {!loading && (
+            user ? (
+              <div className="relative" ref={userDropdownRef}>
+                <button
+                  onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                  className="flex items-center gap-2 bg-transparent border-none cursor-pointer p-0 group"
+                >
+                  <img
+                    src={user.user_metadata?.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.email}`}
+                    alt="user avatar"
+                    className="w-7 h-7 rounded-full border border-[#00E5FF]/30 group-hover:border-[#00E5FF] transition-colors"
+                  />
+                  <span className="hidden xl:inline text-xs font-mono text-white/70 group-hover:text-white transition-colors truncate max-w-[85px]">
+                    {user.user_metadata?.full_name || user.email?.split('@')[0]}
+                  </span>
+                </button>
+
+                {userDropdownOpen && (
+                  <div
+                    className="absolute top-9 right-0 w-44 p-2 flex flex-col gap-1.5 rounded-lg premium-glass border"
+                    style={{
+                      backgroundColor: 'rgba(2, 6, 12, 0.95)',
+                      borderColor: 'rgba(0, 229, 255, 0.2)',
+                      boxShadow: '0 10px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 229, 255, 0.1)',
+                    }}
+                  >
+                    <div className="text-[8px] font-mono text-[#8CA8B8] border-b border-white/5 pb-1 uppercase tracking-widest px-1.5 truncate flex items-center justify-between">
+                      <span className="truncate">{user.email}</span>
+                      {role === 'admin' && (
+                        <span className="ml-1.5 px-1 py-0.2 bg-rose-500/20 text-rose-400 border border-rose-500/40 text-[7px] font-bold rounded uppercase tracking-wider">
+                          ADMIN
+                        </span>
+                      )}
+                    </div>
+                    {role === 'admin' && (
+                      <Link
+                        href="/admin"
+                        className="group flex items-center gap-2 p-1.5 rounded no-underline text-xs text-[#00E5FF] hover:bg-[#00E5FF]/10 font-mono uppercase font-semibold"
+                        onClick={() => setUserDropdownOpen(false)}
+                      >
+                        ⚡ Admin Panel
+                      </Link>
+                    )}
+                    <Link
+                      href="/settings"
+                      className="group flex items-center gap-2 p-1.5 rounded no-underline text-xs text-white/80 hover:bg-white/5 font-mono uppercase"
+                      onClick={() => setUserDropdownOpen(false)}
+                    >
+                      ⚙️ Settings
+                    </Link>
+                    <button
+                      onClick={() => {
+                        setUserDropdownOpen(false);
+                        window.dispatchEvent(new CustomEvent('start-chronoearth-tour'));
+                      }}
+                      className="group flex items-center gap-2 p-1.5 rounded text-left bg-transparent border-none cursor-pointer text-xs text-white/80 hover:bg-white/5 font-mono uppercase w-full"
+                    >
+                      🔄 Restart Tour
+                    </button>
+                    <button
+                      onClick={() => {
+                        setUserDropdownOpen(false);
+                        logout();
+                      }}
+                      className="group flex items-center gap-2 p-1.5 rounded text-left bg-transparent border-none cursor-pointer text-xs text-rose-400 hover:bg-rose-500/10 font-mono uppercase w-full"
+                    >
+                      🚪 Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="flex items-center gap-3">
+                <Link
+                  href="/login"
+                  className="text-xs uppercase font-mono text-white/70 hover:text-white no-underline transition-colors py-1 px-2.5 rounded border border-white/5 hover:border-white/10 bg-white/5"
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/signup"
+                  className="text-xs uppercase font-mono text-white no-underline transition-all py-1 px-2.5 rounded border border-[#00E5FF]/30 hover:border-[#00E5FF] bg-[#00E5FF]/5 hover:bg-[#00E5FF] hover:text-[#02060A] hover:shadow-[0_0_10px_rgba(0,229,255,0.3)] font-semibold"
+                >
+                  Sign Up
+                </Link>
+              </div>
+            )
+          )}
         </div>
 
-        {/* Mobile menu trigger */}
-        <button
-          className="md:hidden flex flex-col gap-1.5 cursor-pointer bg-transparent border-none p-2 relative z-50"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        >
-          <div className="w-6 h-[1px] bg-white transition-all duration-300" style={{ transform: mobileMenuOpen ? 'rotate(45deg) translate(5px, 5px)' : 'none', background: mobileMenuOpen ? '#00E5FF' : '#FFF' }} />
-          <div className="w-6 h-[1px] bg-white transition-all duration-300" style={{ opacity: mobileMenuOpen ? 0 : 1 }} />
-          <div className="w-6 h-[1px] bg-white transition-all duration-300" style={{ transform: mobileMenuOpen ? 'rotate(-45deg) translate(5px, -5px)' : 'none', background: mobileMenuOpen ? '#00E5FF' : '#FFF' }} />
-        </button>
+        {/* Mobile / Mid-size layout action buttons */}
+        <div className="lg:hidden flex items-center gap-3">
+          {/* Quick search button */}
+          <button
+            onClick={() => setSearchOpen(true)}
+            className="p-2 cursor-pointer bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition-colors"
+          >
+            🔍
+          </button>
 
+          {/* Mobile menu trigger */}
+          <button
+            className="flex flex-col gap-1.5 cursor-pointer bg-transparent border-none p-2 relative z-[100001]"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            <div className="w-6 h-[1.5px] bg-white transition-all duration-300" style={{ transform: mobileMenuOpen ? 'rotate(45deg) translate(5px, 5px)' : 'none', background: mobileMenuOpen ? '#00E5FF' : '#FFF' }} />
+            <div className="w-6 h-[1.5px] bg-white transition-all duration-300" style={{ opacity: mobileMenuOpen ? 0 : 1 }} />
+            <div className="w-6 h-[1.5px] bg-white transition-all duration-300" style={{ transform: mobileMenuOpen ? 'rotate(-45deg) translate(5px, -5px)' : 'none', background: mobileMenuOpen ? '#00E5FF' : '#FFF' }} />
+          </button>
+        </div>
       </nav>
 
       {/* Full-Screen Mobile Menu Overlay */}
       {mobileMenuOpen && (
         <div
-          className="fixed inset-0 w-screen h-screen z-[99999] flex flex-col justify-center items-center gap-8 md:hidden animate-slide-in-right"
+          className="fixed inset-0 w-screen h-screen z-[99999] flex flex-col justify-between p-8 lg:hidden animate-slide-in-right font-mono"
           style={{
-            background: 'rgba(2, 6, 10, 0.96)',
+            background: 'rgba(2, 6, 12, 0.98)',
             backdropFilter: 'blur(30px)',
             WebkitBackdropFilter: 'blur(30px)',
+            borderLeft: '1px solid rgba(0, 229, 255, 0.1)',
           }}
         >
-          {/* Close Button top-right */}
-          <button
-            onClick={() => setMobileMenuOpen(false)}
-            className="fixed top-6 right-6 bg-transparent border-none text-[#00E5FF] hover:text-[#6FEAFF] cursor-pointer text-xs font-mono uppercase tracking-widest transition-colors p-2.5 z-[100000]"
-            style={{ textShadow: '0 0 10px rgba(0, 229, 255, 0.4)' }}
-          >
-            [✕ close]
-          </button>
-
           {/* Menu Header */}
-          <div className="flex flex-col items-center gap-1 mb-6">
-            <div className="flex items-center gap-1.5 font-light text-lg tracking-[0.3em] text-white uppercase font-sans">
-              <span>CHRONO</span>
-              <span style={{ color: '#00E5FF', textShadow: '0 0 10px rgba(0, 229, 255, 0.4)' }} className="font-semibold">EARTH</span>
+          <div className="flex justify-between items-center mt-14 border-b border-[#00E5FF]/10 pb-4">
+            <div className="flex flex-col">
+              <div className="flex items-center gap-1.5 font-light text-lg tracking-[0.3em] text-white uppercase font-sans">
+                <span>CHRONO</span>
+                <span style={{ color: '#00E5FF', textShadow: '0 0 10px rgba(0, 229, 255, 0.4)' }} className="font-semibold">EARTH</span>
+              </div>
+              <span className="text-[9px] text-[#8CA8B8] uppercase tracking-[0.15em] mt-0.5">
+                SYSTEM MENU
+              </span>
             </div>
-            <span className="text-[9px] font-mono text-white/30 uppercase tracking-[0.15em]">
-              System Directory
-            </span>
+            <button
+              onClick={() => setMobileMenuOpen(false)}
+              className="bg-transparent border border-[#00E5FF]/20 text-[#00E5FF] hover:text-[#6FEAFF] cursor-pointer text-xs font-mono uppercase tracking-widest px-3 py-1 rounded transition-all"
+              style={{ textShadow: '0 0 10px rgba(0, 229, 255, 0.4)' }}
+            >
+              [✕ CLOSE]
+            </button>
           </div>
 
-          {/* Vertical Links */}
-          <div className="flex flex-col gap-6 items-center">
-            {navLinks.map((link) => {
-              const isActive = link.activePattern.test(pathname);
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="flex items-center gap-4 py-2.5 px-6 text-base tracking-[0.2em] uppercase font-mono no-underline transition-all duration-300 hover:scale-105"
-                  style={{
-                    color: isActive ? '#00E5FF' : 'rgba(255, 255, 255, 0.65)',
-                    textShadow: isActive ? '0 0 12px rgba(0, 229, 255, 0.5)' : 'none',
-                  }}
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <span className={isActive ? 'animate-breathe' : ''}>{link.icon}</span>
-                  <span>{link.label}</span>
-                </Link>
-              );
-            })}
-            
-            <button
-              onClick={() => {
-                setMobileMenuOpen(false);
-                setSearchOpen(true);
-              }}
-              className="flex items-center gap-4 py-2.5 px-6 bg-transparent border-none text-base tracking-[0.2em] uppercase font-mono cursor-pointer text-white/65 hover:text-white transition-all duration-300 hover:scale-105"
-            >
-              <span>🔍</span>
-              <span>Search</span>
-            </button>
+          {/* Scrollable Links Area */}
+          <div className="flex-1 overflow-y-auto py-6 pr-2 flex flex-col gap-6 custom-scrollbar">
+            {/* User Session Interface */}
+            {!loading && (
+              <div className="flex flex-col gap-2 border border-white/5 p-4 rounded-xl" style={{ backgroundColor: 'rgba(255, 255, 255, 0.02)' }}>
+                {user ? (
+                  <div className="flex flex-col gap-3">
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={user.user_metadata?.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.email}`}
+                        alt="avatar"
+                        className="w-8 h-8 rounded-full border border-[#00E5FF]/30"
+                      />
+                      <div className="flex flex-col min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs font-semibold text-white truncate">
+                            {user.user_metadata?.full_name || 'Active User'}
+                          </span>
+                          {role === 'admin' && (
+                            <span className="px-1 py-0.2 bg-rose-500/20 text-rose-400 border border-rose-500/40 text-[7px] font-bold rounded uppercase tracking-wider">
+                              ADMIN
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-[9px] text-slate-500 truncate">{user.email}</span>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 border-t border-white/5 pt-3 mt-1">
+                      {role === 'admin' && (
+                        <Link
+                          href="/admin"
+                          className="flex items-center justify-center gap-2 p-2 rounded border border-[#00E5FF]/30 bg-[#00E5FF]/10 text-[10px] font-semibold text-[#00E5FF] no-underline font-mono uppercase"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          Admin Panel
+                        </Link>
+                      )}
+                      <Link
+                        href="/settings"
+                        className="flex items-center justify-center gap-2 p-2 rounded border border-white/10 bg-white/5 text-[10px] text-white no-underline font-mono uppercase"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Settings
+                      </Link>
+                      <button
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          window.dispatchEvent(new CustomEvent('start-chronoearth-tour'));
+                        }}
+                        className="flex items-center justify-center gap-2 p-2 rounded border border-white/10 bg-white/5 text-[10px] text-white cursor-pointer font-mono uppercase bg-transparent"
+                      >
+                        Restart Tour
+                      </button>
+                      <button
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          logout();
+                        }}
+                        className="col-span-2 flex items-center justify-center gap-2 p-2 rounded border border-rose-500/20 bg-rose-500/10 text-[10px] text-rose-400 cursor-pointer font-mono uppercase"
+                      >
+                        Logout
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    <div className="text-[9px] text-slate-500 uppercase tracking-widest font-bold font-mono">Account Access</div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <Link
+                        href="/login"
+                        className="flex items-center justify-center p-2 rounded border border-white/10 bg-white/5 text-[10px] text-white no-underline uppercase font-mono"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Login
+                      </Link>
+                      <Link
+                        href="/signup"
+                        className="flex items-center justify-center p-2 rounded border border-[#00E5FF]/30 bg-[#00E5FF]/10 text-[10px] text-[#00E5FF] no-underline uppercase font-mono font-bold"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Sign Up
+                      </Link>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Primary Operations Section */}
+            <div className="flex flex-col gap-2">
+              <div className="text-[10px] text-[#00E5FF] font-bold tracking-widest border-l-2 border-[#00E5FF] pl-2 mb-1">
+                PRIMARY INTERFACES
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                {primaryLinks.map((link) => {
+                  const isActive = link.activePattern.test(pathname);
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className="flex items-center gap-3.5 p-3 rounded-lg border transition-all duration-300 no-underline"
+                      style={{
+                        backgroundColor: isActive ? 'rgba(0, 229, 255, 0.05)' : 'rgba(255, 255, 255, 0.02)',
+                        borderColor: isActive ? 'rgba(0, 229, 255, 0.3)' : 'rgba(255, 255, 255, 0.05)',
+                        color: isActive ? '#00E5FF' : 'rgba(255, 255, 255, 0.8)',
+                      }}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <span className="text-lg">{link.icon}</span>
+                      <span className="text-sm uppercase tracking-wide font-semibold">{link.label}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Real-time Telemetry Section */}
+            <div className="flex flex-col gap-2">
+              <div className="text-[10px] text-[#BF5AF2] font-bold tracking-widest border-l-2 border-[#BF5AF2] pl-2 mb-1">
+                SENSORS & COGNITIVE CHANNELS
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                {secondaryLinks.map((link) => {
+                  const isActive = pathname === link.href;
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className="flex flex-col gap-0.5 p-3 rounded-lg border transition-all duration-300 no-underline"
+                      style={{
+                        backgroundColor: isActive ? 'rgba(191, 90, 242, 0.05)' : 'rgba(255, 255, 255, 0.02)',
+                        borderColor: isActive ? 'rgba(191, 90, 242, 0.3)' : 'rgba(255, 255, 255, 0.05)',
+                        color: isActive ? '#BF5AF2' : 'rgba(255, 255, 255, 0.8)',
+                      }}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-lg">{link.icon}</span>
+                        <span className="text-sm uppercase tracking-wide font-semibold">{link.label}</span>
+                      </div>
+                      <span className="text-[9px] text-white/40 mt-1 pl-7">{link.description}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Footer Diagnostic Panel */}
+          <div className="border-t border-white/5 pt-4 text-[9px] text-[#7A8694] flex justify-between items-center">
+            <span>CHRONO_OS v4.82 // NODE STATUS: ONLINE</span>
+            <span>SECURE ENCRYPTED UPLINK</span>
           </div>
         </div>
       )}
@@ -196,7 +520,7 @@ export default function Navbar({ setActiveCity }: NavbarProps) {
            }
          }
          .animate-slide-in-right {
-           animation: slideInRight 0.4s cubic-bezier(0.4,0,0.2,1) forwards;
+           animation: slideInRight 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
          }
       `}</style>
 
@@ -205,4 +529,3 @@ export default function Navbar({ setActiveCity }: NavbarProps) {
     </>
   );
 }
-

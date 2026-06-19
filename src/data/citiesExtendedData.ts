@@ -1,4 +1,4 @@
-﻿export interface FamousPlace {
+export interface FamousPlace {
   name: string;
   desc: string;
 }
@@ -257,4 +257,3 @@ export const getExtendedCityData = (name: string): ExtendedCityData => {
     ]
   };
 };
-

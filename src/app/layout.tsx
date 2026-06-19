@@ -1,17 +1,18 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
+import { AuthProvider } from "@/context/AuthContext";
+import FloatingActions from "@/components/FloatingActions";
+import OnboardingTour from "@/components/OnboardingTour";
 
-const geistSans = Geist({
+// Use standard system font variables to avoid build-time Google Font network request failures
+const geistSans = {
   variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+};
 
-const geistMono = Geist_Mono({
+const geistMono = {
   variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+};
 
 export const metadata: Metadata = {
   title: "ChronoEarth — Explore Earth 2050",
@@ -53,11 +54,14 @@ export default function RootLayout({
           }
         `}</style>
       </head>
-      <body className="h-full overflow-hidden bg-[#02060B] text-[#e8ecf4]">
+      <body className="h-full bg-[#060918] text-[#e8ecf4]">
         <Script src="/cesium/Cesium.js" strategy="beforeInteractive" />
-        {children}
+        <AuthProvider>
+          {children}
+          <FloatingActions />
+          <OnboardingTour />
+        </AuthProvider>
       </body>
     </html>
   );
 }
-

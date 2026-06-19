@@ -1,211 +1,232 @@
 'use client';
 
-import { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import BackgroundEffects from '@/components/BackgroundEffects';
-import IntroCinematic from '@/components/IntroCinematic';
-
-const C = {
-  emerald: '#00E5FF',
-  cyan: '#6FEAFF',
-  iceBlue: '#6FEAFF',
-  white: '#F5F7FA',
-  bg: 'rgba(10, 20, 35, 0.55)',
-  border: 'rgba(0, 229, 255, 0.15)',
-};
+import Link from 'next/link';
+import Footer from '@/components/Footer';
 
 export default function AboutPage() {
-  const [replayIntro, setReplayIntro] = useState(false);
+  const coreFeatures = [
+    { title: 'Earth Visualization', desc: 'Immersive 3D dot-matrix globe tracking planetary simulation parameters in real time.', icon: '🌍', color: '#00E5FF' },
+    { title: 'FutureChat AI', desc: 'Sleek terminal-style conversational interface powered by multi-provider cognitive routing.', icon: '💬', color: '#00F5B0' },
+    { title: 'Predictions Engine', desc: 'Planetary foresight matrices indexed by confidence ratings and user timeline consensus.', icon: '🔮', color: '#FF9500' },
+    { title: 'Knowledge Base', desc: 'Decrypted codex shards outlining future technologies, resource managers, and carbon tariffs.', icon: '📚', color: '#A8B3BC' },
+    { title: 'Market Intelligence', desc: 'Decentralized hardware semiconductor index tracking global foundry yields and supply lines.', icon: '📈', color: '#00F5D4' },
+    { title: 'Sensor Network', desc: 'Real-time seismic stress, fault lines anomaly warnings, and tectonic telemetry monitoring.', icon: '🌋', color: '#EF4444' },
+    { title: 'Space Monitoring', desc: 'Deep-space satellite coverage tracking orbital debris corridors and solar weather anomalies.', icon: '🚀', color: '#BF5AF2' }
+  ];
 
-  const panelStyle: React.CSSProperties = {
-    background: 'rgba(10, 20, 35, 0.55)',
-    backdropFilter: 'blur(24px)',
-    border: '1px solid rgba(255, 255, 255, 0.05)',
-    borderRadius: '4px',
-    padding: '24px',
-    position: 'relative',
-    overflow: 'hidden',
-  };
-
-  const cornerAccent = null;
+  const techStack = [
+    { name: 'Next.js', role: 'App Framework & SSR', desc: 'Production hybrid framework powering dynamic content routing.', color: '#FFFFFF' },
+    { name: 'React', role: 'UI Library', desc: 'Component-driven reactive architecture for responsive viewports.', color: '#00D98F' },
+    { name: 'TypeScript', role: 'Type Safety', desc: 'Compile-time static typing ensuring clean, robust system calculations.', color: '#00E5FF' },
+    { name: 'Supabase', role: 'Backend & Database', desc: 'PostgreSQL relational database housing live predictions, cities, and articles.', color: '#00F5B0' },
+    { name: 'Google Gemini', role: 'Primary AI Model', desc: 'Advanced natural language model generating future forecast analyses.', color: '#0A84FF' },
+    { name: 'Groq', role: 'Secondary AI Model', desc: 'Ultra-fast Llama inference scaling cognitive failover responses.', color: '#FF9500' },
+    { name: 'CesiumJS', role: '3D WebGL Globe', desc: 'High-performance planetary graphics engine rendering spatial telemetry.', color: '#BF5AF2' }
+  ];
 
   return (
-    <main className="h-screen w-screen overflow-y-auto bg-[#02060B] text-[#e2e8f0] relative custom-scrollbar">
-      {/* Replay cinematic intro overlay */}
-      {replayIntro && (
-        <IntroCinematic
-          forcePlay
-          onComplete={() => setReplayIntro(false)}
-        />
-      )}
-
-      {/* Background Twinkling Stars */}
+    <main className="min-h-screen w-full bg-[#02060A] text-[#e2e8f0] relative pb-24">
+      {/* Background Starfield Twinkle */}
       <BackgroundEffects earthMode="cyber" />
 
-      {/* Top Gradient Vignette */}
-      <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-[rgba(10, 20, 35, 0.75)] to-transparent pointer-events-none z-10" />
+      {/* Top Header Vignette */}
+      <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-[rgba(2,6,10,0.95)] to-transparent pointer-events-none z-10" />
 
-      {/* Navigation Header */}
-      <Navbar earthMode="cyber" />
+      <Navbar />
 
       {/* Main Container */}
-      <div className="reading-container pt-32 pb-20 relative z-20 flex flex-col gap-10 animate-fade-up">
+      <div className="max-w-5xl mx-auto px-6 pt-32 relative z-20 flex flex-col gap-14 animate-fade-up font-mono">
         
-        {/* Title Header */}
-        <div className="flex flex-col gap-3 border-b border-[#00E5FF]/15 pb-6">
-          <h1 className="editorial-title text-white">
-            About ChronoEarth
+        {/* HERO SECTION */}
+        <div className="flex flex-col gap-4 border-b border-white/5 pb-8 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-[#00E5FF]/5 rounded-full blur-[80px] pointer-events-none" />
+          <div className="flex justify-between items-start flex-wrap gap-4">
+            <div className="flex items-center gap-2 text-[#00E5FF] text-xs font-mono uppercase tracking-[0.3em] font-semibold">
+              <span>ℹ️ SYSTEM CODEX SHARD</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#00E5FF] animate-pulse" />
+            </div>
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent('start-chronoearth-tour'))}
+              className="premium-glass px-4 py-1.5 rounded text-[10px] font-mono tracking-wider border border-[#00E5FF]/20 hover:border-[#00E5FF] hover:text-[#00E5FF] hover:shadow-[0_0_12px_rgba(0,229,255,0.25)] transition-all cursor-pointer uppercase font-semibold"
+            >
+              🔄 Restart Tour
+            </button>
+          </div>
+          <h1 className="text-3xl sm:text-4xl font-light text-white tracking-wider uppercase m-0">
+            CHRONO<span className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#00E5FF] to-[#00F5B0]">EARTH</span>
           </h1>
-          <p className="editorial-subtitle text-[#7A8694]">
-            Simulating planetary trajectory vectors and future intelligence alignment parameters for 2030, 2040, and 2050.
+          <p className="text-sm font-semibold uppercase tracking-widest text-white/50 m-0">
+            Future Intelligence & Simulation Platform
+          </p>
+          <p className="text-sm leading-relaxed text-[#7A8694] font-light max-w-3xl font-sans mt-2">
+            ChronoEarth is a highly responsive digital twin model of Earth. By combining expert forecasting, real-time planetary sensor feeds, and adaptive simulation algorithms, the platform plots predictive trajectories across critical sectors into 2030, 2040, and 2050 to help anticipate global transition trends.
           </p>
         </div>
 
-        {/* Section 1: Vision & Mission */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 my-4">
-          <div className="flex flex-col gap-4">
-            <h2 className="text-xl font-light text-white border-b border-[#00E5FF]/15 pb-2">
-              Planetary vision
-            </h2>
-            <p className="text-sm leading-relaxed text-[#7A8694] font-light">
-              To construct a highly responsive digital twin model of planet Earth that integrates quantum forecasting, ecological telemetry, and technological trajectories. ChronoEarth serves as an active planetary operating system dashboard, enabling humanity to visualize, anticipate, and mitigate multi-dimensional systemic risks before they manifest.
-            </p>
+        {/* SECTION: WHAT IS CHRONOEARTH */}
+        <div className="flex flex-col gap-6">
+          <div className="border-l-2 border-[#00F5B0] pl-3 py-0.5">
+            <h2 className="text-lg font-semibold text-white uppercase tracking-wider m-0">What is ChronoEarth?</h2>
+            <span className="text-[10px] text-white/40 uppercase tracking-widest">Planetary surveillance capabilities</span>
           </div>
 
-          <div className="flex flex-col gap-4">
-            <h2 className="text-xl font-light text-white border-b border-[#00E5FF]/15 pb-2">
-              Our core mission
-            </h2>
-            <p className="text-sm leading-relaxed text-[#7A8694] font-light">
-              Our mission is to crowdsource and simulate future scenarios with empirical precision. By matching predictions from leading futurologists with real-time planetary sensor readings, we enable citizens, policy makers, and systems engineers to vote on forecast likelihoods, test local technology impacts, and adapt urban centers dynamically.
-            </p>
-          </div>
-        </div>
-
-        {/* Section 2: Methodology */}
-        <div className="flex flex-col gap-6 my-6">
-          <h2 className="text-xl font-light text-white border-b border-[#00E5FF]/15 pb-2">
-            Forecasting engine methodology
-          </h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="card-tier-2 flex flex-col gap-3 p-5">
-              <span className="text-xs text-[#00E5FF]">Sensor assimilation</span>
-              <p className="text-xs text-[#7A8694] leading-relaxed">
-                Decentralized nodes monitor global telemetry including carbon coefficients, oceanic thermal differentials, and LEO satellite arrays.
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="premium-glass p-5 rounded-xl border border-white/5 flex flex-col gap-2">
+              <span className="text-xs text-[#00E5FF] font-bold uppercase tracking-wider">🌍 Earth Intelligence</span>
+              <p className="text-xs text-[#7A8694] leading-relaxed font-sans font-light">
+                An immersive WebGL digital twin displaying geographical assets, population density centers, and smart city infrastructure meshes.
               </p>
             </div>
-            <div className="card-tier-2 flex flex-col gap-3 p-5">
-              <span className="text-xs text-[#00E5FF]">Expert synthesis</span>
-              <p className="text-xs text-[#7A8694] leading-relaxed">
-                Leading specialists in Quantum Intelligence, Geo-engineering, and Nanomedicine input projection parameters into the Chrono-matrix.
+            <div className="premium-glass p-5 rounded-xl border border-white/5 flex flex-col gap-2">
+              <span className="text-xs text-[#FF0055] font-bold uppercase tracking-wider">🌡️ Climate Monitoring</span>
+              <p className="text-xs text-[#7A8694] leading-relaxed font-sans font-light">
+                Assimilation of global temperature rise parameters, regional sea-level variations, and carbon-tariff compliance metrics.
               </p>
             </div>
-            <div className="card-tier-2 flex flex-col gap-3 p-5">
-              <span className="text-xs text-[#00E5FF]">Branch simulation</span>
-              <p className="text-xs text-[#7A8694] leading-relaxed">
-                Predictive neural models run continuous timelines, scoring confidence ratings based on user validation, upvotes, and environmental trends.
+            <div className="premium-glass p-5 rounded-xl border border-white/5 flex flex-col gap-2">
+              <span className="text-xs text-[#FF9500] font-bold uppercase tracking-wider">🔮 Future Predictions</span>
+              <p className="text-xs text-[#7A8694] leading-relaxed font-sans font-light">
+                Expert-written timeline forecasts spanning AGI adoption, fusion energy breakthroughs, and planetary resource managers.
+              </p>
+            </div>
+            <div className="premium-glass p-5 rounded-xl border border-white/5 flex flex-col gap-2">
+              <span className="text-xs text-[#00F5B0] font-bold uppercase tracking-wider">📈 Market Intelligence</span>
+              <p className="text-xs text-[#7A8694] leading-relaxed font-sans font-light">
+                Silicon stock tracking, hardware fabrication yields, and logistics risk corridor metrics updated under allied blocks.
+              </p>
+            </div>
+            <div className="premium-glass p-5 rounded-xl border border-white/5 flex flex-col gap-2">
+              <span className="text-xs text-[#BF5AF2] font-bold uppercase tracking-wider">🛰️ Space Intelligence</span>
+              <p className="text-xs text-[#7A8694] leading-relaxed font-sans font-light">
+                Orbital satellite constellations, LEO debris sweeping paths, and offworld raw mineral transport logistics.
+              </p>
+            </div>
+            <div className="premium-glass p-5 rounded-xl border border-white/5 flex flex-col gap-2">
+              <span className="text-xs text-white font-bold uppercase tracking-wider">🤖 AI-powered Analysis</span>
+              <p className="text-xs text-[#7A8694] leading-relaxed font-sans font-light">
+                Real-time conversation node utilizing semantic routing to query planetary data, run sandboxes, and fact-check variables.
               </p>
             </div>
           </div>
         </div>
 
-        {/* Section 3: Data Sources */}
-        <div className="flex flex-col gap-6 my-6">
-          <h2 className="text-xl font-light text-white border-b border-[#00E5FF]/15 pb-2">
-            Primary data feed sources
-          </h2>
+        {/* SECTION: CORE FEATURES */}
+        <div className="flex flex-col gap-6">
+          <div className="border-l-2 border-[#BF5AF2] pl-3 py-0.5">
+            <h2 className="text-lg font-semibold text-white uppercase tracking-wider m-0">Core Platform Features</h2>
+            <span className="text-[10px] text-white/40 uppercase tracking-widest">Interface control modules</span>
+          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              { title: 'LEO Satellites', desc: 'Autonomous Debris Patrollers & Reflectance Trackers', freq: 'Real-time (0.04s latency)', score: '99.8% Integrity' },
-              { title: 'Marine Telemetry', desc: 'OTEC Baseline Probes & Reef MINERAL Collectors', freq: 'Every 60 seconds', score: '98.2% Integrity' },
-              { title: 'Urban Neural Mesh', desc: 'Transit Zone Microgrids & Carbon-Tax Contracts', freq: 'Instant (Event-triggered)', score: '99.1% Integrity' },
-              { title: 'Expert Networks', desc: 'UN forecasting collectives & Nobel-grade nodes', freq: 'Bi-weekly consensus cycles', score: '95.4% Integrity' }
-            ].map(source => (
-              <div key={source.title} className="card-tier-2 flex flex-col justify-between p-5 min-h-[140px]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {coreFeatures.map((feat) => (
+              <div
+                key={feat.title}
+                className="card-tier-2 flex flex-col justify-between p-5 min-h-[160px] hover:-translate-y-1 transition-all duration-300 relative group"
+              >
                 <div className="flex flex-col gap-2">
-                  <h3 className="text-sm font-light text-white">{source.title}</h3>
-                  <p className="text-xs text-[#7A8694] leading-relaxed">{source.desc}</p>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-bold text-white uppercase tracking-wide">{feat.title}</span>
+                    <span className="text-lg" style={{ textShadow: `0 0 10px ${feat.color}40` }}>{feat.icon}</span>
+                  </div>
+                  <p className="text-xs text-[#7A8694] leading-relaxed font-sans font-light">{feat.desc}</p>
                 </div>
-                <div className="border-t border-[#00E5FF]/10 pt-2 mt-3 flex justify-between text-xs text-[#7A8694]">
-                  <span>{source.freq}</span>
-                  <span className="text-[#00E5FF] font-mono">{source.score}</span>
-                </div>
+                <div 
+                  className="absolute bottom-0 left-0 right-0 h-[2px] transition-all duration-300 opacity-20 group-hover:opacity-100" 
+                  style={{ background: `linear-gradient(90deg, transparent, ${feat.color}, transparent)`, boxShadow: `0 0 8px ${feat.color}` }}
+                />
               </div>
             ))}
           </div>
         </div>
 
-        {/* Section 4: Roadmap */}
-        <div className="flex flex-col gap-6 my-6">
-          <h2 className="text-xl font-light text-white border-b border-[#00E5FF]/15 pb-2">
-            Forecast engine roadmap
-          </h2>
-          
-          <div className="relative border-l border-[#00E5FF]/15 ml-4 md:ml-6 flex flex-col gap-8 mt-4">
+        {/* SECTION: TECHNOLOGY STACK */}
+        <div className="flex flex-col gap-6">
+          <div className="border-l-2 border-[#FF9500] pl-3 py-0.5">
+            <h2 className="text-lg font-semibold text-white uppercase tracking-wider m-0">Technology Stack</h2>
+            <span className="text-[10px] text-white/40 uppercase tracking-widest">Core infrastructure & frameworks</span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {techStack.map((tech) => (
+              <div 
+                key={tech.name} 
+                className="premium-glass p-5 rounded-xl border border-white/5 flex flex-col gap-2 hover:border-white/10 transition-colors"
+              >
+                <div className="flex justify-between items-baseline">
+                  <span className="text-sm font-bold text-white font-mono tracking-wide">{tech.name}</span>
+                  <span className="text-[8px] font-mono uppercase font-semibold px-2 py-0.5 rounded bg-white/5 text-slate-400 border border-white/10" style={{ borderColor: `${tech.color}30`, color: tech.color }}>
+                    {tech.role}
+                  </span>
+                </div>
+                <p className="text-[11px] text-[#7A8694] leading-relaxed font-sans font-light m-0 mt-1">
+                  {tech.desc}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* SECTION: VISION & ROADMAP */}
+        <div className="flex flex-col gap-6">
+          <div className="border-l-2 border-[#00E5FF] pl-3 py-0.5">
+            <h2 className="text-lg font-semibold text-white uppercase tracking-wider m-0">Roadmap & Vision</h2>
+            <span className="text-[10px] text-white/40 uppercase tracking-widest">Planetary alignment benchmarks</span>
+          </div>
+
+          <div className="relative border-l border-white/10 ml-4 md:ml-6 flex flex-col gap-8 mt-4 pl-6">
             {/* Phase 1 */}
-            <div className="relative pl-6">
-              <div className="absolute -left-1 w-2 h-2 rounded-full bg-[#00E5FF] mt-1.5" />
-              <div className="text-xs text-[#7A8694] mb-1">System foundation (current phase)</div>
-              <h3 className="text-base font-light text-white mb-2">Immersive globe visualizer & routing</h3>
-              <p className="text-xs text-[#7A8694] max-w-3xl leading-relaxed">
-                Releasing the 3D planetary dot-matrix globe. Deploying Next.js content routers for the database, expert tracking, and interactive prediction layouts.
+            <div className="relative">
+              <div className="absolute -left-[29px] top-1.5 w-3 h-3 rounded-full bg-[#00F5B0] border-2 border-[#02060A] shadow-[0_0_8px_#00F5B0]" />
+              <div className="text-[9px] text-[#00F5B0] font-bold uppercase tracking-wider">Phase I: Foundation (Current)</div>
+              <h3 className="text-sm font-semibold text-white mt-1 mb-2 uppercase">Decentralized UI & Immersive 3D Mesh</h3>
+              <p className="text-xs text-[#7A8694] leading-relaxed font-sans font-light max-w-3xl m-0">
+                Deployment of the WebGL digital twin, predictions consensus voting nodes, and semantic AI assistant. Skips rate-limiting external writes and relies on optimized client-side integrations.
               </p>
             </div>
 
             {/* Phase 2 */}
-            <div className="relative pl-6">
-              <div className="absolute -left-1 w-2 h-2 rounded-full bg-[#00E5FF] mt-1.5" />
-              <div className="text-xs text-[#7A8694] mb-1">Engagement layer (Q3 2026 target)</div>
-              <h3 className="text-base font-light text-white mb-2">Nested comment protocols & custom reports</h3>
-              <p className="text-xs text-[#7A8694] max-w-3xl leading-relaxed">
-                Activating persistent local storage upvotes, bookmarked timelines, and recursive commenting hierarchies to build structured futurological debates.
+            <div className="relative">
+              <div className="absolute -left-[29px] top-1.5 w-3 h-3 rounded-full bg-[#00E5FF] border-2 border-[#02060A] shadow-[0_0_8px_#00E5FF]" />
+              <div className="text-[9px] text-[#00E5FF] font-bold uppercase tracking-wider">Phase II: Integration (Q4 2026 Target)</div>
+              <h3 className="text-sm font-semibold text-white mt-1 mb-2 uppercase">Dynamic Sensor Hooks & Web-Scale Sync</h3>
+              <p className="text-xs text-[#7A8694] leading-relaxed font-sans font-light max-w-3xl m-0">
+                Piping real-time telemetry from public agencies (NOAA, NASA, USGS) directly into the planetary simulation models. Projections automatically scale when ecological indicators cross thresholds.
               </p>
             </div>
 
             {/* Phase 3 */}
-            <div className="relative pl-6">
-              <div className="absolute -left-1 w-2 h-2 rounded-full bg-[#00E5FF]/40 mt-1.5" />
-              <div className="text-xs text-[#7A8694] mb-1">Live sensor sync (Q1 2027 target)</div>
-              <h3 className="text-base font-light text-white/70 mb-2">Active climate data pipeline integration</h3>
-              <p className="text-xs text-[#7A8694]/70 max-w-3xl leading-relaxed">
-                Plugging in direct API pipelines from planetary monitoring networks. Projections will automatically scale their confidence scores when climate thresholds are crossed.
+            <div className="relative">
+              <div className="absolute -left-[29px] top-1.5 w-3 h-3 rounded-full bg-slate-800 border-2 border-[#02060A]" />
+              <div className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">Phase III: Autonomy (2027+ Target)</div>
+              <h3 className="text-sm font-semibold text-white/50 mt-1 mb-2 uppercase">Cognitive Decentralized Trajectory Sandboxes</h3>
+              <p className="text-xs text-slate-500 leading-relaxed font-sans font-light max-w-3xl m-0">
+                Enabling neural agents to spawn isolated sandbox timeline scenarios dynamically based on user prompts. Runs decentralized consensus validations on the blockchain.
               </p>
             </div>
           </div>
         </div>
 
-        {/* Replay Intro Section */}
-        <div className="flex flex-col gap-4 my-8 border-t border-[#00E5FF]/15 pt-8">
-          <h2 className="text-xl font-light text-white border-b border-[#00E5FF]/15 pb-2">
-            Experience
-          </h2>
-          <div className="flex items-center gap-6">
-            <button
-              onClick={() => {
-                if (typeof window !== 'undefined') {
-                  localStorage.removeItem('chronoearth_intro_seen');
-                }
-                setReplayIntro(true);
-              }}
-              className="group flex items-center gap-3 px-6 py-3 rounded-lg border border-[#00E5FF]/20 hover:border-[#00E5FF]/50 bg-[#07111A]/50 hover:bg-[#07111A]/80 transition-all duration-300 cursor-pointer"
-            >
-              <span style={{ fontSize: '18px' }}>✦</span>
-              <div className="flex flex-col items-start">
-                <span className="text-sm font-medium text-[#EAF7FF] group-hover:text-[#6FEAFF] transition-colors">
-                  Replay Cinematic Intro
-                </span>
-                <span className="text-[10px] text-[#8CA8B8] font-mono tracking-wider">
-                  RE-EXPERIENCE THE OPENING SEQUENCE
-                </span>
-              </div>
-            </button>
+        {/* SECTION: CREDITS & CREATOR */}
+        <div className="premium-glass p-6 rounded-2xl border border-[#00F5B0]/20 flex flex-col items-center text-center gap-4 relative overflow-hidden mt-6 shadow-[0_0_25px_rgba(0,245,176,0.03)]">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-[#00F5B0]/5 rounded-full blur-[40px] pointer-events-none" />
+          <span className="text-[10px] font-mono text-[#00F5B0] uppercase tracking-[0.25em] font-bold">ChronoEarth Creator</span>
+          <div className="flex flex-col gap-1">
+            <h3 className="text-lg font-bold text-white uppercase tracking-wider m-0">Vardan Raghav</h3>
+            <span className="text-[9px] text-white/40 uppercase tracking-widest">Strategic Systems Architect & Developer</span>
+          </div>
+          <p className="text-xs text-[#7A8694] font-sans font-light max-w-2xl leading-relaxed m-0 mt-1">
+            Designed and engineered as a cyberpunk dashboard tracking decadal trajectories, aligning technology indices, and proving spatial data integrity models.
+          </p>
+          <div className="border-t border-white/5 pt-4 w-full flex justify-between items-center text-[8px] text-white/20 mt-2 font-mono">
+            <span>CHRONO_OS v4.82 // ALL RIGHTS RESERVED</span>
+            <Link href="/sources" className="text-[#00F5B0] hover:underline font-bold no-underline uppercase tracking-wider">Sources & Credits →</Link>
           </div>
         </div>
 
       </div>
+      <Footer />
     </main>
   );
 }
-

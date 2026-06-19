@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 if (typeof window !== 'undefined') {
   (window as any).CESIUM_BASE_URL = '/cesium/';
@@ -9,4 +9,3 @@ if (typeof window !== 'undefined') {
     (window as any).Cesium.Ion.defaultAccessToken = ionToken;
   }
 }
-

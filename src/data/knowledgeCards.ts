@@ -1,4 +1,4 @@
-﻿export interface KnowledgeCard {
+export interface KnowledgeCard {
   id: string;
   title: string;
   category: string;
@@ -227,4 +227,3 @@ export const getKnowledgeCard = (id: string): KnowledgeCard => {
     sources: ['ChronoOS core logs']
   };
 };
-

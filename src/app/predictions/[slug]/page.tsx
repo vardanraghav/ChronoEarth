@@ -4,15 +4,20 @@ import { use, useState, useEffect } from 'react';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import BackgroundEffects from '@/components/BackgroundEffects';
-import { PREDICTIONS, FUTUROLOGISTS, Comment } from '@/data/predictionsData';
+import { usePredictions } from '@/hooks/usePredictions';
+import { useFuturologists } from '@/hooks/useFuturologists';
+import { useKnowledgeBase } from '@/hooks/useKnowledgeBase';
+import { Comment } from '@/data/predictionsData';
+import SafeImage from '@/components/SafeImage';
+import { getPredictionImage, getPredictionCategoryFallback } from '@/lib/imageUtils';
 
 const C = {
-  emerald: '#00E5FF',
-  cyan: '#6FEAFF',
-  iceBlue: '#6FEAFF',
+  emerald: '#00F5B0',
+  cyan: '#00D98F',
+  iceBlue: '#00D98F',
   white: '#F5F7FA',
-  bg: 'rgba(7, 17, 26, 0.65)',
-  border: 'rgba(0, 229, 255, 0.15)',
+  bg: 'rgba(2, 8, 15, 0.75)',
+  border: 'rgba(0, 245, 176, 0.15)',
 };
 
 interface Params {
@@ -79,11 +84,11 @@ function CommentNode({ comment, onReply, onVote }: CommentNodeProps) {
   };
 
   return (
-    <div className="border-l border-[#00E5FF]/20 pl-4 mt-4 flex flex-col gap-2 relative">
+    <div className="border-l border-[#00F5B0]/20 pl-4 mt-4 flex flex-col gap-2 relative">
       {/* Visual node line connector dot */}
-      <div className="absolute -left-[3px] top-1.5 w-1.5 h-1.5 rounded-full bg-[#040B12] border border-[#00E5FF]/20" />
+      <div className="absolute -left-[3px] top-1.5 w-1.5 h-1.5 rounded-full bg-[#040B12] border border-[#00F5B0]/20" />
       
-      <div className="flex justify-between items-center text-[10px] font-mono text-[#00E5FF]">
+      <div className="flex justify-between items-center text-[10px] font-mono text-[#00F5B0]">
         <span className="font-semibold text-white">{comment.author}</span>
         <span className="text-[#7A8694]">{new Date(comment.timestamp).toLocaleDateString()}</span>
       </div>
@@ -95,13 +100,13 @@ function CommentNode({ comment, onReply, onVote }: CommentNodeProps) {
       <div className="flex items-center gap-4 text-[9px] font-mono mt-1">
         <button 
           onClick={() => onVote(comment.id)} 
-          className="text-[#00E5FF] hover:text-[#6FEAFF] transition-colors font-semibold"
+          className="text-[#00F5B0] hover:text-[#00D98F] transition-colors font-semibold"
         >
           ▲ {comment.votes}
         </button>
         <button 
           onClick={() => setReplyOpen(!replyOpen)} 
-          className="text-[#00E5FF] hover:underline transition-all"
+          className="text-[#00F5B0] hover:underline transition-all"
         >
           {replyOpen ? '[CLOSE]' : '[REPLY]'}
         </button>
@@ -114,19 +119,19 @@ function CommentNode({ comment, onReply, onVote }: CommentNodeProps) {
             placeholder="Enter Identity Alias..."
             value={replyAuthor}
             onChange={e => setReplyAuthor(e.target.value)}
-            className="bg-transparent border-b border-[#00E5FF]/15 text-xs text-white outline-none focus:border-[#00E5FF] py-1 font-mono"
+            className="bg-transparent border-b border-[#00F5B0]/15 text-xs text-white outline-none focus:border-[#00F5B0] py-1 font-mono"
             required
           />
           <textarea
             placeholder="Synthesize reply content..."
             value={replyContent}
             onChange={e => setReplyContent(e.target.value)}
-            className="bg-transparent border border-[#00E5FF]/15 text-xs text-slate-300 p-2 outline-none focus:border-[#00E5FF] rounded min-h-[60px] font-sans"
+            className="bg-transparent border border-[#00F5B0]/15 text-xs text-slate-300 p-2 outline-none focus:border-[#00F5B0] rounded min-h-[60px] font-sans"
             required
           />
           <div className="flex gap-2 justify-end">
             <button type="button" onClick={() => setReplyOpen(false)} className="text-[9px] font-mono text-[#7A8694] uppercase px-2 hover:text-white">Cancel</button>
-            <button type="submit" className="text-[9px] font-mono text-[#00E5FF] uppercase font-bold px-2 hover:underline">Transmit</button>
+            <button type="submit" className="text-[9px] font-mono text-[#00F5B0] uppercase font-bold px-2 hover:underline">Transmit</button>
           </div>
         </form>
       )}
@@ -175,9 +180,50 @@ const voteCommentHelper = (commentsList: Comment[], commentId: string): Comment[
 };
 
 export default function PredictionDetailPage({ params }: { params: Promise<Params> }) {
+  const { predictions } = usePredictions();
+  const { futurologists } = useFuturologists();
+  const { kbArticles } = useKnowledgeBase();
   const { slug } = use(params);
   
-  const p = PREDICTIONS.find(pred => pred.slug === slug);
+  const p = predictions.find(pred => pred.slug === slug);
+
+  // Find related knowledge articles
+  const getRelatedKnowledge = (category: string, tags: string[]) => {
+    return kbArticles.filter(art => {
+      const artCat = art.category.toLowerCase();
+      const predCat = category.toLowerCase();
+      if (artCat === predCat || (predCat === 'energy' && artCat.includes('energy')) || (predCat === 'climate' && artCat.includes('climate'))) return true;
+      return tags.some(t => art.title.toLowerCase().includes(t.toLowerCase()) || art.shortDesc.toLowerCase().includes(t.toLowerCase()));
+    }).slice(0, 3);
+  };
+
+  const getRelatedCities = (predCategory: string, primaryCityName: string) => {
+    const related = [primaryCityName];
+    if (predCategory === 'AI' || predCategory === 'Transport') {
+      related.push('Singapore', 'San Francisco', 'Shenzhen', 'Tokyo');
+    } else if (predCategory === 'Climate' || predCategory === 'Energy' || predCategory === 'Cities') {
+      related.push('Mumbai', 'Suva', 'Jakarta', 'Reykjavik');
+    } else if (predCategory === 'Space') {
+      related.push('Singapore', 'Sydney', 'Cape Canaveral');
+    } else {
+      related.push('London', 'New York');
+    }
+    return Array.from(new Set(related)).slice(0, 3);
+  };
+
+  const getRelatedFuturologists = (predCategory: string, authorName: string) => {
+    const related = [authorName];
+    if (predCategory === 'AI') {
+      related.push('Dr. Ishita Iyer');
+    } else if (predCategory === 'Climate' || predCategory === 'Energy') {
+      related.push('Prof. Arjun Sharma');
+    } else if (predCategory === 'Space') {
+      related.push('Dr. Rajesh Nair');
+    } else if (predCategory === 'Healthcare') {
+      related.push('Dr. Sneha Patil');
+    }
+    return Array.from(new Set(related)).slice(0, 2);
+  };
 
   const [votesCount, setVotesCount] = useState(p ? p.initialVotes : 0);
   const [hasVoted, setHasVoted] = useState<'up' | 'down' | null>(null);
@@ -214,20 +260,20 @@ export default function PredictionDetailPage({ params }: { params: Promise<Param
         setComments(JSON.parse(cachedComments));
       }
     } catch (e) {
-      console.error(e);
+      // Handle error silently
     }
   }, [p]);
 
   if (!p) {
     return (
-      <main className="h-screen w-screen bg-[#02060B] flex flex-col items-center justify-center text-white gap-4 font-mono">
+      <main className="h-screen w-screen bg-[#02060A] flex flex-col items-center justify-center text-white gap-4 font-mono">
         <div>[ERROR // TIMELINE CORE ARCHIVE LINK CORRUPTED]</div>
-        <Link href="/predictions" className="text-[#00E5FF] hover:underline">[← RETURN TO EXPLORER]</Link>
+        <Link href="/predictions" className="text-[#00F5B0] hover:underline">[← RETURN TO EXPLORER]</Link>
       </main>
     );
   }
 
-  const authorObj = FUTUROLOGISTS.find(f => f.name === p.author);
+  const authorObj = futurologists.find(f => f.name === p.author);
 
   // Voting action
   const triggerVote = (dir: 'up' | 'down') => {
@@ -257,7 +303,7 @@ export default function PredictionDetailPage({ params }: { params: Promise<Param
       dict[p.id] = baseDiff;
       localStorage.setItem('chrono_votes', JSON.stringify(dict));
     } catch (e) {
-      console.error(e);
+      // Handle error silently
     }
   };
 
@@ -275,7 +321,7 @@ export default function PredictionDetailPage({ params }: { params: Promise<Param
       }
       localStorage.setItem('chrono_bookmarked_preds', JSON.stringify(list));
     } catch (e) {
-      console.error(e);
+      // Handle error silently
     }
   };
 
@@ -375,21 +421,54 @@ Generated via ChronoEarth forecast engine.`;
     overflow: 'hidden',
   };
     return (
-    <main className="h-screen w-screen overflow-y-auto bg-[#02060B] text-[#e2e8f0] relative custom-scrollbar">
+    <main className="h-screen w-screen overflow-y-auto bg-[#02060A] text-[#e2e8f0] relative custom-scrollbar">
       <BackgroundEffects earthMode="cyber" />
       
-      <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-[rgba(10, 20, 35, 0.75)] to-transparent pointer-events-none z-10" />
+      <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-[rgba(2,8,15,0.95)] to-transparent pointer-events-none z-10" />
 
       <Navbar earthMode="cyber" />
 
       <div className="reading-container pt-36 pb-24 relative z-20 flex flex-col gap-8 animate-fade-up">
         
         {/* Navigation Breadcrumb */}
-        <div className="flex items-center gap-2 text-xs text-[#00E5FF]">
+        <div className="flex items-center gap-2 text-xs text-[#00F5B0]">
           <Link href="/predictions" className="hover:text-white transition-colors">Forecasts directory</Link>
           <span>/</span>
           <span className="text-[#7A8694]">{p.title}</span>
         </div>
+
+        {/* Hero Banner */}
+        {getPredictionImage(p) ? (
+          <div className="w-full h-[220px] md:h-[300px] rounded-lg overflow-hidden relative border border-white/5 shadow-[0_0_15px_rgba(0,0,0,0.3)]">
+            <SafeImage
+              src={getPredictionImage(p) as string}
+              fallbackSrc={getPredictionCategoryFallback(p.category)}
+              alt={p.title}
+              fill
+              priority
+              sizes="(max-width: 1200px) 100vw, 1200px"
+              className="object-cover transition-transform duration-700 hover:scale-102"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#02060A]/95 via-transparent to-[#02060A]/20" />
+            <div className="absolute bottom-4 left-6 right-6 flex flex-col gap-1.5 z-10 font-mono">
+              <span className="text-[9px] text-[#00F5B0] uppercase tracking-[0.2em] font-semibold bg-[#02060A]/85 border border-[#00F5B0]/20 px-2 py-0.5 rounded self-start">
+                {p.category.toUpperCase()} SECTOR
+              </span>
+              <h2 className="text-xl md:text-2xl font-light text-white tracking-tight m-0 drop-shadow-md">
+                {p.title}
+              </h2>
+            </div>
+          </div>
+        ) : (
+          <div className="w-full p-6 rounded-lg border border-white/5 bg-black/40 flex flex-col gap-2 font-mono">
+            <span className="text-[9px] text-[#00F5B0] uppercase tracking-[0.2em] font-semibold bg-white/5 border border-[#00F5B0]/20 px-2 py-0.5 rounded self-start">
+              {p.category.toUpperCase()} SECTOR
+            </span>
+            <h2 className="text-xl md:text-2xl font-light text-white tracking-tight m-0">
+              {p.title}
+            </h2>
+          </div>
+        )}
 
         {/* 2-Column Dashboard layout */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -398,26 +477,33 @@ Generated via ChronoEarth forecast engine.`;
           <div className="lg:col-span-1 flex flex-col gap-6">
             <div className="card-tier-2 flex flex-col gap-6">
 
-              <div className="flex flex-col gap-1 border-b border-[#00E5FF]/15 pb-4">
+              <div className="flex flex-col gap-1 border-b border-[#00F5B0]/15 pb-4">
                 <span className="text-xs text-[#7A8694]">Forecast ID: <span className="font-mono">{p.id.toUpperCase()}</span></span>
                 <h2 className="text-lg font-normal text-white">Metrics matrix</h2>
               </div>
 
               {/* Gauges */}
-              <div className="flex justify-around items-center py-2 border-b border-[#00E5FF]/15">
+              <div className="flex justify-around items-center py-2 border-b border-[#00F5B0]/15">
                 <CircularGauge value={p.confidenceScore} color={C.cyan} label="Confidence score" />
                 <CircularGauge value={82} color={C.emerald} label="Planetary stability" />
               </div>
 
               {/* Stats Lists */}
-              <div className="flex flex-col gap-3 text-xs border-b border-[#00E5FF]/15 pb-4">
-                <div className="flex justify-between">
+              <div className="flex flex-col gap-3 text-xs border-b border-[#00F5B0]/15 pb-4">
+                <div className="flex justify-between items-start">
                   <span className="text-[#7A8694]">Geolocation</span>
-                  <span className="text-[#00E5FF] font-medium">{p.city}</span>
+                  <div className="flex flex-col items-end gap-1">
+                    <Link href={`/city/${p.city.toLowerCase().replace(/\s+/g, '-')}`} className="text-[#00F5B0] font-medium hover:underline text-right">
+                      {p.city} 🏙️
+                    </Link>
+                    <Link href={`/dashboard?city=${encodeURIComponent(p.city)}`} className="text-[9px] text-white/40 hover:text-[#00F5B0] transition-colors">
+                      [Center on Globe Map]
+                    </Link>
+                  </div>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-[#7A8694]">Target chrono-year</span>
-                  <span className="text-[#00E5FF] font-medium">{p.year} forecast</span>
+                  <span className="text-[#00F5B0] font-medium">{p.year} forecast</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-[#7A8694]">Upvotes registered</span>
@@ -444,13 +530,13 @@ Generated via ChronoEarth forecast engine.`;
               <div className="flex flex-col gap-2 mt-2">
                 
                 {/* Voting Box */}
-                <div className="flex border border-[#00E5FF]/15 rounded overflow-hidden">
+                <div className="flex border border-[#00F5B0]/15 rounded overflow-hidden">
                   <button
                     onClick={() => triggerVote('up')}
                     className={`flex-1 py-2 text-xs transition-all ${
                       hasVoted === 'up'
-                        ? 'bg-[#040B12] text-[#00E5FF] border-r border-[#00E5FF]/15 font-medium'
-                        : 'bg-[#00E5FF]/5 hover:bg-[#00E5FF]/10 text-[#7A8694] border-r border-[#00E5FF]/15'
+                        ? 'bg-[#040B12] text-[#00F5B0] border-r border-[#00F5B0]/15 font-medium'
+                        : 'bg-[#00F5B0]/5 hover:bg-[#00F5B0]/10 text-[#7A8694] border-r border-[#00F5B0]/15'
                     }`}
                   >
                     ▲ Vote probable
@@ -460,7 +546,7 @@ Generated via ChronoEarth forecast engine.`;
                     className={`flex-1 py-2 text-xs transition-all ${
                       hasVoted === 'down'
                         ? 'bg-rose-950/65 text-rose-455 font-medium'
-                        : 'bg-[#00E5FF]/5 hover:bg-[#00E5FF]/10 text-[#7A8694]'
+                        : 'bg-[#00F5B0]/5 hover:bg-[#00F5B0]/10 text-[#7A8694]'
                     }`}
                   >
                     ▼ Vote improbable
@@ -472,8 +558,8 @@ Generated via ChronoEarth forecast engine.`;
                   onClick={toggleSave}
                   className={`w-full py-2 text-xs border rounded transition-all duration-200 ${
                     isSaved
-                      ? 'bg-[#00E5FF]/10 border-[#00E5FF] text-[#00E5FF] font-medium shadow-none'
-                      : 'bg-transparent border-[#00E5FF]/15 text-[#7A8694] hover:border-[#00E5FF]/35 hover:text-white'
+                      ? 'bg-[#00F5B0]/10 border-[#00F5B0] text-[#00F5B0] font-medium shadow-none'
+                      : 'bg-transparent border-[#00F5B0]/15 text-[#7A8694] hover:border-[#00F5B0]/35 hover:text-white'
                   }`}
                 >
                   {isSaved ? '🔖 Timeline path saved' : '🔖 Save for monitoring'}
@@ -482,7 +568,7 @@ Generated via ChronoEarth forecast engine.`;
                 {/* Share Link */}
                 <button
                   onClick={triggerShare}
-                  className="w-full py-2 text-xs bg-[#00E5FF]/10 border border-[#6FEAFF]/20 hover:border-[#6FEAFF]/50 text-[#00E5FF] rounded transition-all duration-200"
+                  className="w-full py-2 text-xs bg-[#00F5B0]/10 border border-[#00D98F]/20 hover:border-[#00D98F]/50 text-[#00F5B0] rounded transition-all duration-200"
                 >
                   🔗 {shareText}
                 </button>
@@ -490,7 +576,7 @@ Generated via ChronoEarth forecast engine.`;
                 {/* Download Report */}
                 <button
                   onClick={triggerExport}
-                  className="w-full py-2 text-xs bg-[#00E5FF] hover:bg-[#6FEAFF] text-[#02060A] font-medium rounded transition-all duration-200"
+                  className="w-full py-2 text-xs bg-[#00F5B0] hover:bg-[#00D98F] text-[#02060A] font-medium rounded transition-all duration-200"
                 >
                   ⚡ Export intelligence report (.txt)
                 </button>
@@ -507,8 +593,8 @@ Generated via ChronoEarth forecast engine.`;
             <div className="card-tier-1 flex flex-col gap-6">
 
               <div className="flex justify-between items-center text-xs">
-                <span className="px-2 py-0.5 bg-[#040B12] text-[#00E5FF] border border-[#00E5FF]/20 rounded-sm">{p.category}</span>
-                <span className="text-[#00E5FF]">{p.year} timeline shard</span>
+                <span className="px-2 py-0.5 bg-[#040B12] text-[#00F5B0] border border-[#00F5B0]/20 rounded-sm">{p.category}</span>
+                <span className="text-[#00F5B0]">{p.year} timeline shard</span>
               </div>
 
               <div>
@@ -521,7 +607,7 @@ Generated via ChronoEarth forecast engine.`;
                     className="flex items-center gap-3 w-fit mt-3 group"
                   >
                     {avatarError ? (
-                      <div className="w-8 h-8 rounded-full border border-[#00E5FF]/30 flex items-center justify-center bg-[#040B12] text-[9px] font-mono text-[#00E5FF] font-bold shrink-0">
+                      <div className="w-8 h-8 rounded-full border border-[#00F5B0]/30 flex items-center justify-center bg-[#040B12] text-[9px] font-mono text-[#00F5B0] font-bold shrink-0">
                         {p.author.split(' ').map(n => n[0]).join('')}
                       </div>
                     ) : (
@@ -530,35 +616,115 @@ Generated via ChronoEarth forecast engine.`;
                         alt={p.author} 
                         loading="lazy"
                         onError={() => setAvatarError(true)}
-                        className="w-8 h-8 rounded-full border border-[#00E5FF]/30 object-cover shadow-none group-hover:scale-105 transition-transform shrink-0"
+                        className="w-8 h-8 rounded-full border border-[#00F5B0]/30 object-cover shadow-none group-hover:scale-105 transition-transform shrink-0"
                       />
                     )}
                     <div>
-                      <span className="text-xs font-medium text-white group-hover:text-[#00E5FF] transition-colors">{p.author}</span>
+                      <span className="text-xs font-medium text-white group-hover:text-[#00F5B0] transition-colors">{p.author}</span>
                       <span className="text-xs text-[#7A8694] block">{authorObj.role}</span>
                     </div>
                   </Link>
                 )}
               </div>
 
-              <div className="border-t border-[#00E5FF]/15 pt-6 text-sm leading-relaxed text-[#7A8694] whitespace-pre-wrap">
+              <div className="border-t border-[#00F5B0]/15 pt-6 text-sm leading-relaxed text-[#7A8694] whitespace-pre-wrap">
                 {p.description}
               </div>
 
               {/* Tags */}
-              <div className="flex flex-wrap gap-2 pt-2 border-t border-[#00E5FF]/15">
+              <div className="flex flex-wrap gap-2 pt-2 border-t border-[#00F5B0]/15">
                 {p.tags.map(tag => (
-                  <span key={tag} className="px-2 py-1 bg-[#00E5FF]/10 text-xs text-[#00E5FF] border border-[#00E5FF]/10 rounded-full">
+                  <span key={tag} className="px-2 py-1 bg-[#00F5B0]/10 text-xs text-[#00F5B0] border border-[#00F5B0]/10 rounded-full">
                     #{tag.replace(/\s+/g, '')}
                   </span>
                 ))}
+              </div>
+
+              {/* Related Entities Grid */}
+              <div className="border-t border-[#00F5B0]/15 pt-6 flex flex-col gap-6">
+                
+                {/* Related Codex Articles */}
+                <div className="flex flex-col gap-3">
+                  <span className="text-[10px] text-[#00E5FF] font-mono uppercase tracking-wider font-semibold">Related Codex Shards</span>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {getRelatedKnowledge(p.category, p.tags).length === 0 ? (
+                      <span className="text-xs text-[#7A8694] font-light">No direct tech codex link registered.</span>
+                    ) : (
+                      getRelatedKnowledge(p.category, p.tags).map(art => (
+                        <Link 
+                          key={art.id}
+                          href={`/knowledge?article=${art.id}`}
+                          className="p-3 bg-black/45 hover:bg-[#00E5FF]/5 border border-[#00E5FF]/15 hover:border-[#00E5FF] rounded flex flex-col gap-1 no-underline group transition-all"
+                        >
+                          <span className="text-[8px] font-mono text-white/40 uppercase">CODEX // {art.category}</span>
+                          <span className="text-xs font-semibold text-white group-hover:text-[#00E5FF] transition-colors truncate">
+                            {art.title}
+                          </span>
+                        </Link>
+                      ))
+                    )}
+                  </div>
+                </div>
+
+                {/* Related Cities */}
+                <div className="flex flex-col gap-3 border-t border-white/5 pt-4">
+                  <span className="text-[10px] text-[#00F5B0] font-mono uppercase tracking-wider font-semibold">Related Cities</span>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {getRelatedCities(p.category, p.city).map(cityName => (
+                      <Link 
+                        key={cityName}
+                        href={`/city/${cityName.toLowerCase().replace(/\s+/g, '-')}`}
+                        className="p-3 bg-black/45 border border-[#00F5B0]/15 hover:border-[#00F5B0] rounded flex justify-between items-center no-underline group transition-all"
+                      >
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-[8px] font-mono text-white/40 uppercase">CITY NODE</span>
+                          <span className="text-xs font-semibold text-white group-hover:text-[#00F5B0] transition-colors truncate">
+                            {cityName}
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-white/20 group-hover:text-[#00F5B0] transition-colors">→</span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Related Specialists */}
+                <div className="flex flex-col gap-3 border-t border-white/5 pt-4">
+                  <span className="text-[10px] text-[#BF5AF2] font-mono uppercase tracking-wider font-semibold">Related Futurologists</span>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {getRelatedFuturologists(p.category, p.author).map(fName => {
+                      const fObj = futurologists.find(f => f.name === fName);
+                      if (!fObj) return null;
+                      return (
+                        <Link 
+                          key={fObj.slug}
+                          href={`/futurologists/${fObj.slug}`}
+                          className="p-3 bg-black/45 border border-[#BF5AF2]/15 hover:border-[#BF5AF2] rounded flex items-center gap-3 no-underline group transition-all"
+                        >
+                          <div className="w-8 h-8 rounded-full border border-white/10 overflow-hidden shrink-0">
+                            <img src={fObj.avatar} alt={fObj.name} className="w-full h-full object-cover" />
+                          </div>
+                          <div className="flex flex-col min-w-0">
+                            <span className="text-xs font-semibold text-white group-hover:text-[#BF5AF2] transition-colors truncate">
+                              {fObj.name}
+                            </span>
+                            <span className="text-[9px] font-mono text-[#7A8694] truncate">
+                              {fObj.role}
+                            </span>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+
               </div>
             </div>
 
             {/* Nested Comments Panel */}
             <div className="card-tier-2 flex flex-col gap-6">
               
-              <div className="flex justify-between items-center border-b border-[#00E5FF]/15 pb-4">
+              <div className="flex justify-between items-center border-b border-[#00F5B0]/15 pb-4">
                 <div className="flex items-center gap-3">
                   <h3 className="text-lg font-light text-white uppercase tracking-wider">Planetary Consensus Thread</h3>
                 </div>
@@ -569,8 +735,8 @@ Generated via ChronoEarth forecast engine.`;
                     onClick={() => setSortMode('top')}
                     className={`px-2 py-1 font-mono text-[8px] uppercase border rounded transition-all ${
                       sortMode === 'top'
-                        ? 'bg-[#040B12] text-[#00E5FF] border-[#00E5FF]/30'
-                        : 'bg-transparent border-[#00E5FF]/15 text-[#7A8694] hover:text-white'
+                        ? 'bg-[#040B12] text-[#00F5B0] border-[#00F5B0]/30'
+                        : 'bg-transparent border-[#00F5B0]/15 text-[#7A8694] hover:text-white'
                     }`}
                   >
                     Top Ratings
@@ -579,8 +745,8 @@ Generated via ChronoEarth forecast engine.`;
                     onClick={() => setSortMode('newest')}
                     className={`px-2 py-1 font-mono text-[8px] uppercase border rounded transition-all ${
                       sortMode === 'newest'
-                        ? 'bg-[#040B12] text-[#00E5FF] border-[#00E5FF]/30'
-                        : 'bg-transparent border-[#00E5FF]/15 text-[#7A8694] hover:text-white'
+                        ? 'bg-[#040B12] text-[#00F5B0] border-[#00F5B0]/30'
+                        : 'bg-transparent border-[#00F5B0]/15 text-[#7A8694] hover:text-white'
                     }`}
                   >
                     Newest
@@ -596,26 +762,26 @@ Generated via ChronoEarth forecast engine.`;
                   placeholder="Identity matrix / Username..."
                   value={newAuthor}
                   onChange={e => setNewAuthor(e.target.value)}
-                  className="bg-[#02060B]/70 border border-[#00E5FF]/15 text-xs text-white px-3 py-2 outline-none focus:border-[#00E5FF] rounded font-mono"
+                  className="bg-[#00050c]/60 border border-[#00F5B0]/15 text-xs text-white px-3 py-2 outline-none focus:border-[#00F5B0] rounded font-mono"
                   required
                 />
                 <textarea
                   placeholder="Input detailed fourier analysis feedback or prediction critiques..."
                   value={newContent}
                   onChange={e => setNewContent(e.target.value)}
-                  className="bg-[#02060B]/70 border border-[#00E5FF]/15 text-xs text-[#7A8694] p-3 outline-none focus:border-[#00E5FF] rounded min-h-[80px] font-sans"
+                  className="bg-[#00050c]/60 border border-[#00F5B0]/15 text-xs text-[#7A8694] p-3 outline-none focus:border-[#00F5B0] rounded min-h-[80px] font-sans"
                   required
                 />
                 <button
                   type="submit"
-                  className="self-end px-4 py-2 bg-[#040B12] text-[#00E5FF] border border-[#00E5FF]/20 hover:bg-[#00E5FF] hover:text-[#02060A] hover:border-transparent font-mono text-[9px] tracking-widest uppercase rounded transition-all duration-300"
+                  className="self-end px-4 py-2 bg-[#040B12] text-[#00F5B0] border border-[#00F5B0]/20 hover:bg-[#00F5B0] hover:text-[#02060A] hover:border-transparent font-mono text-[9px] tracking-widest uppercase rounded transition-all duration-300"
                 >
                   TRANSMIT PROTOCOL FEEDBACK
                 </button>
               </form>
 
               {/* Comments Thread List */}
-              <div className="flex flex-col gap-6 mt-2 divide-y divide-[#00E5FF]/10">
+              <div className="flex flex-col gap-6 mt-2 divide-y divide-[#00F5B0]/10">
                 {sortedComments.length === 0 ? (
                   <div className="text-center py-8 font-mono text-xs text-[#7A8694]">
                     AWAITING INITIAL TRANSMISSIONS... BE THE FIRST TO COMMENT.

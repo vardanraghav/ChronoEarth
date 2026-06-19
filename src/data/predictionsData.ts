@@ -1,4 +1,4 @@
-﻿export interface Comment {
+export interface Comment {
   id: string;
   author: string;
   avatar?: string;
@@ -39,7 +39,7 @@ export interface Prediction {
 export interface KBArticle {
   id: string;
   title: string;
-  category: 'Technologies' | 'Future Jobs' | 'Climate' | 'Energy' | 'Space';
+  category: string;
   shortDesc: string;
   content: string;
   readinessIndex: number; // 0 to 100
@@ -463,4 +463,3 @@ export const KB_ARTICLES: KBArticle[] = [
     impactLevel: 'High'
   }
 ];
-
