@@ -163,10 +163,10 @@ export default function FutureChatCore() {
     console.log('[FutureChat Debug] Load requested. Target UID:', uid);
     setHistoryLoading(true);
     try {
-      console.log('[FutureChat Debug] Querying database for user_id =', uid);
+      console.log('[FutureChat Debug] Querying database (chat_sessions) for user_id =', uid);
       const { data, error } = await supabase
-        .from('futurechat_conversations')
-        .select('id, role, content, created_at')
+        .from('chat_sessions')
+        .select('id, content, created_at')
         .eq('user_id', uid)
         .order('created_at', { ascending: true })
         .limit(50);
@@ -178,11 +178,21 @@ export default function FutureChatCore() {
 
       console.log('[FutureChat Debug] Loaded raw conversation records:', data ? data.length : 0);
       if (data && data.length > 0) {
-        const parsed = data.map((item: any) => ({
-          id: item.id,
-          text: item.content,
-          isAi: item.role === 'assistant',
-        }));
+        const parsed = data.map((item: any) => {
+          const rawText = item.content || '';
+          const isAi = rawText.startsWith('[ASSISTANT]:');
+          const cleanText = isAi 
+            ? rawText.slice(12) 
+            : rawText.startsWith('[USER]:') 
+              ? rawText.slice(7) 
+              : rawText;
+
+          return {
+            id: item.id,
+            text: cleanText,
+            isAi: isAi,
+          };
+        });
         console.log('[FutureChat Debug] Mapped messages for UI rendering pipeline:', parsed.length);
         setMessages(parsed);
       } else {
@@ -242,10 +252,13 @@ export default function FutureChatCore() {
 
   // ── Persist a single message row ─────────────────────────────────────────
   const persistMessage = (uid: string, role: 'user' | 'assistant', content: string) => {
-    console.log(`[FutureChat Debug] Storing ${role} message. UID: ${uid}, Session: ${sessionId}`);
+    console.log(`[FutureChat Debug] Storing ${role} message in chat_sessions. UID: ${uid}`);
+    // Prefix content with role since chat_sessions doesn't have role/is_ai column
+    const formattedContent = `[${role.toUpperCase()}]: ${content}`;
+    
     supabase
-      .from('futurechat_conversations')
-      .insert({ user_id: uid, session_id: sessionId, role, content })
+      .from('chat_sessions')
+      .insert({ user_id: uid, content: formattedContent })
       .then(({ error }: { error: any }) => {
         if (error) {
           console.error(`[FutureChat Debug] Database write failed for ${role} message:`, error.message);
