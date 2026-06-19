@@ -114,12 +114,12 @@ export async function fetchSiliconAnalystsIntelligence(apiKey: string): Promise<
     parseJson(acceleratorsRes)
   ]);
 
-  // Extract from the { success: true, data: ... } wrapper returned by the API
-  const pulseRaw = pulseData?.data || pulseData || [];
-  const hbmRaw = hbmData?.data || hbmData || null;
-  const waferRaw = waferData?.data || waferData || [];
-  const packagingRaw = packagingData?.data?.packaging || packagingData?.data || packagingData || [];
-  const acceleratorsRaw = acceleratorsData?.data || acceleratorsData || [];
+  // Extract from the { success: true, data: ... } wrapper returned by the API, normalized for fallback structures
+  const pulseRaw = pulseData?.data ?? pulseData?.signals ?? pulseData?.items ?? (Array.isArray(pulseData) ? pulseData : []);
+  const hbmRaw = hbmData?.data ?? hbmData?.items ?? hbmData ?? null;
+  const waferRaw = waferData?.data ?? waferData?.items ?? (Array.isArray(waferData) ? waferData : []);
+  const packagingRaw = packagingData?.data?.packaging ?? packagingData?.data ?? packagingData?.items ?? (Array.isArray(packagingData) ? packagingData : []);
+  const acceleratorsRaw = acceleratorsData?.data ?? acceleratorsData?.items ?? (Array.isArray(acceleratorsData) ? acceleratorsData : []);
 
   const pulseClean: MarketPulseSignal[] = Array.isArray(pulseRaw) ? pulseRaw : [];
   

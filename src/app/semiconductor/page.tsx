@@ -19,8 +19,10 @@ export default function SemiconductorBloombergTerminal() {
         setSemiLoading(true);
         const res = await fetch('/api/semiconductor');
         const payload = await res.json();
+        console.log("Breaking Signals Raw", payload?.data);
         if (payload.success && payload.data) {
           setSemiData(payload.data);
+          console.log("Breaking Signals Count", payload.data.marketPulse?.length || 0);
         } else {
           setSemiError(payload.error || 'Semiconductor Intelligence temporarily unavailable');
         }
@@ -344,57 +346,63 @@ export default function SemiconductorBloombergTerminal() {
                     <span className="text-[9px] font-mono text-indigo-400">REAL-TIME FEEDS</span>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {processedSignals.map((sig) => (
-                      <div key={sig.id} className="premium-glass p-5 rounded border border-white/5 bg-[#040b12]/60 flex flex-col justify-between min-h-[320px] relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 blur-2xl rounded-full pointer-events-none" />
-                        <div className="flex flex-col gap-4">
-                          <div className="flex gap-4 items-start">
-                            {/* Compact Thumbnail Image */}
-                            <div className="relative w-20 h-20 rounded overflow-hidden flex-shrink-0 border border-white/10 group-hover:border-indigo-500/30 transition-all duration-300">
-                              <SafeImage
-                                src={sig.image}
-                                fallbackSrc="https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&auto=format&fit=crop&q=80"
-                                alt={sig.headline}
-                                fill
-                                sizes="80px"
-                                loading="lazy"
-                                className="object-cover group-hover:scale-105 transition-transform duration-300"
-                              />
-                            </div>
-                            <div className="flex-1 flex flex-col gap-1 min-w-0">
-                              <div className="flex justify-between items-center text-[9px] font-mono">
-                                <span className="text-indigo-400 font-bold uppercase truncate max-w-[120px]">{sig.company}</span>
-                                <span className="text-white/40 truncate max-w-[100px]">{sig.date || 'Live Stream'}</span>
+                  {processedSignals.length === 0 ? (
+                    <div className="py-16 text-center border border-white/5 bg-black/40 rounded-lg font-mono">
+                      <span className="text-xs text-white/50">No signals available</span>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {processedSignals.map((sig) => (
+                        <div key={sig.id} className="premium-glass p-5 rounded border border-white/5 bg-[#040b12]/60 flex flex-col justify-between min-h-[320px] relative overflow-hidden group">
+                          <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 blur-2xl rounded-full pointer-events-none" />
+                          <div className="flex flex-col gap-4">
+                            <div className="flex gap-4 items-start">
+                              {/* Compact Thumbnail Image */}
+                              <div className="relative w-20 h-20 rounded overflow-hidden flex-shrink-0 border border-white/10 group-hover:border-indigo-500/30 transition-all duration-300">
+                                <SafeImage
+                                  src={sig.image}
+                                  fallbackSrc="https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&auto=format&fit=crop&q=80"
+                                  alt={sig.headline}
+                                  fill
+                                  sizes="80px"
+                                  loading="lazy"
+                                  className="object-cover group-hover:scale-105 transition-transform duration-300"
+                                />
                               </div>
-                              <h3 className="text-xs font-semibold font-mono text-white leading-normal m-0 group-hover:text-indigo-300 transition-colors">
-                                {sig.headline}
-                              </h3>
+                              <div className="flex-1 flex flex-col gap-1 min-w-0">
+                                <div className="flex justify-between items-center text-[9px] font-mono">
+                                  <span className="text-indigo-400 font-bold uppercase truncate max-w-[120px]">{sig.company}</span>
+                                  <span className="text-white/40 truncate max-w-[100px]">{sig.date || 'Live Stream'}</span>
+                                </div>
+                                <h3 className="text-xs font-semibold font-mono text-white leading-normal m-0 group-hover:text-indigo-300 transition-colors">
+                                  {sig.headline}
+                                </h3>
+                              </div>
+                            </div>
+
+                            <div className="bg-black/45 border border-indigo-500/10 p-2.5 rounded text-[10px] font-mono">
+                              <div className="text-[#00E5FF] font-bold uppercase text-[8px] mb-0.5 tracking-wider">Strategic Impact</div>
+                              <p className="text-white/80 m-0 leading-normal">{sig.strategicImpact}</p>
                             </div>
                           </div>
 
-                          <div className="bg-black/45 border border-indigo-500/10 p-2.5 rounded text-[10px] font-mono">
-                            <div className="text-[#00E5FF] font-bold uppercase text-[8px] mb-0.5 tracking-wider">Strategic Impact</div>
-                            <p className="text-white/80 m-0 leading-normal">{sig.strategicImpact}</p>
+                          <div className="flex flex-col gap-2 mt-4 pt-3 border-t border-white/5 font-mono">
+                            <div className="flex justify-between items-center text-[9px]">
+                              <span className="text-white/40">Importance Score</span>
+                              <span className="text-amber-400 font-bold">{sig.importanceScore}%</span>
+                            </div>
+                            <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
+                              <div className="h-full bg-amber-400 shadow-[0_0_6px_rgba(245,158,11,0.5)]" style={{ width: `${sig.importanceScore}%` }} />
+                            </div>
+                            <div className="flex justify-between items-center text-[8px] text-[#7A8694] pt-1">
+                              <span>Category: {sig.category}</span>
+                              <span className="text-indigo-400 font-bold">Source: {sig.source}</span>
+                            </div>
                           </div>
                         </div>
-
-                        <div className="flex flex-col gap-2 mt-4 pt-3 border-t border-white/5 font-mono">
-                          <div className="flex justify-between items-center text-[9px]">
-                            <span className="text-white/40">Importance Score</span>
-                            <span className="text-amber-400 font-bold">{sig.importanceScore}%</span>
-                          </div>
-                          <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
-                            <div className="h-full bg-amber-400 shadow-[0_0_6px_rgba(245,158,11,0.5)]" style={{ width: `${sig.importanceScore}%` }} />
-                          </div>
-                          <div className="flex justify-between items-center text-[8px] text-[#7A8694] pt-1">
-                            <span>Category: {sig.category}</span>
-                            <span className="text-indigo-400 font-bold">Source: {sig.source}</span>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
 
