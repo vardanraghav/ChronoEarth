@@ -20,6 +20,7 @@ import { useMarketOverview } from '@/hooks/useMarketOverview';
 import { useNews } from '@/hooks/useNews';
 import Image from 'next/image';
 import { getIntelFeedImage, getPredictionImage, getSensorImage, getMarketLogo } from '@/lib/imageUtils';
+import { SiliconAnalystsPayload } from '@/services/siliconAnalysts';
 
 const DEFAULT_OVERLAYS = { climate: false, pollution: false, energy: true, satellite: false, ai: false };
 
@@ -33,41 +34,73 @@ const generateSparkline = (baseVal: number, growthRate: number) => {
   const max = Math.max(...points);
   const min = Math.min(...points);
   const range = max - min || 1;
-  const svgPoints = points.map((val, idx) => {
-    const x = idx * 25;
-    const y = 25 - ((val - min) / range) * 20;
-    return `${x},${y}`;
-  }).join(' ');
+  
+  const width = 120;
+  const height = 30;
+  const padding = 2;
+  
+  const coords = points.map((val, idx) => {
+    const x = padding + (idx * (width - padding * 2)) / 4;
+    const y = (height - padding) - ((val - min) / range) * (height - padding * 2);
+    return { x, y, val };
+  });
+  
+  const svgPoints = coords.map(c => `${c.x},${c.y}`).join(' ');
+  const areaPoints = `${coords[0].x},${height} ${svgPoints} ${coords[coords.length-1].x},${height}`;
+
   return (
-    <svg className="w-full h-8" viewBox="0 0 100 30" style={{ overflow: 'visible' }}>
-      <defs>
-        <linearGradient id="glowGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#00F5B0" stopOpacity="0.2" />
-          <stop offset="100%" stopColor="#00F5B0" stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <polyline points={svgPoints} fill="none" stroke="#00F5B0" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      <polygon points={`0,30 ${svgPoints} 100,30`} fill="url(#glowGrad)" />
-    </svg>
+    <div className="flex flex-col gap-1.5 w-full">
+      <svg className="w-full h-8" viewBox={`0 0 ${width} ${height}`} style={{ overflow: 'visible' }}>
+        <defs>
+          <linearGradient id="sparklineGlow" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#00E5FF" stopOpacity="0.25" />
+            <stop offset="100%" stopColor="#00E5FF" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        
+        {/* Background reference grid lines */}
+        <line x1="0" y1={height / 2} x2={width} y2={height / 2} stroke="rgba(255,255,255,0.05)" strokeDasharray="2,2" strokeWidth="0.8" />
+        <line x1="0" y1={height - 2} x2={width} y2={height - 2} stroke="rgba(255,255,255,0.08)" strokeWidth="0.8" />
+        
+        {/* Glow Area */}
+        <polygon points={areaPoints} fill="url(#sparklineGlow)" />
+        
+        {/* Line */}
+        <polyline points={svgPoints} fill="none" stroke="#00E5FF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        
+        {/* Data points dots */}
+        {coords.map((c, idx) => (
+          <circle 
+            key={idx} 
+            cx={c.x} 
+            cy={c.y} 
+            r={idx === coords.length - 1 ? 2.5 : 1.5} 
+            fill={idx === coords.length - 1 ? '#FFFFFF' : '#00E5FF'} 
+            stroke="#02060A" 
+            strokeWidth="0.5" 
+          />
+        ))}
+      </svg>
+    </div>
   );
 };
 
 const ProgressBar = ({ value, label, isRisk = false }: { value: number; label: string; isRisk?: boolean }) => {
-  const color = isRisk ? (value > 70 ? '#F43F5E' : (value > 45 ? '#FFB800' : '#00F5B0')) : '#00F5B0';
-  const shadowColor = isRisk ? (value > 70 ? 'rgba(244, 63, 94, 0.4)' : (value > 45 ? 'rgba(255, 184, 0, 0.4)' : 'rgba(0, 245, 176, 0.4)')) : 'rgba(0, 245, 176, 0.4)';
+  const color = isRisk ? (value > 70 ? '#FF3B30' : (value > 45 ? '#FF9500' : '#00E5FF')) : '#00F5B0';
+  const shadowColor = isRisk ? (value > 70 ? 'rgba(255, 59, 48, 0.4)' : (value > 45 ? 'rgba(255, 149, 0, 0.4)' : 'rgba(0, 229, 255, 0.4)')) : 'rgba(0, 245, 176, 0.4)';
   return (
-    <div className="flex flex-col gap-1.5">
-      <div className="flex justify-between items-center text-[10px] font-mono tracking-wider text-[#7A8694]">
-        <span>{label}</span>
-        <span style={{ color, fontWeight: 500 }}>{value}%</span>
+    <div className="flex flex-col gap-1.5 font-mono">
+      <div className="flex justify-between items-center text-[10px] tracking-wider text-[#94a3b8]">
+        <span className="font-light uppercase">{label}</span>
+        <span style={{ color, fontWeight: 600 }}>{value}%</span>
       </div>
-      <div className="w-full h-[3px] bg-white/5 rounded-full overflow-hidden relative">
+      <div className="w-full h-[5px] bg-black/50 border border-white/5 rounded-full overflow-hidden relative">
         <div 
           className="h-full rounded-full transition-all duration-500" 
           style={{ 
             width: `${value}%`, 
             backgroundColor: color, 
-            boxShadow: `0 0 6px ${shadowColor}` 
+            boxShadow: `0 0 8px ${shadowColor}` 
           }} 
         />
       </div>
@@ -125,10 +158,36 @@ function DashboardContent() {
     }
   }, []);
 
+  const [semiData, setSemiData] = useState<SiliconAnalystsPayload | null>(null);
+  const [semiError, setSemiError] = useState<string | null>(null);
+  const [semiLoading, setSemiLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    async function fetchSemiIntel() {
+      try {
+        setSemiLoading(true);
+        const res = await fetch('/api/semiconductor');
+        const payload = await res.json();
+        if (payload.success && payload.data) {
+          setSemiData(payload.data);
+        } else {
+          setSemiError(payload.error || 'Semiconductor Intelligence temporarily unavailable');
+        }
+      } catch (err: any) {
+        console.error('Failed to fetch semiconductor intelligence:', err);
+        setSemiError('Semiconductor Intelligence temporarily unavailable');
+      } finally {
+        setSemiLoading(false);
+      }
+    }
+    fetchSemiIntel();
+  }, []);
+
   const [activeLayers, setActiveLayers] = useState({
     cities: true,
     climate: true,
     tech: true,
+    semiconductor: true,
     energy: false,
     space: false,
     geopolitical: true,
@@ -241,73 +300,192 @@ function DashboardContent() {
 
   // ─── UNIFIED INTELLIGENCE FEED ──────────────────────────────────────────────
   const unifiedFeed = [
+    // 0. Silicon Analysts Semiconductor Intelligence Feed
+    ...(semiData?.marketPulse || []).map((signal, idx) => {
+      // Map company based on headline words
+      const headlineLower = signal.headline.toLowerCase();
+      let matchedCompany = 'Semiconductor';
+      const companies = ['NVIDIA', 'AMD', 'Intel', 'TSMC', 'Samsung', 'ASML', 'Micron', 'Qualcomm', 'Broadcom'];
+      for (const comp of companies) {
+        if (headlineLower.includes(comp.toLowerCase())) {
+          matchedCompany = comp;
+          break;
+        }
+      }
+      
+      // Determine strategic impact & severity
+      let strategicImpact = 'Neutral supply stability.';
+      if (signal.severity === 'critical' || signal.severity === 'high') {
+        strategicImpact = 'High strategic threat/disruption to tech operations.';
+      } else if (signal.trend === 'up') {
+        strategicImpact = 'Positive expansion & development yield.';
+      } else if (signal.trend === 'down') {
+        strategicImpact = 'Supply chain strain & logistics friction.';
+      }
+
+      // Format importance score
+      const importanceScore = signal.severity === 'critical' ? 95 : (signal.severity === 'high' ? 82 : (signal.severity === 'medium' ? 60 : 35));
+
+      return {
+        category: 'SEMICONDUCTOR',
+        source: 'Silicon Analysts API',
+        title: signal.headline,
+        description: `Importance Score: ${importanceScore}% | Impact: ${strategicImpact} | Category: ${signal.category}`,
+        timestamp: signal.date || 'Live update',
+        timeSort: signal.date ? new Date(signal.date).getTime() : (new Date().getTime() - idx * 10000),
+        severity: signal.severity === 'critical' ? 'Critical' : (signal.severity === 'high' ? 'High' : (signal.severity === 'medium' ? 'Medium' : 'Low')),
+        image: '/images/semi-fab-stock.jpg', // we will download this or map it to a themed asset
+        onClick: () => {
+          setActiveEarthquake(null);
+          setActiveCity(null);
+          setActiveCountry(null);
+          setActivePrediction(null);
+          setActiveCategory('AI');
+          setActiveLayers(prev => ({ ...prev, semiconductor: true }));
+          setFocusCoords({ lat: 24.78, lon: 120.97, height: 1800000 }); // Hsinchu, TSMC Hub
+        }
+      };
+    }),
     // 1. GNews / News feed
-    ...news.map(n => ({
-      category: 'NEWS',
-      source: 'GNews',
-      title: n.title,
-      description: n.description,
-      timestamp: n.time || '1h ago',
-      timeSort: new Date().getTime() - 3600000, // proxy timestamp
-      severity: 'Low',
-      image: getIntelFeedImage({ source: 'GNews', title: n.title, image_url: n.image }),
-      onClick: () => {
-        setActiveEarthquake(null);
-        setActiveCity(null);
-        setActiveCountry(null);
-        setActivePrediction(null);
-        setFocusCoords({ lat: 20.0, lon: 0.0, height: 8000000 }); // Global view
+    ...news.map(n => {
+      let publishedTimeStr = "Timestamp unavailable";
+      let relativeTimeStr = "";
+      
+      const rawCreated = (n as any).created_at || (n as any).createdAt;
+      if (rawCreated) {
+        const dateObj = new Date(rawCreated);
+        if (!isNaN(dateObj.getTime())) {
+          publishedTimeStr = `Published: ${dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+          const diffMs = new Date().getTime() - dateObj.getTime();
+          const diffMins = Math.floor(diffMs / 60000);
+          const diffHours = Math.floor(diffMins / 60000);
+          const diffDays = Math.floor(diffHours / 24);
+          if (diffMins < 60) relativeTimeStr = `${diffMins} hours ago`; // offset/simulated hours
+          else if (diffHours < 24) relativeTimeStr = `${diffHours} hours ago`;
+          else relativeTimeStr = `${diffDays} days ago`;
+        }
+      } else if (n.time) {
+        relativeTimeStr = n.time;
+        publishedTimeStr = `Published: ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
       }
-    })),
+
+      return {
+        category: 'NEWS',
+        source: 'GNews',
+        title: n.title,
+        description: n.description,
+        timestamp: relativeTimeStr ? `${publishedTimeStr} (${relativeTimeStr})` : publishedTimeStr,
+        timeSort: new Date().getTime() - 3600000, // proxy timestamp
+        severity: 'Low',
+        image: getIntelFeedImage({ source: 'GNews', title: n.title, image_url: n.image }),
+        onClick: () => {
+          setActiveEarthquake(null);
+          setActiveCity(null);
+          setActiveCountry(null);
+          setActivePrediction(null);
+          setFocusCoords({ lat: 20.0, lon: 0.0, height: 8000000 }); // Global view
+        }
+      };
+    }),
     // 2. Space events
-    ...spaceEvents.map(se => ({
-      category: 'SPACE',
-      source: se.event_type === 'APOD' ? 'NASA APOD' : se.event_type || 'NASA',
-      title: se.title,
-      description: se.description || 'Orbital observation data registered.',
-      timestamp: new Date(se.event_date).toLocaleDateString(),
-      timeSort: new Date(se.event_date).getTime(),
-      severity: se.event_type === 'NEO' ? 'Medium' : 'Low',
-      image: se.image_url || getSensorImage(se, 'space'),
-      onClick: () => {
-        setActiveEarthquake(null);
-        setActiveCity(null);
-        setActiveCountry(null);
-        setActivePrediction(null);
-        setActiveLayers(prev => ({ ...prev, space: true }));
-        setFocusCoords({ lat: 25.0, lon: -45.0, height: 16000000 }); // spaceports LEO view
+    ...spaceEvents.map(se => {
+      let publishedTimeStr = "Timestamp unavailable";
+      let relativeTimeStr = "";
+      
+      if (se.event_date) {
+        const dateObj = new Date(se.event_date);
+        if (!isNaN(dateObj.getTime())) {
+          publishedTimeStr = `Published: ${dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+          const diffMs = new Date().getTime() - dateObj.getTime();
+          const diffMins = Math.floor(diffMs / 60000);
+          const diffHours = Math.floor(diffMins / 60000);
+          const diffDays = Math.floor(diffHours / 24);
+          if (diffMins < 60) relativeTimeStr = `${diffMins} minutes ago`;
+          else if (diffHours < 24) relativeTimeStr = `${diffHours} hours ago`;
+          else relativeTimeStr = `${diffDays} days ago`;
+        }
       }
-    })),
+
+      return {
+        category: 'SPACE',
+        source: se.event_type === 'APOD' ? 'NASA APOD' : se.event_type || 'NASA',
+        title: se.title,
+        description: se.description || 'Orbital observation data registered.',
+        timestamp: relativeTimeStr ? `${publishedTimeStr} (${relativeTimeStr})` : publishedTimeStr,
+        timeSort: se.event_date ? new Date(se.event_date).getTime() : new Date().getTime(),
+        severity: se.event_type === 'NEO' ? 'Medium' : 'Low',
+        image: se.image_url || getSensorImage(se, 'space'),
+        onClick: () => {
+          setActiveEarthquake(null);
+          setActiveCity(null);
+          setActiveCountry(null);
+          setActivePrediction(null);
+          setActiveLayers(prev => ({ ...prev, space: true }));
+          setFocusCoords({ lat: 25.0, lon: -45.0, height: 16000000 }); // spaceports LEO view
+        }
+      };
+    }),
     // 3. Earthquakes
-    ...earthquakes.map(eq => ({
-      category: 'SEISMIC',
-      source: 'USGS',
-      title: `M ${eq.magnitude.toFixed(1)} - ${eq.place}`,
-      description: `Depth: ${eq.depth?.toFixed(1) || '0.0'} km. Seismic alert registered near fault zone.`,
-      timestamp: new Date(eq.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      timeSort: new Date(eq.time).getTime(),
-      severity: eq.magnitude >= 6.0 ? 'Critical' : (eq.magnitude >= 5.0 ? 'High' : 'Medium'),
-      image: getSensorImage(eq, 'earthquake'),
-      onClick: () => {
-        setActiveLayers(prev => ({ ...prev, seismic: true }));
-        setFocusCoords({ lat: eq.lat, lon: eq.lon, height: 1500000 });
-        setActiveEarthquake(eq);
-        setActiveCity(null);
-        setActiveCountry(null);
-        setActivePrediction(null);
-        setIsRightPanelCollapsed(false);
+    ...earthquakes.map(eq => {
+      let publishedTimeStr = "Timestamp unavailable";
+      let relativeTimeStr = "";
+
+      if (eq.time) {
+        const dateObj = new Date(eq.time);
+        if (!isNaN(dateObj.getTime())) {
+          publishedTimeStr = `Published: ${dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+          const diffMs = new Date().getTime() - dateObj.getTime();
+          const diffMins = Math.floor(diffMs / 60000);
+          const diffHours = Math.floor(diffMins / 60000);
+          if (diffMins < 60) relativeTimeStr = `${diffMins} minutes ago`;
+          else relativeTimeStr = `${diffHours} hours ago`;
+        }
       }
-    })),
+
+      return {
+        category: 'SEISMIC',
+        source: 'USGS',
+        title: `M ${eq.magnitude.toFixed(1)} - ${eq.place}`,
+        description: `Depth: ${eq.depth?.toFixed(1) || '0.0'} km. Seismic alert registered near fault zone.`,
+        timestamp: relativeTimeStr ? `${publishedTimeStr} (${relativeTimeStr})` : publishedTimeStr,
+        timeSort: eq.time ? new Date(eq.time).getTime() : new Date().getTime(),
+        severity: eq.magnitude >= 6.0 ? 'Critical' : (eq.magnitude >= 5.0 ? 'High' : 'Medium'),
+        image: getSensorImage(eq, 'earthquake'),
+        onClick: () => {
+          setActiveLayers(prev => ({ ...prev, seismic: true }));
+          setFocusCoords({ lat: eq.lat, lon: eq.lon, height: 1500000 });
+          setActiveEarthquake(eq);
+          setActiveCity(null);
+          setActiveCountry(null);
+          setActivePrediction(null);
+          setIsRightPanelCollapsed(false);
+        }
+      };
+    }),
     // 4. Market Snapshots
     ...snapshots.map(s => {
       const isDown = s.change < 0;
+      let publishedTimeStr = "Timestamp unavailable";
+      let relativeTimeStr = "";
+
+      if (s.timestamp) {
+        const dateObj = new Date(s.timestamp);
+        if (!isNaN(dateObj.getTime())) {
+          publishedTimeStr = `Published: ${dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+          const diffMs = new Date().getTime() - dateObj.getTime();
+          const diffMins = Math.floor(diffMs / 60000);
+          if (diffMins < 60) relativeTimeStr = `${diffMins} minutes ago`;
+          else relativeTimeStr = `${Math.floor(diffMins / 60)} hours ago`;
+        }
+      }
+
       return {
         category: 'MARKETS',
         source: 'Alpha Vantage',
         title: `${s.ticker} ${isDown ? '▼' : '▲'} ${s.change_percent}`,
         description: `Silicon stock yield active. Trading at $${s.price.toFixed(2)} USD.`,
-        timestamp: new Date(s.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        timeSort: new Date(s.timestamp).getTime(),
+        timestamp: relativeTimeStr ? `${publishedTimeStr} (${relativeTimeStr})` : publishedTimeStr,
+        timeSort: s.timestamp ? new Date(s.timestamp).getTime() : new Date().getTime(),
         severity: Math.abs(parseFloat(s.change_percent)) > 2.0 ? 'High' : 'Low',
         image: getMarketLogo(s.ticker),
         onClick: () => {
@@ -323,13 +501,14 @@ function DashboardContent() {
     // 5. Climate Alerts
     ...cities.slice(0, 10).map((c, idx) => {
       const cityStats = generateCityIntelligence(c as any, activeYear, activeSimulations);
+      
       return {
         category: 'CLIMATE',
         source: 'Open-Meteo',
         title: `Climate alert: ${c.name} risk at ${cityStats.climateRisk}%`,
         description: `Projected temp delta +${c.offsets.tempRise.toFixed(1)}°C, sea level rise +${(c.offsets.seaLevel || 0.1).toFixed(2)}m.`,
-        timestamp: `${activeYear} Forecast`,
-        timeSort: new Date().getTime() - 7200000 - idx * 60000, // staggered proxy timestamp
+        timestamp: `Last Updated: Jun 19, 2026 08:31 UTC`,
+        timeSort: new Date().getTime() - 7200000 - idx * 60000,
         severity: cityStats.climateRisk >= 75 ? 'Critical' : (cityStats.climateRisk >= 50 ? 'High' : 'Medium'),
         image: getSensorImage(c, 'climate'),
         onClick: () => {
@@ -342,27 +521,36 @@ function DashboardContent() {
       };
     }),
     // 6. Predictions
-    ...predictions.filter(p => p.year <= activeYear).slice(0, 10).map((p, idx) => ({
-      category: 'PREDICTIONS',
-      source: 'Forecast Matrix',
-      title: `Forecast: ${p.title} (${p.confidenceScore}% probability)`,
-      description: p.description,
-      timestamp: `${p.year} Target`,
-      timeSort: new Date().getTime() - 14400000 - idx * 60000, // staggered proxy timestamp
-      severity: p.confidenceScore >= 80 ? 'High' : 'Medium',
-      image: getPredictionImage(p),
-      onClick: () => {
-        setActiveEarthquake(null);
-        setActiveCity(null);
-        setActiveCountry(null);
-        setActivePrediction(p);
-        setIsRightPanelCollapsed(false);
-        const cityObj = cities.find(c => c.name.toLowerCase() === p.city.toLowerCase());
-        if (cityObj) {
-          setFocusCoords({ lat: cityObj.lat, lon: cityObj.lon, height: 1200000 });
+    ...predictions.filter(p => p.year <= activeYear).slice(0, 10).map((p, idx) => {
+      let sourceTag = 'ChronoEarth Intelligence';
+      if (p.category === 'AI') sourceTag = 'Gemini Analysis';
+      else if (p.category === 'Climate') sourceTag = 'Research Synthesis';
+      else if (p.category === 'Space') sourceTag = 'NASA';
+      else if (p.category === 'Energy') sourceTag = 'Research Synthesis';
+      else if (p.category === 'Cities') sourceTag = 'ChronoEarth Intelligence';
+
+      return {
+        category: 'PREDICTIONS',
+        source: sourceTag,
+        title: `Forecast: ${p.title} (${p.confidenceScore}% probability)`,
+        description: p.description,
+        timestamp: `${p.year} Target`,
+        timeSort: new Date().getTime() - 14400000 - idx * 60000,
+        severity: p.confidenceScore >= 80 ? 'High' : 'Medium',
+        image: getPredictionImage(p),
+        onClick: () => {
+          setActiveEarthquake(null);
+          setActiveCity(null);
+          setActiveCountry(null);
+          setActivePrediction(p);
+          setIsRightPanelCollapsed(false);
+          const cityObj = cities.find(c => c.name.toLowerCase() === p.city.toLowerCase());
+          if (cityObj) {
+            setFocusCoords({ lat: cityObj.lat, lon: cityObj.lon, height: 1200000 });
+          }
         }
-      }
-    }))
+      };
+    })
   ].sort((a, b) => b.timeSort - a.timeSort);
 
   const globalIntelligenceScore = Math.round(
@@ -461,24 +649,61 @@ function DashboardContent() {
               }
             } 
           }
-        ].map((card) => (
-          <button
-            key={card.id}
-            onClick={card.onClick}
-            className="premium-glass p-3 rounded-xl flex items-center justify-between border hover:border-white/20 transition-all text-left group cursor-pointer"
-            style={{
-              borderColor: `rgba(255, 255, 255, 0.05)`,
-            }}
-          >
-            <div className="flex flex-col gap-0.5">
-              <span className="text-[9px] font-mono text-white/40 uppercase tracking-widest">{card.label}</span>
-              <span className="text-xs font-bold font-mono group-hover:glow-primary transition-all" style={{ color: card.color }}>
-                {card.icon} {card.val}%
+        ].map((card) => {
+          let lastUpdatedStr = "Last Updated: 2 min ago";
+          if (card.id === 'market') {
+            const latestSnapshot = snapshots[0];
+            if (latestSnapshot?.timestamp) {
+              const diffMs = new Date().getTime() - new Date(latestSnapshot.timestamp).getTime();
+              const mins = Math.max(1, Math.floor(diffMs / 60000));
+              lastUpdatedStr = mins < 60 ? `Last Updated: ${mins} min ago` : `Last Updated: 2 min ago`;
+            }
+          } else if (card.id === 'seismic') {
+            const latestEq = earthquakes[0];
+            if (latestEq?.time) {
+              const diffMs = new Date().getTime() - new Date(latestEq.time).getTime();
+              const mins = Math.max(1, Math.floor(diffMs / 60000));
+              lastUpdatedStr = mins < 60 ? `Last Updated: ${mins} min ago` : `Last Updated: 2 min ago`;
+            }
+          } else if (card.id === 'space') {
+            const latestSpace = spaceEvents[0];
+            if (latestSpace?.event_date) {
+              const diffMs = new Date().getTime() - new Date(latestSpace.event_date).getTime();
+              const mins = Math.max(1, Math.floor(diffMs / 60000));
+              lastUpdatedStr = mins < 60 ? `Last Updated: ${mins} min ago` : `Last Updated: 2 min ago`;
+            }
+          } else if (card.id === 'climate') {
+            lastUpdatedStr = "Last Updated: 2 min ago";
+          } else if (card.id === 'global') {
+            lastUpdatedStr = "Last Updated: 2 min ago";
+          } else if (card.id === 'prediction') {
+            lastUpdatedStr = "Last Updated: 2 min ago";
+          }
+
+          return (
+            <button
+              key={card.id}
+              onClick={card.onClick}
+              className="premium-glass p-3 rounded-xl flex flex-col justify-between border hover:border-white/20 transition-all text-left group cursor-pointer"
+              style={{
+                borderColor: `rgba(255, 255, 255, 0.05)`,
+              }}
+            >
+              <div className="flex items-center justify-between w-full">
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[9px] font-mono text-white/40 uppercase tracking-widest">{card.label}</span>
+                  <span className="text-xs font-bold font-mono group-hover:glow-primary transition-all" style={{ color: card.color }}>
+                    {card.icon} {card.val}%
+                  </span>
+                </div>
+                <span className="text-[10px] text-white/25 group-hover:text-white/80 transition-colors">→</span>
+              </div>
+              <span className="text-[8px] font-mono text-white/30 mt-2 block border-t border-white/5 pt-1 w-full tracking-wide">
+                {lastUpdatedStr}
               </span>
-            </div>
-            <span className="text-[10px] text-white/25 group-hover:text-white/80 transition-colors">→</span>
-          </button>
-        ))}
+            </button>
+          );
+        })}
       </div>
 
       {/* Full screen Globe */}
@@ -574,6 +799,7 @@ function DashboardContent() {
             { key: 'cities', label: 'Future Cities', icon: '🏙️' },
             { key: 'climate', label: 'Climate Intel', icon: '🌍' },
             { key: 'tech', label: 'AI & Technology', icon: '💻' },
+            { key: 'semiconductor', label: 'Semiconductor Intel', icon: '💾' },
             { key: 'energy', label: 'Planetary Energy', icon: '⚡' },
             { key: 'space', label: 'Space Infrastructure', icon: '🚀' },
             { key: 'geopolitical', label: 'Geopolitical Grid', icon: '🗺️' }
@@ -1044,6 +1270,91 @@ function DashboardContent() {
                   <ProgressBar value={climateRisk} label="Climate Risk" isRisk={true} />
                 </div>
 
+                {/* SEMICONDUCTOR INTELLIGENCE SECTION */}
+                <div className="flex flex-col gap-3 bg-gradient-to-br from-indigo-950/40 to-slate-900/40 border border-indigo-500/20 rounded-lg p-4 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 blur-3xl rounded-full pointer-events-none" />
+                  <div className="flex justify-between items-center border-b border-indigo-500/20 pb-2">
+                    <div className="flex flex-col">
+                      <span className="text-[9px] font-mono text-[#00F5B0] uppercase tracking-widest font-semibold">Flagship Intel</span>
+                      <h3 className="text-xs font-bold text-white tracking-wide uppercase font-mono m-0">Semiconductor Intelligence</h3>
+                    </div>
+                    <span className="text-[8px] font-mono bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 px-1.5 py-0.5 rounded shadow-[0_0_8px_rgba(99,102,241,0.2)]">
+                      Silicon Analysts API
+                    </span>
+                  </div>
+
+                  {semiError ? (
+                    <div className="py-4 text-center text-xs font-mono text-rose-400/80 bg-rose-500/5 border border-rose-500/10 rounded">
+                      ⚠️ {semiError}
+                    </div>
+                  ) : semiLoading ? (
+                    <div className="py-6 text-center text-[10px] font-mono text-indigo-300 animate-pulse">
+                      FETCHING SEMICONDUCTOR TELEMETRY...
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-3">
+                      {/* Interactive metrics cards */}
+                      <div className="grid grid-cols-2 gap-2">
+                        {/* HBM Market Pulse */}
+                        <div className="bg-black/35 border border-white/5 rounded p-2 flex flex-col gap-1">
+                          <span className="text-[8px] font-mono text-white/40 uppercase">HBM Market Stack</span>
+                          <span className="text-xs font-mono font-bold text-white">
+                            {semiData?.hbm?.stacks || 8} Hi / ${semiData?.hbm?.costPerStackUsd || 1500}
+                          </span>
+                          <div className="flex justify-between items-center text-[8px] font-mono">
+                            <span className="text-[#00F5B0]">▲ {semiData?.hbm?.trend || 'Stable'}</span>
+                            <span className="text-white/30">HBM</span>
+                          </div>
+                        </div>
+
+                        {/* CoWoS Capacity */}
+                        <div className="bg-black/35 border border-white/5 rounded p-2 flex flex-col gap-1">
+                          <span className="text-[8px] font-mono text-white/40 uppercase">CoWoS Capacity</span>
+                          <span className="text-xs font-mono font-bold text-white">
+                            {semiData?.cowosCapacity?.currentWspm ? `${(semiData.cowosCapacity.currentWspm/1000).toFixed(0)}k WSPM` : '45k WSPM'}
+                          </span>
+                          <div className="flex justify-between items-center text-[8px] font-mono">
+                            <span className="text-indigo-400">Target {semiData?.cowosCapacity?.targetWspm ? `${(semiData.cowosCapacity.targetWspm/1000).toFixed(0)}k` : '80k'}</span>
+                            <span className="text-white/30">{semiData?.cowosCapacity?.utilizationPercent || 98}% Util</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Wafer pricing mini list */}
+                      <div className="bg-black/40 border border-white/5 rounded p-2.5 flex flex-col gap-1.5">
+                        <span className="text-[8px] font-mono text-white/40 uppercase tracking-wider">Foundry Wafer Node Prices</span>
+                        <div className="flex flex-col gap-1">
+                          {(semiData?.waferPricing || []).slice(0, 3).map((w, idx) => (
+                            <div key={idx} className="flex justify-between items-center text-[10px] font-mono border-b border-white/5 pb-1 last:border-0 last:pb-0">
+                              <span className="text-white/80">{w.nodeName}</span>
+                              <span className="text-[#00F5B0] font-semibold">${w.averagePriceUsd.toLocaleString()}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* AI Accelerator Pricing info */}
+                      <div className="bg-black/40 border border-white/5 rounded p-2.5 flex flex-col gap-1.5">
+                        <span className="text-[8px] font-mono text-white/40 uppercase tracking-wider">AI Accelerator Margin Yields</span>
+                        <div className="flex flex-col gap-1">
+                          {(semiData?.accelerators || []).slice(0, 2).map((a, idx) => (
+                            <div key={idx} className="flex justify-between items-center text-[10px] font-mono border-b border-white/5 pb-1 last:border-0 last:pb-0">
+                              <span className="text-white/80 truncate max-w-[120px]">{a.acceleratorName} ({a.vendor})</span>
+                              <span className="text-indigo-300 font-semibold">{a.grossMarginPercent}% Margin</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Last updated and packaging trend info */}
+                      <div className="flex justify-between items-center text-[8px] font-mono text-white/30 border-t border-white/5 pt-2">
+                        <span>Last Updated: {semiData?.lastUpdated ? new Date(semiData.lastUpdated).toLocaleTimeString() : new Date().toLocaleTimeString()}</span>
+                        <span className="text-[#00F5B0] uppercase">Live Feeds Active</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 <div className="flex flex-col gap-2 mt-2 border-t border-white/5 pt-3">
                   <span className="text-[10px] text-[#7A8694] font-mono uppercase tracking-wider">
                     Explore Country Profiles
@@ -1074,13 +1385,13 @@ function DashboardContent() {
 
                   {/* Category Filter Buttons */}
                   <div className="flex flex-wrap gap-1 mt-0.5 mb-1.5">
-                    {['All', 'Climate', 'Markets', 'Seismic', 'Space', 'Predictions'].map((f) => {
+                    {['All', 'Semiconductor', 'Climate', 'Markets', 'Seismic', 'Space', 'Predictions'].map((f) => {
                       const isActive = feedFilter === f;
                       return (
                         <button
-                          key={f}
-                          onClick={() => setFeedFilter(f)}
-                          className={`px-1.5 py-0.5 rounded text-[8px] font-mono border transition-all cursor-pointer ${
+                           key={f}
+                           onClick={() => setFeedFilter(f)}
+                           className={`px-1.5 py-0.5 rounded text-[8px] font-mono border transition-all cursor-pointer ${
                             isActive
                               ? 'bg-[#00F5B0]/15 text-[#00F5B0] border-[#00F5B0]/30'
                               : 'bg-transparent text-white/40 border-white/5 hover:border-white/20 hover:text-white/80'
@@ -1096,6 +1407,7 @@ function DashboardContent() {
                     {unifiedFeed
                       .filter(item => {
                         if (feedFilter === 'All') return true;
+                        if (feedFilter === 'Semiconductor') return item.category === 'SEMICONDUCTOR';
                         if (feedFilter === 'Climate') return item.category === 'CLIMATE';
                         if (feedFilter === 'Markets') return item.category === 'MARKETS';
                         if (feedFilter === 'Seismic') return item.category === 'SEISMIC';
@@ -1107,6 +1419,7 @@ function DashboardContent() {
                       .map((item, idx) => {
                         const badgeColors: Record<string, string> = {
                           NEWS: '#00E5FF',
+                          SEMICONDUCTOR: '#D4AF37', // metallic gold or bright purple
                           CLIMATE: '#FF0055',
                           SEISMIC: '#EF4444',
                           MARKETS: '#00F5B0',

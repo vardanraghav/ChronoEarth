@@ -70,11 +70,13 @@ export default function Navbar({ setActiveCity }: NavbarProps) {
     { href: '/', label: 'Map', icon: '🌍', activePattern: /^\/$/ },
     { href: '/dashboard', label: 'Dashboard', icon: '📊', activePattern: /^\/dashboard/ },
     { href: '/feed', label: 'Intel Feed', icon: '📰', activePattern: /^\/feed/ },
+    { href: '/semiconductor', label: 'Semiconductor', icon: '💾', activePattern: /^\/semiconductor/ },
     { href: '/knowledge', label: 'Knowledge', icon: '📚', activePattern: /^\/knowledge/ },
     { href: '/about', label: 'About', icon: 'ℹ️', activePattern: /^\/about/ },
   ];
 
   const secondaryLinks = [
+    { href: '/semiconductor', label: 'Semiconductor Terminal', icon: '💾', description: 'Flagship semiconductor analytics' },
     { href: '/climate', label: 'Climate Core', icon: '🌡️', description: 'Real-time weather & sea anomalies' },
     { href: '/space', label: 'Space Center', icon: '🚀', description: 'Orbit tracking & solar forecast' },
     { href: '/earthquakes', label: 'Seismic Core', icon: '🌋', description: 'Global earthquake telemetry' },

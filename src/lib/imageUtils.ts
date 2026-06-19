@@ -189,6 +189,16 @@ function lookupByTitle(title: string): string | null {
 export function getKnowledgeCardImage(card: any): string | null {
   if (!card) return null;
 
+  const category = (card?.category || '').toLowerCase();
+  const title = (card?.title || '').toLowerCase();
+  const isSpace = category.includes('space') || title.includes('space') || title.includes('lunar') || title.includes('orbit');
+
+  // 1. For space-related, check NASA sources/fallback first
+  if (isSpace) {
+    if (card.image_url) return card.image_url;
+    return KNOWLEDGE_CATEGORY_IMAGES.space;
+  }
+
   // 1. Database-provided image
   if (card.image_url) return card.image_url;
 
@@ -209,7 +219,6 @@ export function getKnowledgeCardImage(card: any): string | null {
   if (id === 'kb-9') return KNOWLEDGE_CATEGORY_IMAGES.geopolitics; // Carbon Tariffs
 
   // 4. Text-based category inference
-  const category = (card?.category || '').toLowerCase();
   if (category.includes('ai') || category.includes('tech') || category.includes('future jobs')) {
     return KNOWLEDGE_CATEGORY_IMAGES.ai;
   }
@@ -218,9 +227,6 @@ export function getKnowledgeCardImage(card: any): string | null {
   }
   if (category.includes('energy') || category.includes('fusion')) {
     return KNOWLEDGE_CATEGORY_IMAGES.energy;
-  }
-  if (category.includes('space') || category.includes('orbital')) {
-    return KNOWLEDGE_CATEGORY_IMAGES.space;
   }
   if (category.includes('city') || category.includes('urban') || category.includes('cities')) {
     return KNOWLEDGE_CATEGORY_IMAGES.cities;
@@ -236,6 +242,16 @@ export function getKnowledgeCardImage(card: any): string | null {
 export function getPredictionImage(prediction: any): string | null {
   if (!prediction) return null;
 
+  const category = (prediction?.category || '').toLowerCase();
+  const title = (prediction?.title || '').toLowerCase();
+  const isSpace = category.includes('space') || title.includes('space') || title.includes('lunar') || title.includes('orbit') || title.includes('artemis') || title.includes('asteroid') || title.includes('leo');
+
+  // Space priority: NASA image, existing image_url, category fallback
+  if (isSpace) {
+    if (prediction.image_url) return prediction.image_url;
+    return PREDICTION_CATEGORY_IMAGES.space;
+  }
+
   // 1. Database-provided image
   if (prediction.image_url) return prediction.image_url;
 
@@ -244,11 +260,9 @@ export function getPredictionImage(prediction: any): string | null {
   if (titleMatch) return titleMatch;
 
   // 3. Category fallback
-  const category = (prediction?.category || '').toLowerCase();
   if (category.includes('ai'))          return PREDICTION_CATEGORY_IMAGES.ai;
   if (category.includes('climate'))     return PREDICTION_CATEGORY_IMAGES.climate;
   if (category.includes('energy'))      return PREDICTION_CATEGORY_IMAGES.energy;
-  if (category.includes('space'))       return PREDICTION_CATEGORY_IMAGES.space;
   if (category.includes('cities') || category.includes('city')) return PREDICTION_CATEGORY_IMAGES.cities;
   if (category.includes('transport'))   return PREDICTION_CATEGORY_IMAGES.transport;
   if (category.includes('health'))      return PREDICTION_CATEGORY_IMAGES.healthcare;
@@ -263,6 +277,18 @@ export function getPredictionImage(prediction: any): string | null {
 export function getIntelFeedImage(item: any): string {
   if (!item) return PREDICTION_CATEGORY_IMAGES.default;
 
+  const source = (item?.source || '').toLowerCase();
+  const category = (item?.category || '').toLowerCase();
+  const title = (item?.title || '').toLowerCase();
+  const isSpace = source.includes('nasa') || source.includes('space') || category.includes('space') || title.includes('space') || title.includes('orbit') || title.includes('neo') || title.includes('apod') || title.includes('epic');
+
+  // Space priority: NASA image, existing image_url, category fallback
+  if (isSpace) {
+    if (item.image_url) return item.image_url;
+    if (item.image) return item.image;
+    return SENSOR_IMAGES.space;
+  }
+
   // 1. Database-provided image
   if (item.image_url) return item.image_url;
 
@@ -271,14 +297,10 @@ export function getIntelFeedImage(item: any): string {
   if (titleMatch) return titleMatch;
 
   // 3. Source-based inference
-  const source = (item?.source || '').toLowerCase();
-  if (source.includes('nasa') || source.includes('space'))    return SENSOR_IMAGES.space;
   if (source.includes('ipcc') || source.includes('climate'))  return SENSOR_IMAGES.climate;
   if (source.includes('seismic') || source.includes('usgs'))  return SENSOR_IMAGES.earthquake;
 
   // 4. Category inference from item metadata
-  const category = (item?.category || '').toLowerCase();
-  if (category.includes('space'))   return SENSOR_IMAGES.space;
   if (category.includes('climate')) return SENSOR_IMAGES.climate;
 
   // 5. Consistent hash-based category selection so same title always → same image
@@ -294,6 +316,10 @@ export function getIntelFeedImage(item: any): string {
  * Resolves the image for a Sensor event.
  */
 export function getSensorImage(sensor: any, type: 'earthquake' | 'space' | 'climate'): string {
+  if (type === 'space') {
+    if (sensor?.image_url) return sensor.image_url;
+    return SENSOR_IMAGES.space;
+  }
   if (sensor?.image_url) return sensor.image_url;
   return SENSOR_IMAGES[type] || PREDICTION_CATEGORY_IMAGES.default;
 }

@@ -208,20 +208,51 @@ export default function AboutPage() {
           </div>
         </div>
 
-        {/* SECTION: CREDITS & CREATOR */}
-        <div className="premium-glass p-6 rounded-2xl border border-[#00F5B0]/20 flex flex-col items-center text-center gap-4 relative overflow-hidden mt-6 shadow-[0_0_25px_rgba(0,245,176,0.03)]">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-[#00F5B0]/5 rounded-full blur-[40px] pointer-events-none" />
-          <span className="text-[10px] font-mono text-[#00F5B0] uppercase tracking-[0.25em] font-bold">ChronoEarth Creator</span>
-          <div className="flex flex-col gap-1">
-            <h3 className="text-lg font-bold text-white uppercase tracking-wider m-0">Vardan Raghav</h3>
-            <span className="text-[9px] text-white/40 uppercase tracking-widest">Strategic Systems Architect & Developer</span>
+        {/* SECTION: FOUNDER */}
+        <div className="flex flex-col gap-6">
+          <div className="border-l-2 border-[#00F5B0] pl-3 py-0.5">
+            <h2 className="text-lg font-semibold text-white uppercase tracking-wider m-0">Founder</h2>
+            <span className="text-[10px] text-white/40 uppercase tracking-widest">Platform leadership & vision</span>
           </div>
-          <p className="text-xs text-[#7A8694] font-sans font-light max-w-2xl leading-relaxed m-0 mt-1">
-            Designed and engineered as a cyberpunk dashboard tracking decadal trajectories, aligning technology indices, and proving spatial data integrity models.
-          </p>
-          <div className="border-t border-white/5 pt-4 w-full flex justify-between items-center text-[8px] text-white/20 mt-2 font-mono">
-            <span>CHRONO_OS v4.82 // ALL RIGHTS RESERVED</span>
-            <Link href="/sources" className="text-[#00F5B0] hover:underline font-bold no-underline uppercase tracking-wider">Sources & Credits →</Link>
+
+          <div className="premium-glass p-6 rounded-2xl border border-[#00F5B0]/20 flex flex-col gap-4 relative overflow-hidden shadow-[0_0_25px_rgba(0,245,176,0.03)]">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-[#00F5B0]/5 rounded-full blur-[40px] pointer-events-none" />
+            <div className="flex flex-col gap-1">
+              <h3 className="text-lg font-bold text-white uppercase tracking-wider m-0">Vardan Raghav</h3>
+              <span className="text-[9px] text-[#00E5FF] uppercase tracking-wider font-semibold font-mono">
+                B.Tech Electronics & Communication Engineering (Artificial Intelligence & Machine Learning)
+              </span>
+            </div>
+            <p className="text-xs text-[#7A8694] font-sans font-light max-w-3xl leading-relaxed m-0 mt-1">
+              ChronoEarth was developed as an independent future intelligence platform focused on forecasting, technology monitoring, scientific research synthesis, and planetary-scale intelligence visualization.
+            </p>
+          </div>
+        </div>
+
+        {/* SECTION: CONTACT & FEEDBACK */}
+        <div className="flex flex-col gap-6">
+          <div className="border-l-2 border-[#00E5FF] pl-3 py-0.5">
+            <h2 className="text-lg font-semibold text-white uppercase tracking-wider m-0">Contact & Feedback</h2>
+            <span className="text-[10px] text-white/40 uppercase tracking-widest">Comms link & support channel</span>
+          </div>
+
+          <div className="premium-glass p-6 rounded-2xl border border-[#00E5FF]/20 flex flex-col gap-4 relative overflow-hidden">
+            <p className="text-xs text-[#7A8694] font-sans font-light max-w-3xl leading-relaxed m-0">
+              We welcome feedback, research discussions, feature suggestions, and collaboration opportunities.
+            </p>
+            <div className="flex flex-col gap-1.5 font-mono border-b border-white/5 pb-4">
+              <span className="text-[10px] text-white/40 uppercase tracking-wider">For questions, suggestions, collaborations, bug reports, or feedback:</span>
+              <a 
+                href="mailto:raghavvardan123@gmail.com" 
+                className="text-[#00E5FF] hover:underline font-bold text-xs tracking-wider transition-all"
+              >
+                raghavvardan123@gmail.com
+              </a>
+            </div>
+            <div className="w-full flex justify-between items-center text-[8px] text-white/20 mt-2 font-mono">
+              <span>CHRONO_OS v4.82 // ALL RIGHTS RESERVED</span>
+              <Link href="/sources" className="text-[#00F5B0] hover:underline font-bold no-underline uppercase tracking-wider">Sources & Credits →</Link>
+            </div>
           </div>
         </div>
 

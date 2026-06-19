@@ -34,6 +34,7 @@ export interface Prediction {
   tags: string[];
   comments: Comment[];
   shareUrl: string;
+  created_at?: string;
 }
 
 export interface KBArticle {
@@ -134,7 +135,8 @@ export const PREDICTIONS: Prediction[] = [
     votes: 234,
     tags: ['Autonomous Farming', 'Neural Grids'],
     comments: createSampleComments('AI Decides Regional Agriculture'),
-    shareUrl: '/predictions/ai-decides-regional-agriculture'
+    shareUrl: '/predictions/ai-decides-regional-agriculture',
+    created_at: '2026-06-19T20:09:30Z'
   },
   {
     id: 'pred-2',
@@ -150,7 +152,8 @@ export const PREDICTIONS: Prediction[] = [
     votes: 189,
     tags: ['Blockchain Carbon', 'Automated Tariffs'],
     comments: createSampleComments('Carbon-Tax Smart Contracts Go Live'),
-    shareUrl: '/predictions/carbon-tax-smart-contracts-go-live'
+    shareUrl: '/predictions/carbon-tax-smart-contracts-go-live',
+    created_at: '2026-06-19T18:09:30Z'
   },
   {
     id: 'pred-3',
@@ -166,7 +169,8 @@ export const PREDICTIONS: Prediction[] = [
     votes: 342,
     tags: ['Commercial Fusion', 'Zero Emission'],
     comments: createSampleComments('First Commercial Fusion Plant Connects'),
-    shareUrl: '/predictions/first-commercial-fusion-plant-connects'
+    shareUrl: '/predictions/first-commercial-fusion-plant-connects',
+    created_at: '2026-06-19T17:09:30Z'
   },
   {
     id: 'pred-4',
@@ -182,7 +186,8 @@ export const PREDICTIONS: Prediction[] = [
     votes: 156,
     tags: ['LEO Clean', 'Orbital Safety'],
     comments: createSampleComments('Debris Sweeper Satellites Patrol LEO'),
-    shareUrl: '/predictions/debris-sweeper-satellites-patrol-leo'
+    shareUrl: '/predictions/debris-sweeper-satellites-patrol-leo',
+    created_at: '2026-06-19T13:09:30Z'
   },
   {
     id: 'pred-5',
@@ -198,7 +203,8 @@ export const PREDICTIONS: Prediction[] = [
     votes: 207,
     tags: ['Smart Transit', 'Autonomous Pods'],
     comments: createSampleComments('Autonomous Transit Zones in Europe'),
-    shareUrl: '/predictions/autonomous-transit-zones-in-europe'
+    shareUrl: '/predictions/autonomous-transit-zones-in-europe',
+    created_at: '2026-06-19T14:15:30Z'
   },
 
   // 2040 Predictions
@@ -216,7 +222,8 @@ export const PREDICTIONS: Prediction[] = [
     votes: 412,
     tags: ['Quantum Forecasting', 'Storm Shield'],
     comments: createSampleComments('Quantum Weather Supercomputers'),
-    shareUrl: '/predictions/quantum-weather-supercomputers'
+    shareUrl: '/predictions/quantum-weather-supercomputers',
+    created_at: '2026-06-19T12:00:30Z'
   },
   {
     id: 'pred-7',
@@ -232,7 +239,8 @@ export const PREDICTIONS: Prediction[] = [
     votes: 284,
     tags: ['Geo-Engineering', 'Arctic Reflectance'],
     comments: createSampleComments('Atmospheric Aerosol Injection Begins'),
-    shareUrl: '/predictions/atmospheric-aerosol-injection-begins'
+    shareUrl: '/predictions/atmospheric-aerosol-injection-begins',
+    created_at: '2026-06-19T11:45:30Z'
   },
   {
     id: 'pred-8',
@@ -248,7 +256,8 @@ export const PREDICTIONS: Prediction[] = [
     votes: 320,
     tags: ['Space Solar', 'Microwave Beaming'],
     comments: createSampleComments('Wireless Orbital Power Transmissions'),
-    shareUrl: '/predictions/wireless-orbital-power-transmissions'
+    shareUrl: '/predictions/wireless-orbital-power-transmissions',
+    created_at: '2026-06-19T10:15:30Z'
   },
   {
     id: 'pred-9',
@@ -264,7 +273,8 @@ export const PREDICTIONS: Prediction[] = [
     votes: 298,
     tags: ['Lunar Colonization', 'Artemis Base'],
     comments: createSampleComments('Moon Base Artemis Operational'),
-    shareUrl: '/predictions/moon-base-artemis-operational'
+    shareUrl: '/predictions/moon-base-artemis-operational',
+    created_at: '2026-06-19T09:30:30Z'
   },
   {
     id: 'pred-10',
@@ -280,7 +290,8 @@ export const PREDICTIONS: Prediction[] = [
     votes: 489,
     tags: ['Epigenetics', 'Longevity Medicine'],
     comments: createSampleComments('Anti-Aging Rejuvenation Therapy Approved'),
-    shareUrl: '/predictions/anti-aging-rejuvenation-therapy-approved'
+    shareUrl: '/predictions/anti-aging-rejuvenation-therapy-approved',
+    created_at: '2026-06-19T08:15:30Z'
   },
 
   // 2050 Predictions
@@ -298,7 +309,8 @@ export const PREDICTIONS: Prediction[] = [
     votes: 612,
     tags: ['ChronoOS Integration', 'Global Singularity'],
     comments: createSampleComments('Earth-wide Cybernetic Singularity'),
-    shareUrl: '/predictions/earth-wide-cybernetic-singularity'
+    shareUrl: '/predictions/earth-wide-cybernetic-singularity',
+    created_at: '2026-06-19T07:15:30Z'
   },
   {
     id: 'pred-12',
@@ -314,7 +326,8 @@ export const PREDICTIONS: Prediction[] = [
     votes: 518,
     tags: ['Desert Greening', 'IPCC Irrigation'],
     comments: createSampleComments('Sahara Fully Greened by Desal Grids'),
-    shareUrl: '/predictions/sahara-fully-greened-by-desal-grids'
+    shareUrl: '/predictions/sahara-fully-greened-by-desal-grids',
+    created_at: '2026-06-19T06:30:30Z'
   },
   {
     id: 'pred-13',
@@ -330,7 +343,8 @@ export const PREDICTIONS: Prediction[] = [
     votes: 588,
     tags: ['Fusion Network', 'Zero Carbon Planet'],
     comments: createSampleComments('Global Fusion Grid Meets 85% Demand'),
-    shareUrl: '/predictions/global-fusion-grid-meets-85-percent-demand'
+    shareUrl: '/predictions/global-fusion-grid-meets-85-percent-demand',
+    created_at: '2026-06-19T05:45:30Z'
   },
   {
     id: 'pred-14',
@@ -346,7 +360,8 @@ export const PREDICTIONS: Prediction[] = [
     votes: 423,
     tags: ['Asteroid Mining', 'Psyche Harvester'],
     comments: createSampleComments('Asteroid Mining Ship Returns with Metals'),
-    shareUrl: '/predictions/asteroid-mining-ship-returns-with-metals'
+    shareUrl: '/predictions/asteroid-mining-ship-returns-with-metals',
+    created_at: '2026-06-19T04:15:30Z'
   },
   {
     id: 'pred-15',
@@ -362,7 +377,8 @@ export const PREDICTIONS: Prediction[] = [
     votes: 462,
     tags: ['Floating Metropolis', 'Biophilic Coral'],
     comments: createSampleComments('Fully Biophilic Floating Megacities'),
-    shareUrl: '/predictions/fully-biophilic-floating-megacities'
+    shareUrl: '/predictions/fully-biophilic-floating-megacities',
+    created_at: '2026-06-19T03:30:30Z'
   },
   {
     id: 'pred-16',
@@ -378,7 +394,8 @@ export const PREDICTIONS: Prediction[] = [
     votes: 495,
     tags: ['Trans-oceanic Hyperloop', 'Mach 2.5 Transit'],
     comments: createSampleComments('Vacuum Tube Hyperloop Global Web'),
-    shareUrl: '/predictions/vacuum-tube-hyperloop-global-web'
+    shareUrl: '/predictions/vacuum-tube-hyperloop-global-web',
+    created_at: '2026-06-19T02:15:30Z'
   },
   {
     id: 'pred-17',
@@ -394,7 +411,8 @@ export const PREDICTIONS: Prediction[] = [
     votes: 540,
     tags: ['Nanomedicine', 'Synthetic Biology'],
     comments: createSampleComments('Nanobot Synthetic Immune Systems'),
-    shareUrl: '/predictions/nanobot-synthetic-immune-systems'
+    shareUrl: '/predictions/nanobot-synthetic-immune-systems',
+    created_at: '2026-06-19T01:30:30Z'
   }
 ];
 

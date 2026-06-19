@@ -129,10 +129,49 @@ export default function FeedPage() {
               else if (p.category === 'Space') impact = "Orbital cargo shipping costs drop ↓";
               else if (p.category === 'Cities') impact = "Urban decentralization vectors increase ↑";
 
+              const isSpace = p.category === 'Space';
+              const targetImage = isSpace 
+                ? (getPredictionImage(p) || getPredictionCategoryFallback(p.category)) 
+                : (getPredictionImage(p) || getPredictionCategoryFallback(p.category));
+
+              // Map prediction category to source tags
+              let sourceTag = 'ChronoEarth Intelligence';
+              if (p.category === 'AI') sourceTag = 'Gemini Analysis';
+              else if (p.category === 'Climate') sourceTag = 'Research Synthesis';
+              else if (p.category === 'Space') sourceTag = 'NASA';
+              else if (p.category === 'Energy') sourceTag = 'Research Synthesis';
+              else if (p.category === 'Cities') sourceTag = 'ChronoEarth Intelligence';
+
+              // Determine timestamps dynamically using prediction fields
+              // Predictions from database may have a created_at or we fallback
+              let publishedTimeStr = "Timestamp unavailable";
+              let relativeTimeStr = "";
+              
+              // Using actual database model properties mapping where possible
+              const rawCreated = (p as any).created_at || (p as any).createdAt;
+              if (rawCreated) {
+                const dateObj = new Date(rawCreated);
+                if (!isNaN(dateObj.getTime())) {
+                  publishedTimeStr = `Published: ${dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+                  // Calculate relative time
+                  const diffMs = new Date().getTime() - dateObj.getTime();
+                  const diffMins = Math.floor(diffMs / 60000);
+                  const diffHours = Math.floor(diffMins / 60000);
+                  const diffDays = Math.floor(diffHours / 24);
+                  if (diffMins < 60) {
+                    relativeTimeStr = `${diffMins} minutes ago`;
+                  } else if (diffHours < 24) {
+                    relativeTimeStr = `${diffHours} hours ago`;
+                  } else {
+                    relativeTimeStr = `${diffDays} days ago`;
+                  }
+                }
+              }
+
               return (
                 <div 
                   key={p.id}
-                  className="group premium-glass p-6 rounded-lg flex flex-col justify-between min-h-[300px] border border-white/5 hover:translate-y-[-4px] transition-all duration-300"
+                  className="group premium-glass p-6 rounded-lg flex flex-col justify-between min-h-[300px] border border-white/5 hover:translate-y-[-4px] transition-all duration-300 animate-fade-in"
                   style={{
                     backgroundColor: 'rgba(4, 11, 18, 0.75)',
                     '--glow-color': style.color
@@ -140,10 +179,10 @@ export default function FeedPage() {
                 >
                   <div className="flex flex-col gap-4">
                     {/* Cover Thumbnail Image */}
-                    {getPredictionImage(p) ? (
+                    {targetImage ? (
                       <div className="w-full h-32 rounded overflow-hidden relative border border-white/5 shrink-0">
                         <SafeImage
-                          src={getPredictionImage(p) as string}
+                          src={targetImage as string}
                           fallbackSrc={getPredictionCategoryFallback(p.category)}
                           alt={p.title}
                           fill
@@ -157,13 +196,24 @@ export default function FeedPage() {
 
                     {/* Category and Target Year */}
                     <div className="flex justify-between items-center text-[10px] font-mono tracking-wider">
-                      <span 
-                        className="uppercase font-semibold tracking-[0.15em]" 
-                        style={{ color: style.color }}
-                      >
-                        {p.category}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span 
+                          className="uppercase font-semibold tracking-[0.15em]" 
+                          style={{ color: style.color }}
+                        >
+                          {p.category}
+                        </span>
+                        <span className="bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 px-1 py-0.5 rounded text-[8px]">
+                          [{sourceTag}]
+                        </span>
+                      </div>
                       <span className="text-[#7A8694]">{p.year} FORECAST</span>
+                    </div>
+
+                    {/* Published and Relative Timestamps */}
+                    <div className="flex justify-between items-center text-[9px] font-mono text-white/40 -mt-2">
+                      <span>{publishedTimeStr}</span>
+                      {relativeTimeStr && <span className="text-[#00F5B0]">{relativeTimeStr}</span>}
                     </div>
 
                     {/* Title */}

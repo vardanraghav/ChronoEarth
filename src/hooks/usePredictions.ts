@@ -19,7 +19,8 @@ export function mapDBPredictionToFrontend(p: DBPrediction): Prediction {
     votes: p.votes,
     tags: p.tags || [],
     comments: p.comments || [],
-    shareUrl: p.share_url
+    shareUrl: p.share_url,
+    created_at: p.created_at
   };
 }
 

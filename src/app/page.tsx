@@ -597,50 +597,6 @@ export function HomeContent() {
             </div>
           </div>
 
-          {/* ── SECTION: KNOWLEDGE HUB (APPLE NEWS+ STYLE) ────────────────── */}
-          <div className="flex flex-col gap-4">
-            <div className="border-b border-white/5 pb-2">
-              <h2 className="text-lg font-light text-white tracking-wide uppercase m-0">Foresight Codex Hub</h2>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {kbArticles.slice(0, 6).map(art => {
-                let catColor = '#00F5B0';
-                if (art.category.toLowerCase().includes('space')) catColor = '#BF5AF2';
-                else if (art.category.toLowerCase().includes('climate')) catColor = '#FF0055';
-                else if (art.category.toLowerCase().includes('ai')) catColor = '#00F5D4';
-                
-                return (
-                  <Link 
-                    key={art.id}
-                    href={`/knowledge?article=${art.id}`}
-                    className="p-6 bg-black/45 hover:bg-white/5 border border-white/5 hover:border-white/15 rounded-2xl flex flex-col justify-between min-h-[220px] no-underline group transition-all duration-300"
-                  >
-                    <div className="flex flex-col gap-3">
-                      <div className="flex justify-between items-center text-[9px] font-mono">
-                        <span style={{ color: catColor }} className="uppercase font-bold tracking-wider">{art.category}</span>
-                        <span className="text-white/30">Readiness: {art.readinessIndex}%</span>
-                      </div>
-                      
-                      <h4 className="text-sm font-semibold text-white group-hover:text-[#00E5FF] transition-colors leading-snug m-0 font-mono">
-                        {art.title}
-                      </h4>
-                      
-                      <p className="text-[11px] text-white/50 leading-relaxed font-sans font-light m-0 line-clamp-3">
-                        {art.shortDesc}
-                      </p>
-                    </div>
-
-                    <div className="border-t border-white/5 pt-3 mt-4 flex justify-between items-center text-[9px] font-mono text-white/40">
-                      <span>Impact: <span className="text-white font-medium">{art.impactLevel}</span></span>
-                      <span className="group-hover:text-white transition-colors">DECYPHER →</span>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-
           {/* ── SECTION: LIVE GLOBAL INTELLIGENCE FEED ───────────────────── */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <div className="lg:col-span-8 flex flex-col gap-4">

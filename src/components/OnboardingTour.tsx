@@ -12,45 +12,50 @@ interface TourStep {
 const TOUR_STEPS: TourStep[] = [
   {
     title: 'Welcome to ChronoEarth',
-    description: 'ChronoEarth is an AI-powered Future Intelligence Platform that combines planetary monitoring, predictive intelligence, live signals, knowledge systems, and AI analysis into a unified interface.',
+    description: 'An AI-powered future intelligence platform combining live planetary monitoring, forecasting, semiconductor intelligence, research knowledge, and scenario simulation.',
   },
   {
-    title: 'Planetary Map & Orbit (Step 1 of 7)',
-    description: 'Explore Earth visualization, future timelines, planetary data layers, and geographic intelligence.',
+    title: 'MAP',
+    description: 'Explore Earth through real-time intelligence layers, future projections, planetary monitoring, and global event visualization.',
     target: '#nav-map',
   },
   {
-    title: 'Intelligence Dashboard (Step 2 of 7)',
-    description: 'View real-time intelligence signals, alerts, forecasts, and operational metrics.',
+    title: 'DASHBOARD',
+    description: 'Monitor live intelligence streams including climate risk, market stability, seismic activity, and space surveillance.',
     target: '#nav-dashboard',
   },
   {
-    title: 'Live Intel Feed (Step 3 of 7)',
-    description: 'Monitor live information streams, news signals, research updates, and emerging trends.',
+    title: 'INTEL FEED',
+    description: 'Track real-time technological, geopolitical, environmental, and scientific developments.',
     target: '#nav-intelfeed',
   },
   {
-    title: 'Future Predictions Engine (Step 4 of 7)',
-    description: 'Explore future forecasts, simulations, scenario modeling, and timeline projections.',
-    target: '#float-predictions',
+    title: 'SEMICONDUCTOR TERMINAL',
+    description: 'Analyze semiconductor supply chains, AI chip competition, foundry intelligence, HBM markets, and geopolitical risks.',
+    target: '#nav-semiconductor',
   },
   {
-    title: 'Foresight Codex / Knowledge Base (Step 5 of 7)',
-    description: 'Access research dossiers, technology intelligence, scientific concepts, and strategic knowledge systems.',
+    title: 'KNOWLEDGE BASE',
+    description: 'Access future technology dossiers, scientific concepts, climate research, AI developments, and strategic forecasts.',
     target: '#nav-knowledge',
   },
   {
-    title: 'FutureChat Terminal (Step 6 of 7)',
-    description: 'Interact with ChronoAI to ask questions, analyze trends, and explore future possibilities.',
-    target: '#float-futurechat',
+    title: 'PREDICTIONS',
+    description: 'Explore future scenarios, probability forecasts, and long-term trend analysis.',
+    target: '#float-predictions',
   },
   {
-    title: 'Sensors & Telemetry Channels (Step 7 of 7)',
-    description: 'Track live climate, seismic, market, space, and environmental monitoring systems.',
+    title: 'SENSORS',
+    description: 'Monitor earthquakes, climate indicators, market telemetry, and space activity in real time.',
     target: '#nav-sensors',
   },
   {
-    title: "You're Ready to Explore ChronoEarth",
+    title: 'FUTURECHAT',
+    description: 'Interact with ChronoEarth AI to explore future technologies, trends, risks, and opportunities.',
+    target: '#float-futurechat',
+  },
+  {
+    title: "You're now connected to the ChronoEarth Intelligence Network.",
     description: 'The platform is now ready. Explore intelligence feeds, predictions, simulations, planetary monitoring, and AI-powered analysis.',
   }
 ];

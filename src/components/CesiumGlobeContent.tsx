@@ -43,8 +43,8 @@ declare const Cesium: any;
 // ─── STRICT COLOR PALETTE ───────────────────────────────────────────────────
 const C = {
   emerald: '#00F5B0',
-  cyan: '#00D98F',
-  iceBlue: '#00D98F',
+  cyan: '#00FFFF',
+  iceBlue: '#33FFFF',
   white: '#FFFFFF',
   spaceBg:  '#02060A',
   black:    '#000000',
@@ -602,7 +602,7 @@ export default function CesiumGlobeContent({
 
     // Set black/very dark base globe
     if (viewer.scene.globe) {
-      viewer.scene.globe.baseColor = Cesium.Color.fromCssColorString('#02060A'); // deep dark space-blue
+      viewer.scene.globe.baseColor = Cesium.Color.fromCssColorString('#000103'); // darker space-black/blue
       viewer.scene.globe.showGroundAtmosphere = false; // removes pink terminator
       viewer.scene.globe.enableLighting = true;
       viewer.scene.globe.atmosphereLightIntensity = 0.0; // disable default atmosphere lighting to use our shells
@@ -611,18 +611,18 @@ export default function CesiumGlobeContent({
     // Set dark space ambient and directional lights
     viewer.scene.light = new Cesium.DirectionalLight({
       direction: new Cesium.Cartesian3(-0.55, -0.18, -0.82),
-      color: Cesium.Color.fromCssColorString('#001A0E'), // Dark green
-      intensity: 1.5, // breathing will animate this
+      color: Cesium.Color.fromCssColorString('#002615'), // Slightly brighter dark green
+      intensity: 1.8, // breathing will animate this
     });
-    viewer.scene.ambientColor = new Cesium.Color(0.0, 0.02, 0.0, 1.0);
+    viewer.scene.ambientColor = new Cesium.Color(0.0, 0.03, 0.01, 1.0);
 
     // Volumetric Atmospheric Limb (4 layers + outer breathing layer) - Desktop only
     if (!isMobile) {
       const atmosphereShells = [
-        { r: 6378137 + 75000, color: C.cyan, alpha: 0.0045 },
-        { r: 6378137 + 45000, color: C.cyan, alpha: 0.0105 },
-        { r: 6378137 + 25000,  color: C.iceBlue, alpha: 0.0165 },
-        { r: 6378137 + 10000,  color: C.iceBlue, alpha: 0.0255 },
+        { r: 6378137 + 115000, color: C.cyan, alpha: 0.0150 }, // wider and brighter
+        { r: 6378137 + 75000,  color: C.cyan, alpha: 0.0260 },
+        { r: 6378137 + 45000,  color: C.iceBlue, alpha: 0.0380 },
+        { r: 6378137 + 20000,  color: C.iceBlue, alpha: 0.0600 },
       ];
       atmosphereShells.forEach((shell) => {
         safeAddEntity({
@@ -642,13 +642,13 @@ export default function CesiumGlobeContent({
         ellipsoid: {
           radii: new Cesium.CallbackProperty(() => {
             const pulse = 1.0 + 0.0025 * Math.sin(timeRef.current * 0.6);
-            const r = (6378137 + 15000) * pulse; // Tighter breathing shell
+            const r = (6378137 + 22000) * pulse; // Tighter breathing shell
             return new Cesium.Cartesian3(r, r, r);
           }, false),
           material: new Cesium.ColorMaterialProperty(
             new Cesium.CallbackProperty(() =>
               Cesium.Color.fromCssColorString(C.cyan).withAlpha(
-                0.009 + 0.006 * Math.sin(timeRef.current * 0.6)
+                0.024 + 0.016 * Math.sin(timeRef.current * 0.6)
               ), false)
           ),
           fill: true,
@@ -743,29 +743,29 @@ export default function CesiumGlobeContent({
 
       const isVisible = (!fullCity.year || fullCity.year <= activeYear);
 
-      // Core point (white) - size 12
+      // Core point (white) - size 14
       const corePt = mainNodeCollection.add({
         position: pos,
         color: Cesium.Color.WHITE,
-        pixelSize: 12,
+        pixelSize: 14,
         show: isVisible,
         disableDepthTestDistance: Number.POSITIVE_INFINITY,
       });
 
-      // Inner glow (colored) - size 24, alpha 0.55
+      // Inner glow (colored) - size 32, alpha 0.65
       const glowPt = mainNodeCollection.add({
         position: pos,
-        color: color.withAlpha(0.55),
-        pixelSize: 24,
+        color: color.withAlpha(0.65),
+        pixelSize: 32,
         show: isVisible,
         disableDepthTestDistance: Number.POSITIVE_INFINITY,
       });
 
-      // Outer halo (soft color) - size 40, alpha 0.12
+      // Outer halo (soft color) - size 55, alpha 0.20
       const outerPt = mainNodeCollection.add({
         position: pos,
-        color: color.withAlpha(0.12),
-        pixelSize: 40,
+        color: color.withAlpha(0.20),
+        pixelSize: 55,
         show: isVisible,
         disableDepthTestDistance: Number.POSITIVE_INFINITY,
       });
@@ -1060,7 +1060,7 @@ export default function CesiumGlobeContent({
     ).then((ds: any) => {
       if (viewer.isDestroyed() || !isCyber) return;
 
-  const neonColor = Cesium.Color.fromCssColorString('#A8EFFF').withAlpha(0.75);
+  const neonColor = Cesium.Color.fromCssColorString('#00FFFF').withAlpha(1.0);
       let totalLandOutlines = 0;
       let totalLandPositions = 0;
 
@@ -1174,7 +1174,7 @@ export default function CesiumGlobeContent({
 safeAddEntity({
   polyline: {
     positions: adjustedPositions,
-    width: 1.2,
+    width: 3.2, // increased width for high-end intelligence platform look
     material: neonColor,
     arcType: Cesium.ArcType.GEODESIC,
     granularity: isMobile ? Cesium.Math.RADIANS_PER_DEGREE * 5.0 : Cesium.Math.RADIANS_PER_DEGREE,
@@ -1192,7 +1192,7 @@ safeAddEntity({
         if (e.polygon) {
           e.polygon.outline = false;
           // Dark space-blue solid continent fill
-          e.polygon.material = Cesium.Color.fromCssColorString('#040B12').withAlpha(0.96);
+          e.polygon.material = Cesium.Color.fromCssColorString('#081a2e').withAlpha(0.98);
           e.polygon.arcType = Cesium.ArcType.GEODESIC;
           e.polygon.granularity = Cesium.Math.RADIANS_PER_DEGREE;
 
@@ -1693,11 +1693,11 @@ safeAddEntity({
           }
         }
 
-        const scale = (isSel ? 1.8 : (isHover ? 1.4 : 1.0)) * (1.0 + 1.2 * flashIntensity);
+        const scale = (isSel ? 2.2 : (isHover ? 1.6 : 1.0)) * (1.0 + 1.2 * flashIntensity);
 
-        // Update core size & opacity - Base 12
+        // Update core size & opacity - Base 14
         if (anim.corePt) {
-          anim.corePt.pixelSize = 12 * scale * (0.85 + 0.15 * pulse);
+          anim.corePt.pixelSize = 14 * scale * (0.85 + 0.15 * pulse);
           scratchColor.red = 1.0;
           scratchColor.green = 1.0;
           scratchColor.blue = 1.0;
@@ -1705,27 +1705,27 @@ safeAddEntity({
           if (!disableDots) anim.corePt.color = scratchColor;
         }
 
-        // Update glow size & opacity - Base 24
+        // Update glow size & opacity - Base 32
         if (anim.glowPt) {
           const glowFactor = 0.60 + 0.40 * pulse;
-          anim.glowPt.pixelSize = 24 * scale * glowFactor;
+          anim.glowPt.pixelSize = 32 * scale * glowFactor;
           const animColor = anim.color;
           scratchColor.red = Math.min(1.0, animColor.red + 0.5 * flashIntensity);
           scratchColor.green = Math.min(1.0, animColor.green + 0.5 * flashIntensity);
           scratchColor.blue = Math.min(1.0, animColor.blue + 0.5 * flashIntensity);
-          scratchColor.alpha = Math.min(1.0, 0.55 * pulse + 0.45 * flashIntensity);
+          scratchColor.alpha = Math.min(1.0, (0.65 * pulse + 0.35) * (isSel ? 1.0 : (isHover ? 0.9 : 0.8)) + 0.45 * flashIntensity);
           if (!disableDots) anim.glowPt.color = scratchColor;
         }
 
-        // Update outer halo size & opacity - Base 40
+        // Update outer halo size & opacity - Base 55
         if (anim.outerPt) {
           const outerFactor = 0.50 + 0.50 * pulse;
-          anim.outerPt.pixelSize = 40 * scale * outerFactor;
+          anim.outerPt.pixelSize = 55 * scale * outerFactor;
           const animColor = anim.color;
           scratchColor.red = animColor.red;
           scratchColor.green = animColor.green;
           scratchColor.blue = animColor.blue;
-          scratchColor.alpha = Math.min(1.0, 0.12 * pulse + 0.35 * flashIntensity);
+          scratchColor.alpha = Math.min(1.0, (0.25 * pulse + 0.10) + 0.35 * flashIntensity);
           if (!disableDots) anim.outerPt.color = scratchColor;
         }
       }
