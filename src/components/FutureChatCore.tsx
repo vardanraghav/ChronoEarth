@@ -3,8 +3,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
-import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/lib/supabase';
+
 import SafeImage from '@/components/SafeImage';
 import { getKnowledgeCardImage, getPredictionImage, KNOWLEDGE_CATEGORY_IMAGES, PREDICTION_CATEGORY_IMAGES } from '@/lib/imageUtils';
 import { KNOWLEDGE_CARDS } from '@/data/knowledgeCards';
@@ -148,75 +147,36 @@ function newSessionId(): string {
 }
 
 export default function FutureChatCore() {
-  const { user } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [typing, setTyping] = useState(false);
-  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyLoading, setHistoryLoading] = useState(true);
   const [sessionId, setSessionId] = useState<string>(newSessionId);
   const endRef = useRef<HTMLDivElement | null>(null);
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
 
-  // ── Load last 50 chat messages from Supabase on auth change ──────────────
-  const loadChatHistory = useCallback(async (uid: string) => {
-    console.log('[FutureChat Debug] Load requested. Target UID:', uid);
+  // Load chat history from localStorage on mount
+  useEffect(() => {
     setHistoryLoading(true);
     try {
-      console.log('[FutureChat Debug] Querying database (chat_sessions) for user_id =', uid);
-      const { data, error } = await supabase
-        .from('chat_sessions')
-        .select('id, content, created_at')
-        .eq('user_id', uid)
-        .order('created_at', { ascending: true })
-        .limit(50);
-
-      if (error) {
-        console.error('[FutureChat Debug] Supabase SELECT query error:', error.message);
-        return;
+      const saved = localStorage.getItem('chronoearth_chats');
+      if (saved) {
+        setMessages(JSON.parse(saved));
       }
-
-      console.log('[FutureChat Debug] Loaded raw conversation records:', data ? data.length : 0);
-      if (data && data.length > 0) {
-        const parsed = data.map((item: any) => {
-          const rawText = item.content || '';
-          const isAi = rawText.startsWith('[ASSISTANT]:');
-          const cleanText = isAi 
-            ? rawText.slice(12) 
-            : rawText.startsWith('[USER]:') 
-              ? rawText.slice(7) 
-              : rawText;
-
-          return {
-            id: item.id,
-            text: cleanText,
-            isAi: isAi,
-          };
-        });
-        console.log('[FutureChat Debug] Mapped messages for UI rendering pipeline:', parsed.length);
-        setMessages(parsed);
-      } else {
-        console.log('[FutureChat Debug] No previous conversation found in database for user:', uid);
-        setMessages([]);
-      }
-    } catch (err) {
-      console.error('[FutureChat Debug] Exception occurred loading chat history:', err);
+    } catch (e) {
+      console.error('[FutureChat] Failed to load local chat history:', e);
     } finally {
       setHistoryLoading(false);
     }
   }, []);
 
+  // Persist messages to localStorage
   useEffect(() => {
-    console.log('[FutureChat Debug] Auth state trigger. Active user object:', user);
-    if (!user) {
-      console.log('[FutureChat Debug] User not loaded or logged out. Purging local UI messages.');
-      setMessages([]);
-      return;
+    if (!historyLoading) {
+      localStorage.setItem('chronoearth_chats', JSON.stringify(messages));
     }
-    const resolvedUid = user.uid ?? user.id;
-    console.log('[FutureChat Debug] Auth state resolved. User UID:', resolvedUid, 'Email:', user.email);
-    loadChatHistory(resolvedUid);
-  }, [user, loadChatHistory]);
+  }, [messages, historyLoading]);
 
   // ── Scroll helpers ───────────────────────────────────────────────────────
   const scrollToBottom = (behavior: 'smooth' | 'auto' = 'smooth') => {
@@ -250,40 +210,18 @@ export default function FutureChatCore() {
     }
   }, [isGenerating, messages.length]);
 
-  // ── Persist a single message row ─────────────────────────────────────────
-  const persistMessage = (uid: string, role: 'user' | 'assistant', content: string) => {
-    console.log(`[FutureChat Debug] Storing ${role} message in chat_sessions. UID: ${uid}`);
-    // Prefix content with role since chat_sessions doesn't have role/is_ai column
-    const formattedContent = `[${role.toUpperCase()}]: ${content}`;
-    
-    supabase
-      .from('chat_sessions')
-      .insert({ user_id: uid, content: formattedContent })
-      .then(({ error }: { error: any }) => {
-        if (error) {
-          console.error(`[FutureChat Debug] Database write failed for ${role} message:`, error.message);
-        } else {
-          console.log(`[FutureChat Debug] Database write success for ${role} message.`);
-        }
-      });
-  };
-
   // ── Send message ─────────────────────────────────────────────────────────
   const handleSend = async (e?: React.FormEvent, customPrompt?: string) => {
     e?.preventDefault();
     const prompt = (customPrompt || inputValue).trim();
     if (!prompt || isGenerating) return;
 
-    const uid = user?.uid ?? user?.id;
     const userMsgId = `u-${Date.now()}`;
     const userMsg: ChatMessage = { id: userMsgId, text: prompt, isAi: false };
     setMessages(prev => [...prev, userMsg]);
     setInputValue('');
     setIsGenerating(true);
     setTyping(true);
-
-    // Save user message
-    if (uid) persistMessage(uid, 'user', prompt);
 
     try {
       const res = await fetch('/api/futurechat', {
@@ -303,25 +241,22 @@ export default function FutureChatCore() {
         avatar: 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=80&auto=format&fit=crop&q=80',
       };
       setMessages(prev => [...prev, aiMsg]);
-
-      // Save assistant message
-      if (uid) persistMessage(uid, 'assistant', answer);
     } catch (err) {
       const errorText = `ChronoAI could not access the intelligence network. Please try again. (${(err as any)?.message || ''})`;
       const aiMsg: ChatMessage = { id: `a-${Date.now()}`, text: errorText, isAi: true };
       setMessages(prev => [...prev, aiMsg]);
-      if (uid) persistMessage(uid, 'assistant', errorText);
     } finally {
       setTyping(false);
       setIsGenerating(false);
     }
   };
 
-  // ── New Chat: clears UI only, keeps DB history intact ────────────────────
+  // ── New Chat: clears UI and localStorage ────────────────────
   const handleNewChat = () => {
     setMessages([]);
     setInputValue('');
     setSessionId(newSessionId()); // fresh session for new messages
+    localStorage.removeItem('chronoearth_chats');
   };
 
   const suggestions = [
@@ -343,13 +278,7 @@ export default function FutureChatCore() {
             <div className="flex flex-col gap-0.5 min-w-0">
               <h1 className="text-2xl font-extrabold text-white font-mono tracking-wide">FutureChat</h1>
               <p className="text-sm text-[#94A3B8] font-mono truncate">
-                {user
-                  ? <span>
-                      <span className="text-[#00F5B0]">[{user.email?.split('@')[0] ?? 'user'}]</span>
-                      {' '}— history synced
-                    </span>
-                  : 'AI-powered future intelligence assistant'
-                }
+                <span>secure local client node // local history active</span>
               </p>
             </div>
 
@@ -402,11 +331,9 @@ export default function FutureChatCore() {
                     <p className="text-sm max-w-xl text-[#94A3B8]/80 leading-relaxed">
                       Ask ChronoAI about predictions, climate intelligence, smart cities, microelectronics, space logistics, and timeline parameters.
                     </p>
-                    {user && (
-                      <p className="text-[10px] font-mono text-[#00F5B0]/60 mt-1">
-                        Your conversations are saved and will persist across sessions.
-                      </p>
-                    )}
+                    <p className="text-[10px] font-mono text-[#00F5B0]/60 mt-1">
+                      Your conversations are saved locally and will persist across sessions.
+                    </p>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-xl mt-4">

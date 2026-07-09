@@ -1,17 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/hooks/useAuth';
 import Navbar from '@/components/Navbar';
 import BackgroundEffects from '@/components/BackgroundEffects';
 import Footer from '@/components/Footer';
-import { supabase } from '@/lib/supabase';
-import { useRouter } from 'next/navigation';
 
 export default function SettingsPage() {
-  const { user, loading, logout } = useAuth();
-  const router = useRouter();
-
   const [loadingData, setLoadingData] = useState(true);
   const [saving, setSaving] = useState(false);
   
@@ -22,120 +16,71 @@ export default function SettingsPage() {
   // Preference variables
   const [theme, setTheme] = useState('cyber');
   const [timeline, setTimeline] = useState(2050);
-  const [favoriteCities, setFavoriteCities] = useState<string[]>([]);
-  const [favoriteCompanies, setFavoriteCompanies] = useState<string[]>([]);
 
   // Feedback states
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' | null }>({ text: '', type: null });
 
+  // Load preferences from localStorage on mount
   useEffect(() => {
-    if (loading) return;
-    if (!user) {
-      router.push('/login');
-      return;
+    setLoadingData(true);
+    try {
+      const storedFullName = localStorage.getItem('chrono_settings_fullName') || 'Digital Citizen';
+      const storedAvatarUrl = localStorage.getItem('chrono_settings_avatarUrl') || '';
+      const storedTheme = localStorage.getItem('chrono_settings_theme') || 'cyber';
+      const storedTimeline = localStorage.getItem('chrono_settings_timeline') || '2050';
+
+      setFullName(storedFullName);
+      setAvatarUrl(storedAvatarUrl);
+      setTheme(storedTheme);
+      setTimeline(Number(storedTimeline));
+    } catch (e) {
+      console.error('[Settings] Failed to load local settings:', e);
+    } finally {
+      setLoadingData(false);
     }
-
-    const fetchUserData = async () => {
-      try {
-        setLoadingData(true);
-        
-        // Fetch profiles table
-        const { data: profile, error: profileErr } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single();
-
-        // Fetch preferences table
-        const { data: prefs, error: prefsErr } = await supabase
-          .from('user_preferences')
-          .select('*')
-          .eq('user_id', user.id)
-          .single();
-
-        if (profile) {
-          setFullName(profile.full_name || '');
-          setAvatarUrl(profile.avatar_url || '');
-        } else {
-          // If profile missing in DB, fallback to auth session meta
-          setFullName(user.user_metadata?.full_name || '');
-          setAvatarUrl(user.user_metadata?.avatar_url || '');
-        }
-
-        if (prefs) {
-          setTheme(prefs.selected_theme || 'cyber');
-          setTimeline(prefs.default_timeline || 2050);
-          setFavoriteCities(prefs.favorite_cities || []);
-          setFavoriteCompanies(prefs.favorite_companies || []);
-        }
-      } catch (err) {
-        console.error('Failed to load user variables:', err);
-      } finally {
-        setLoadingData(false);
-      }
-    };
-
-    fetchUserData();
-  }, [user, loading, router]);
+  }, []);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
-
     setSaving(true);
     setMessage({ text: '', type: null });
 
     try {
-      // 1. Update public.profiles
-      const { error: profileErr } = await supabase
-        .from('profiles')
-        .update({
-          full_name: fullName,
-          avatar_url: avatarUrl
-        })
-        .eq('id', user.id);
+      localStorage.setItem('chrono_settings_fullName', fullName);
+      localStorage.setItem('chrono_settings_avatarUrl', avatarUrl);
+      localStorage.setItem('chrono_settings_theme', theme);
+      localStorage.setItem('chrono_settings_timeline', String(timeline));
 
-      if (profileErr) throw profileErr;
+      // Dispatch global configuration change event
+      window.dispatchEvent(new Event('chrono_settings_changed'));
 
-      // 2. Update public.user_preferences (upsert if missing)
-      const { error: prefsErr } = await supabase
-        .from('user_preferences')
-        .upsert({
-          user_id: user.id,
-          selected_theme: theme,
-          default_timeline: timeline,
-          favorite_cities: favoriteCities,
-          favorite_companies: favoriteCompanies
-        });
-
-      if (prefsErr) throw prefsErr;
-
-      // 3. Update auth user metadata so the local session reflects updates immediately
-      const { auth: firebaseAuth } = await import('@/lib/firebase');
-      const { updateProfile } = await import('firebase/auth');
-      
-      if (firebaseAuth.currentUser) {
-        await updateProfile(firebaseAuth.currentUser, {
-          displayName: fullName,
-          photoURL: avatarUrl
-        });
-      }
-
-      setMessage({ text: 'System variables synchronized successfully.', type: 'success' });
+      setMessage({ text: 'Local system configuration variables committed successfully.', type: 'success' });
     } catch (err: any) {
-      console.error('Sync failed:', err);
+      console.error('Local settings save failed:', err);
       setMessage({ text: `Failed to compile configuration: ${err.message}`, type: 'error' });
     } finally {
       setSaving(false);
     }
   };
 
-  const handleLogout = async () => {
-    await logout();
-    router.push('/login');
+  const handleReset = () => {
+    if (confirm('Are you sure you want to restore factory default configuration settings?')) {
+      localStorage.removeItem('chrono_settings_fullName');
+      localStorage.removeItem('chrono_settings_avatarUrl');
+      localStorage.removeItem('chrono_settings_theme');
+      localStorage.removeItem('chrono_settings_timeline');
+      
+      setFullName('Digital Citizen');
+      setAvatarUrl('');
+      setTheme('cyber');
+      setTimeline(2050);
+      
+      window.dispatchEvent(new Event('chrono_settings_changed'));
+      setMessage({ text: 'Settings restored to factory defaults.', type: 'success' });
+    }
   };
 
-  if (loading || loadingData) {
+  if (loadingData) {
     return (
       <main className="min-h-screen w-full bg-[#02060A] text-white flex items-center justify-center font-mono text-xs uppercase tracking-widest">
         <span>Restoring settings coordinate telemetry...</span>
@@ -156,7 +101,7 @@ export default function SettingsPage() {
           <div className="absolute top-0 right-0 w-64 h-64 bg-[#00E5FF]/5 rounded-full blur-[80px] pointer-events-none" />
           <div className="flex justify-between items-start flex-wrap gap-4">
             <div className="flex items-center gap-2 text-[#00E5FF] text-xs font-mono uppercase tracking-[0.3em] font-semibold">
-              <span>⚙️ USER PREFERENCES</span>
+              <span>⚙️ SYSTEM PREFERENCES</span>
               <span className="w-1.5 h-1.5 rounded-full bg-[#00E5FF] animate-pulse" />
             </div>
             <button
@@ -209,15 +154,15 @@ export default function SettingsPage() {
                 />
               </div>
 
-              {/* Email (Read Only) */}
+              {/* Uplink Status */}
               <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] text-[#7A8694] uppercase tracking-wider font-semibold">Synchronised Email</label>
+                <label className="text-[10px] text-[#7A8694] uppercase tracking-wider font-semibold">Uplink Status</label>
                 <input
                   type="text"
                   readOnly
                   disabled
-                  value={user?.email || ''}
-                  className="w-full bg-white/5 border border-white/5 rounded px-3 py-2 text-xs text-white/40 outline-none font-mono cursor-not-allowed"
+                  value="LOCAL // DECENTRALIZED"
+                  className="w-full bg-[#00E5FF]/5 border border-[#00E5FF]/20 rounded px-3 py-2 text-xs text-[#00E5FF] outline-none font-mono cursor-not-allowed uppercase font-semibold"
                 />
               </div>
 
@@ -226,7 +171,7 @@ export default function SettingsPage() {
                 <label className="text-[10px] text-[#7A8694] uppercase tracking-wider font-semibold">Avatar Image URL</label>
                 <div className="flex gap-4 items-center">
                   <img
-                    src={avatarUrl || `https://api.dicebear.com/7.x/bottts/svg?seed=${user?.email}`}
+                    src={avatarUrl || `https://api.dicebear.com/7.x/bottts/svg?seed=${fullName || 'citizen'}`}
                     alt="avatar preview"
                     className="w-10 h-10 rounded-full border border-[#00E5FF]/20 object-cover shrink-0"
                   />
@@ -282,14 +227,14 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          {/* Save Button */}
+          {/* Save & Reset Buttons */}
           <div className="border-t border-white/5 pt-6 flex justify-between items-center gap-4 mt-2">
             <button
               type="button"
-              onClick={handleLogout}
+              onClick={handleReset}
               className="px-5 py-2.5 bg-transparent hover:bg-rose-500/10 border border-rose-500/30 hover:border-rose-500 text-rose-400 font-mono text-xs rounded transition-all cursor-pointer font-semibold uppercase tracking-wider"
             >
-              Sign out from System
+              Reset Local Settings
             </button>
 
             <button

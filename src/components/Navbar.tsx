@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import SearchModal from './SearchModal';
-import { useAuth } from '@/hooks/useAuth';
 
 interface NavbarProps {
   onSearchClick?: () => void;
@@ -21,9 +20,6 @@ export default function Navbar({ setActiveCity }: NavbarProps) {
   const [hubsDropdownOpen, setHubsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const { user, role, loading, logout } = useAuth();
-  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
-  const userDropdownRef = useRef<HTMLDivElement>(null);
 
   // Ctrl+K Global key binding
   useEffect(() => {
@@ -58,9 +54,7 @@ export default function Navbar({ setActiveCity }: NavbarProps) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setHubsDropdownOpen(false);
       }
-      if (userDropdownRef.current && !userDropdownRef.current.contains(event.target as Node)) {
-        setUserDropdownOpen(false);
-      }
+
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -209,95 +203,15 @@ export default function Navbar({ setActiveCity }: NavbarProps) {
             </kbd>
           </button>
 
-          {/* Auth Section */}
-          {!loading && (
-            user ? (
-              <div className="relative" ref={userDropdownRef}>
-                <button
-                  onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                  className="flex items-center gap-2 bg-transparent border-none cursor-pointer p-0 group"
-                >
-                  <img
-                    src={user.user_metadata?.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.email}`}
-                    alt="user avatar"
-                    className="w-7 h-7 rounded-full border border-[#00E5FF]/30 group-hover:border-[#00E5FF] transition-colors"
-                  />
-                  <span className="hidden xl:inline text-xs font-mono text-white/70 group-hover:text-white transition-colors truncate max-w-[85px]">
-                    {user.user_metadata?.full_name || user.email?.split('@')[0]}
-                  </span>
-                </button>
-
-                {userDropdownOpen && (
-                  <div
-                    className="absolute top-9 right-0 w-44 p-2 flex flex-col gap-1.5 rounded-lg premium-glass border"
-                    style={{
-                      backgroundColor: 'rgba(2, 6, 12, 0.95)',
-                      borderColor: 'rgba(0, 229, 255, 0.2)',
-                      boxShadow: '0 10px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 229, 255, 0.1)',
-                    }}
-                  >
-                    <div className="text-[8px] font-mono text-[#8CA8B8] border-b border-white/5 pb-1 uppercase tracking-widest px-1.5 truncate flex items-center justify-between">
-                      <span className="truncate">{user.email}</span>
-                      {role === 'admin' && (
-                        <span className="ml-1.5 px-1 py-0.2 bg-rose-500/20 text-rose-400 border border-rose-500/40 text-[7px] font-bold rounded uppercase tracking-wider">
-                          ADMIN
-                        </span>
-                      )}
-                    </div>
-                    {role === 'admin' && (
-                      <Link
-                        href="/admin"
-                        className="group flex items-center gap-2 p-1.5 rounded no-underline text-xs text-[#00E5FF] hover:bg-[#00E5FF]/10 font-mono uppercase font-semibold"
-                        onClick={() => setUserDropdownOpen(false)}
-                      >
-                        ⚡ Admin Panel
-                      </Link>
-                    )}
-                    <Link
-                      href="/settings"
-                      className="group flex items-center gap-2 p-1.5 rounded no-underline text-xs text-white/80 hover:bg-white/5 font-mono uppercase"
-                      onClick={() => setUserDropdownOpen(false)}
-                    >
-                      ⚙️ Settings
-                    </Link>
-                    <button
-                      onClick={() => {
-                        setUserDropdownOpen(false);
-                        window.dispatchEvent(new CustomEvent('start-chronoearth-tour'));
-                      }}
-                      className="group flex items-center gap-2 p-1.5 rounded text-left bg-transparent border-none cursor-pointer text-xs text-white/80 hover:bg-white/5 font-mono uppercase w-full"
-                    >
-                      🔄 Restart Tour
-                    </button>
-                    <button
-                      onClick={() => {
-                        setUserDropdownOpen(false);
-                        logout();
-                      }}
-                      className="group flex items-center gap-2 p-1.5 rounded text-left bg-transparent border-none cursor-pointer text-xs text-rose-400 hover:bg-rose-500/10 font-mono uppercase w-full"
-                    >
-                      🚪 Logout
-                    </button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="flex items-center gap-3">
-                <Link
-                  href="/login"
-                  className="text-xs uppercase font-mono text-white/70 hover:text-white no-underline transition-colors py-1 px-2.5 rounded border border-white/5 hover:border-white/10 bg-white/5"
-                >
-                  Login
-                </Link>
-                <Link
-                  href="/signup"
-                  className="text-xs uppercase font-mono text-white no-underline transition-all py-1 px-2.5 rounded border border-[#00E5FF]/30 hover:border-[#00E5FF] bg-[#00E5FF]/5 hover:bg-[#00E5FF] hover:text-[#02060A] hover:shadow-[0_0_10px_rgba(0,229,255,0.3)] font-semibold"
-                >
-                  Sign Up
-                </Link>
-              </div>
-            )
-          )}
+          {/* Settings Link */}
+          <Link
+            href="/settings"
+            className="group flex items-center gap-1.5 py-1 px-2.5 bg-white/5 hover:bg-[#00E5FF]/10 rounded border border-[#00E5FF]/20 cursor-pointer text-xs tracking-wider uppercase font-mono transition-all text-white/70 hover:text-white"
+            title="System Settings"
+          >
+            <span>⚙️</span>
+            <span>Settings</span>
+          </Link>
         </div>
 
         {/* Mobile / Mid-size layout action buttons */}
@@ -355,91 +269,28 @@ export default function Navbar({ setActiveCity }: NavbarProps) {
 
           {/* Scrollable Links Area */}
           <div className="flex-1 overflow-y-auto py-6 pr-2 flex flex-col gap-6 custom-scrollbar">
-            {/* User Session Interface */}
-            {!loading && (
-              <div className="flex flex-col gap-2 border border-white/5 p-4 rounded-xl" style={{ backgroundColor: 'rgba(255, 255, 255, 0.02)' }}>
-                {user ? (
-                  <div className="flex flex-col gap-3">
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={user.user_metadata?.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.email}`}
-                        alt="avatar"
-                        className="w-8 h-8 rounded-full border border-[#00E5FF]/30"
-                      />
-                      <div className="flex flex-col min-w-0">
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-xs font-semibold text-white truncate">
-                            {user.user_metadata?.full_name || 'Active User'}
-                          </span>
-                          {role === 'admin' && (
-                            <span className="px-1 py-0.2 bg-rose-500/20 text-rose-400 border border-rose-500/40 text-[7px] font-bold rounded uppercase tracking-wider">
-                              ADMIN
-                            </span>
-                          )}
-                        </div>
-                        <span className="text-[9px] text-slate-500 truncate">{user.email}</span>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2 border-t border-white/5 pt-3 mt-1">
-                      {role === 'admin' && (
-                        <Link
-                          href="/admin"
-                          className="flex items-center justify-center gap-2 p-2 rounded border border-[#00E5FF]/30 bg-[#00E5FF]/10 text-[10px] font-semibold text-[#00E5FF] no-underline font-mono uppercase"
-                          onClick={() => setMobileMenuOpen(false)}
-                        >
-                          Admin Panel
-                        </Link>
-                      )}
-                      <Link
-                        href="/settings"
-                        className="flex items-center justify-center gap-2 p-2 rounded border border-white/10 bg-white/5 text-[10px] text-white no-underline font-mono uppercase"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        Settings
-                      </Link>
-                      <button
-                        onClick={() => {
-                          setMobileMenuOpen(false);
-                          window.dispatchEvent(new CustomEvent('start-chronoearth-tour'));
-                        }}
-                        className="flex items-center justify-center gap-2 p-2 rounded border border-white/10 bg-white/5 text-[10px] text-white cursor-pointer font-mono uppercase bg-transparent"
-                      >
-                        Restart Tour
-                      </button>
-                      <button
-                        onClick={() => {
-                          setMobileMenuOpen(false);
-                          logout();
-                        }}
-                        className="col-span-2 flex items-center justify-center gap-2 p-2 rounded border border-rose-500/20 bg-rose-500/10 text-[10px] text-rose-400 cursor-pointer font-mono uppercase"
-                      >
-                        Logout
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex flex-col gap-2">
-                    <div className="text-[9px] text-slate-500 uppercase tracking-widest font-bold font-mono">Account Access</div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <Link
-                        href="/login"
-                        className="flex items-center justify-center p-2 rounded border border-white/10 bg-white/5 text-[10px] text-white no-underline uppercase font-mono"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        Login
-                      </Link>
-                      <Link
-                        href="/signup"
-                        className="flex items-center justify-center p-2 rounded border border-[#00E5FF]/30 bg-[#00E5FF]/10 text-[10px] text-[#00E5FF] no-underline uppercase font-mono font-bold"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        Sign Up
-                      </Link>
-                    </div>
-                  </div>
-                )}
+            {/* Local Calibration Interface */}
+            <div className="flex flex-col gap-2 border border-white/5 p-4 rounded-xl" style={{ backgroundColor: 'rgba(255, 255, 255, 0.02)' }}>
+              <div className="text-[9px] text-[#8CA8B8] uppercase tracking-widest font-bold font-mono">System Calibration</div>
+              <div className="grid grid-cols-2 gap-3 mt-1">
+                <Link
+                  href="/settings"
+                  className="flex items-center justify-center p-2 rounded border border-[#00E5FF]/30 bg-[#00E5FF]/10 text-[10px] text-[#00E5FF] no-underline uppercase font-mono font-bold"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  ⚙️ Settings
+                </Link>
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    window.dispatchEvent(new CustomEvent('start-chronoearth-tour'));
+                  }}
+                  className="flex items-center justify-center p-2 rounded border border-white/10 bg-white/5 text-[10px] text-white cursor-pointer font-mono uppercase bg-transparent"
+                >
+                  🔄 Tour
+                </button>
               </div>
-            )}
+            </div>
 
             {/* Primary Operations Section */}
             <div className="flex flex-col gap-2">

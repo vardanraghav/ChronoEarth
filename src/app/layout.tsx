@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Script from "next/script";
 import "./globals.css";
-import { AuthProvider } from "@/context/AuthContext";
 import FloatingActions from "@/components/FloatingActions";
 import OnboardingTour from "@/components/OnboardingTour";
 
@@ -56,11 +55,9 @@ export default function RootLayout({
       </head>
       <body className="h-full bg-[#060918] text-[#e8ecf4]">
         <Script src="/cesium/Cesium.js" strategy="beforeInteractive" />
-        <AuthProvider>
-          {children}
-          <FloatingActions />
-          <OnboardingTour />
-        </AuthProvider>
+        {children}
+        <FloatingActions />
+        <OnboardingTour />
       </body>
     </html>
   );
