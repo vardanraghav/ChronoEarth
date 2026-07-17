@@ -363,9 +363,8 @@ export default function CesiumGlobeContent({
     
     // HDR Rendering & filmic tone mapping / exposure control
     viewer.scene.highDynamicRange = true;
-    if (viewer.scene.postProcessStages && viewer.scene.postProcessStages.exposure) {
-      viewer.scene.postProcessStages.exposure.enabled = true;
-      viewer.scene.postProcessStages.exposure.uniforms.exposure = 0.7; // Film exposure level
+    if (viewer.scene.postProcessStages) {
+      viewer.scene.postProcessStages.exposure = 0.75; // Film exposure level
     }
 
     // Planet momentum & heavy inertia feel
