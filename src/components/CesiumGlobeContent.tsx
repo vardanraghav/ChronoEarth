@@ -207,6 +207,31 @@ const SPACEPORTS = [
   { name: 'Wenchang Spaceport', lat: 19.61, lon: 110.95 }
 ];
 
+const SEMI_FABS = [
+  { name: 'TSMC Gigafab (Hsinchu)', lat: 24.78, lon: 120.97 },
+  { name: 'Intel Fab 34 (Hillsboro)', lat: 45.52, lon: -122.95 },
+  { name: 'Samsung Pyeongtaek Fab', lat: 37.27, lon: 127.12 },
+  { name: 'Micron Fab 15 (Boise)', lat: 43.61, lon: -116.20 },
+  { name: 'GlobalFoundries Fab 8 (Malta)', lat: 42.97, lon: -73.79 },
+  { name: 'ASML HQ (Veldhoven)', lat: 51.41, lon: 5.40 }
+];
+
+const SEMI_SUPPLY_LINKS = [
+  { a: { lat: 51.41, lon: 5.40 }, b: { lat: 24.78, lon: 120.97 } }, // ASML to TSMC
+  { a: { lat: 24.78, lon: 120.97 }, b: { lat: 45.52, lon: -122.95 } }, // TSMC to Intel
+  { a: { lat: 37.27, lon: 127.12 }, b: { lat: 51.41, lon: 5.40 } }, // Samsung to ASML
+  { a: { lat: 42.97, lon: -73.79 }, b: { lat: 43.61, lon: -116.20 } }, // GF to Micron
+  { a: { lat: 24.78, lon: 120.97 }, b: { lat: 42.97, lon: -73.79 } } // TSMC to GF
+];
+
+const LANDING_STATIONS = [
+  { name: 'Bude Cable Station (UK)', lat: 50.83, lon: -4.54 },
+  { name: 'Marseille Landing Hub (FR)', lat: 43.30, lon: 5.37 },
+  { name: 'Chennai Landing Hub (IN)', lat: 13.08, lon: 80.27 },
+  { name: 'Hillsboro Cable Landing (US)', lat: 45.52, lon: -122.95 },
+  { name: 'Chikura Cable Station (JP)', lat: 34.97, lon: 139.97 }
+];
+
 const GEOPOLITICAL_LANES = [
   {
     name: 'Suez Maritime Route',
@@ -410,7 +435,7 @@ export default function CesiumGlobeContent({
     } else {
       viewer.resolutionScale = 1.0;
       if (viewer.scene.globe) {
-        viewer.scene.globe.maximumScreenSpaceError = 2.0;
+        viewer.scene.globe.maximumScreenSpaceError = 1.5; // High terrain resolution for sharp ridges
       }
     }
 
@@ -1200,15 +1225,16 @@ export default function CesiumGlobeContent({
       });
 
       if (!isMobile) {
-        safeAddEntity({
+        const ringEnt = safeAddEntity({
           polyline: {
             positions: ringPts,
             width: 0.8,
-            material: Cesium.Color.fromCssColorString(shell.color).withAlpha(0.003),
+            material: Cesium.Color.WHITE.withAlpha(0.008), // Clean faint white orbital path
             arcType: Cesium.ArcType.GEODESIC,
             granularity: Cesium.Math.toRadians(8.0),
           },
         });
+        if (ringEnt) ringEnt.layerId = 'space';
       }
 
       // Satellites
@@ -1216,7 +1242,6 @@ export default function CesiumGlobeContent({
         if (isMobile && s > 0) continue; // limit satellites count on mobile
         const phase0 = (s / shell.sats) * Math.PI * 2;
         const speed = shell.speed;
-        const color = shell.color;
 
         const satEnt = safeAddEntity({
           position: new Cesium.CallbackProperty(() => {
@@ -1225,9 +1250,9 @@ export default function CesiumGlobeContent({
             return new Cesium.Cartesian3(x, y, z);
           }, false),
           point: {
-            pixelSize: 1.5,
-            color: Cesium.Color.WHITE.withAlpha(0.40),
-            outlineColor: Cesium.Color.fromCssColorString(color).withAlpha(0.20),
+            pixelSize: 1.2, // Small white sensor dot
+            color: Cesium.Color.WHITE.withAlpha(0.70),
+            outlineColor: Cesium.Color.WHITE.withAlpha(0.25),
             outlineWidth: 0.5,
           },
         });
@@ -1623,14 +1648,30 @@ safeAddEntity({
         }
       });
 
-      // ─── 3. AI & Technology Layer ───
+      // ─── 3. AI & Technology Layer (AI Infrastructure) ───
       TECH_HUBS.forEach((th, index) => {
         if (isMobile && index % 2 !== 0) return;
         const ent = safeAddEntity({
           position: Cesium.Cartesian3.fromDegrees(th.lon, th.lat, 9000), // Raised to prevent terrain clipping
           point: {
             pixelSize: 8,
-            color: Cesium.Color.fromCssColorString('#00BFFF'),
+            color: Cesium.Color.fromCssColorString('#BF55EC'), // Neon purple AI nodes
+            outlineColor: Cesium.Color.WHITE,
+            outlineWidth: 1,
+            translucencyByDistance: new Cesium.NearFarScalar(1500000, 1.0, 16000000, 0.2),
+            scaleByDistance: new Cesium.NearFarScalar(1500000, 1.0, 16000000, 0.4),
+          }
+        });
+        if (ent) ent.layerId = 'tech';
+      });
+
+      LANDING_STATIONS.forEach((ls, index) => {
+        if (isMobile && index % 2 !== 0) return;
+        const ent = safeAddEntity({
+          position: Cesium.Cartesian3.fromDegrees(ls.lon, ls.lat, 9000),
+          point: {
+            pixelSize: 7,
+            color: Cesium.Color.fromCssColorString('#9933FF'), // Cable landing station
             outlineColor: Cesium.Color.WHITE,
             outlineWidth: 1,
             translucencyByDistance: new Cesium.NearFarScalar(1500000, 1.0, 16000000, 0.2),
@@ -1646,7 +1687,7 @@ safeAddEntity({
           polyline: {
             positions: Cesium.Cartesian3.fromDegreesArray([link.a.lon, link.a.lat, link.b.lon, link.b.lat]),
             width: 1.2,
-            material: Cesium.Color.fromCssColorString('#00BFFF').withAlpha(0.3),
+            material: Cesium.Color.fromCssColorString('#9933FF').withAlpha(0.25), // Purple fiber links
             arcType: Cesium.ArcType.GEODESIC,
             granularity: isMobile ? Cesium.Math.RADIANS_PER_DEGREE * 5.0 : Cesium.Math.RADIANS_PER_DEGREE
           }
@@ -1660,9 +1701,9 @@ safeAddEntity({
         const ent = safeAddEntity({
           position: Cesium.Cartesian3.fromDegrees(fh.lon, fh.lat, 9000), // Raised to prevent terrain clipping
           point: {
-            pixelSize: 8,
-            color: Cesium.Color.fromCssColorString('#FF8C00'),
-            outlineColor: Cesium.Color.YELLOW,
+            pixelSize: 8.5,
+            color: Cesium.Color.fromCssColorString('#FF9900'), // Bright energy orange
+            outlineColor: Cesium.Color.fromCssColorString('#FFFF00'),
             outlineWidth: 1.5,
             translucencyByDistance: new Cesium.NearFarScalar(1500000, 1.0, 16000000, 0.2),
             scaleByDistance: new Cesium.NearFarScalar(1500000, 1.0, 16000000, 0.4),
@@ -1676,8 +1717,8 @@ safeAddEntity({
         const ent = safeAddEntity({
           polyline: {
             positions: Cesium.Cartesian3.fromDegreesArray([grid.a.lon, grid.a.lat, grid.b.lon, grid.b.lat]),
-            width: 1.0,
-            material: Cesium.Color.fromCssColorString('#FF8C00').withAlpha(0.35),
+            width: 1.2,
+            material: Cesium.Color.fromCssColorString('#FF5500').withAlpha(0.35), // Orange transmission lines
             arcType: Cesium.ArcType.GEODESIC,
             granularity: isMobile ? Cesium.Math.RADIANS_PER_DEGREE * 5.0 : Cesium.Math.RADIANS_PER_DEGREE
           }
@@ -1691,18 +1732,18 @@ safeAddEntity({
         const ent = safeAddEntity({
           position: Cesium.Cartesian3.fromDegrees(sp.lon, sp.lat, 9000), // Raised to prevent terrain clipping
           point: {
-            pixelSize: 8,
-            color: Cesium.Color.fromCssColorString('#9400D3'),
-            outlineColor: Cesium.Color.WHITE,
-            outlineWidth: 1,
-            translucencyByDistance: new Cesium.NearFarScalar(1500000, 1.0, 16000000, 0.2),
+            pixelSize: 6.0,
+            color: Cesium.Color.fromCssColorString('#D1D5DB'), // Launchpad metallic base
+            outlineColor: Cesium.Color.fromCssColorString('#FF3366'), // Glowing red launch outer ring
+            outlineWidth: 2.0,
+            translucencyByDistance: new Cesium.NearFarScalar(1500000, 1.0, 16000000, 0.25),
             scaleByDistance: new Cesium.NearFarScalar(1500000, 1.0, 16000000, 0.4),
           }
         });
         if (ent) ent.layerId = 'space';
       });
 
-      // ─── 6. Geopolitical Layer ───
+      // ─── 6. Geopolitical & Shipping Layer ───
       GEOPOLITICAL_LANES.forEach((lane, index) => {
         if (isMobile && index % 2 !== 0) return;
         const flatCoords = lane.coords.flatMap(c => [c.lon, c.lat]);
@@ -1710,7 +1751,7 @@ safeAddEntity({
           polyline: {
             positions: Cesium.Cartesian3.fromDegreesArray(flatCoords),
             width: 1.2,
-            material: Cesium.Color.fromCssColorString(lane.isArctic ? '#00FFFF' : '#1E90FF').withAlpha(0.35),
+            material: Cesium.Color.fromCssColorString(lane.isArctic ? '#00FFFF' : '#1F75FE').withAlpha(0.38), // Blue shipping passages
             arcType: Cesium.ArcType.GEODESIC,
             granularity: isMobile ? Cesium.Math.RADIANS_PER_DEGREE * 5.0 : Cesium.Math.RADIANS_PER_DEGREE
           }
@@ -1723,13 +1764,32 @@ safeAddEntity({
         }
       });
 
+      // Global flight corridors (Aviation)
+      const AVIATION_LANES = [
+        { a: { lat: 51.5074, lon: -0.1278 }, b: { lat: 40.7128, lon: -74.0060 } }, // London to NY
+        { a: { lat: 48.8566, lon: 2.3522 }, b: { lat: 25.2048, lon: 55.2708 } }, // Paris to Dubai
+        { a: { lat: 35.6762, lon: 139.6503 }, b: { lat: 34.0522, lon: -118.2437 } } // Tokyo to LA
+      ];
+      AVIATION_LANES.forEach((lane) => {
+        const pts = geodesicArc(lane.a, lane.b, 650000); // flight altitude
+        const ent = safeAddEntity({
+          polyline: {
+            positions: pts,
+            width: 1.0,
+            material: Cesium.Color.fromCssColorString('#00FF66').withAlpha(0.18), // Faint green flight corridor
+            arcType: Cesium.ArcType.NONE,
+          }
+        });
+        if (ent) ent.layerId = 'geopolitical';
+      });
+
       MINERAL_NODES.forEach((mn, index) => {
         if (isMobile && index % 2 !== 0) return;
         const ent = safeAddEntity({
           position: Cesium.Cartesian3.fromDegrees(mn.lon, mn.lat, 9000), // Raised to prevent terrain clipping
           point: {
             pixelSize: 7,
-            color: Cesium.Color.fromCssColorString('#FF1493'),
+            color: Cesium.Color.fromCssColorString('#007FFF'), // Azure blue port node
             outlineColor: Cesium.Color.WHITE,
             outlineWidth: 1,
             translucencyByDistance: new Cesium.NearFarScalar(1500000, 1.0, 16000000, 0.2),
@@ -1745,14 +1805,45 @@ safeAddEntity({
           position: Cesium.Cartesian3.fromDegrees(cp.lon, cp.lat, 9000), // Raised to prevent terrain clipping
           point: {
             pixelSize: 9,
-            color: Cesium.Color.fromCssColorString('#FF3333'),
-            outlineColor: Cesium.Color.YELLOW,
-            outlineWidth: 1,
+            color: Cesium.Color.fromCssColorString('#005FFF'), // Deep blue trade choke point
+            outlineColor: Cesium.Color.fromCssColorString('#88C5FF'),
+            outlineWidth: 1.5,
             translucencyByDistance: new Cesium.NearFarScalar(1500000, 1.0, 16000000, 0.2),
             scaleByDistance: new Cesium.NearFarScalar(1500000, 1.0, 16000000, 0.4),
           }
         });
         if (ent) ent.layerId = 'geopolitical';
+      });
+
+      // ─── 7. Semiconductor Supply Network Layer (Markets Toggle) ───
+      SEMI_FABS.forEach((fab, index) => {
+        if (isMobile && index % 2 !== 0) return;
+        const ent = safeAddEntity({
+          position: Cesium.Cartesian3.fromDegrees(fab.lon, fab.lat, 9000),
+          point: {
+            pixelSize: 8.5,
+            color: Cesium.Color.fromCssColorString('#00FFFF'), // Cyan fabrication foundry
+            outlineColor: Cesium.Color.WHITE,
+            outlineWidth: 1.5,
+            translucencyByDistance: new Cesium.NearFarScalar(1500000, 1.0, 16000000, 0.2),
+            scaleByDistance: new Cesium.NearFarScalar(1500000, 1.0, 16000000, 0.4),
+          }
+        });
+        if (ent) ent.layerId = 'markets';
+      });
+
+      SEMI_SUPPLY_LINKS.forEach((link, index) => {
+        if (isMobile && index % 2 !== 0) return;
+        const ent = safeAddEntity({
+          polyline: {
+            positions: Cesium.Cartesian3.fromDegreesArray([link.a.lon, link.a.lat, link.b.lon, link.b.lat]),
+            width: 1.0,
+            material: Cesium.Color.fromCssColorString('#00FFFF').withAlpha(0.25), // Cyan supply routes
+            arcType: Cesium.ArcType.GEODESIC,
+            granularity: isMobile ? Cesium.Math.RADIANS_PER_DEGREE * 5.0 : Cesium.Math.RADIANS_PER_DEGREE
+          }
+        });
+        if (ent) ent.layerId = 'markets';
       });
 
     }).catch(() => {});
@@ -2167,6 +2258,34 @@ safeAddEntity({
         if (eqEnt) {
           eqEnt.layerId = 'seismic';
           earthquakeEntitiesRef.current.push(eqEnt);
+        }
+
+        // Animated seismic wave propagation ripple
+        const eqRipple = viewer.entities.add({
+          position: Cesium.Cartesian3.fromDegrees(eq.lon, eq.lat),
+          ellipse: {
+            semiMajorAxis: new Cesium.CallbackProperty(() => {
+              const age = (timeRef.current * 0.4 + eq.magnitude) % 4.0; // 4 second loop
+              return age * 220000; // expand up to 880km
+            }, false),
+            semiMinorAxis: new Cesium.CallbackProperty(() => {
+              const age = (timeRef.current * 0.4 + eq.magnitude) % 4.0;
+              return age * 220000;
+            }, false),
+            material: new Cesium.ColorMaterialProperty(
+              new Cesium.CallbackProperty(() => {
+                const age = (timeRef.current * 0.4 + eq.magnitude) % 4.0;
+                const alpha = Math.max(0.0, 0.40 * (1.0 - age / 4.0));
+                return Cesium.Color.fromCssColorString('#F97316').withAlpha(alpha); // Orange ripple
+              }, false)
+            ),
+            height: 2000, // Clamp slightly off-ground for normal terrain visibility
+          }
+        });
+        
+        if (eqRipple) {
+          eqRipple.layerId = 'seismic';
+          earthquakeEntitiesRef.current.push(eqRipple);
         }
       });
     }
