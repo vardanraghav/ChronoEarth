@@ -318,6 +318,7 @@ export default function BackgroundEffects({ earthMode = 'realistic' }: Backgroun
 
   return (
     <div 
+      id="space-background"
       className="fixed inset-0 z-0 overflow-hidden pointer-events-none"
       style={{
         backgroundImage: "url('/nasa_deep_space_background.png')",

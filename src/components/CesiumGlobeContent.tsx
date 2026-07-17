@@ -361,6 +361,13 @@ export default function CesiumGlobeContent({
 
     viewer.scene.backgroundColor = Cesium.Color.TRANSPARENT;
     
+    // HDR Rendering & filmic tone mapping / exposure control
+    viewer.scene.highDynamicRange = true;
+    if (viewer.scene.postProcessStages && viewer.scene.postProcessStages.exposure) {
+      viewer.scene.postProcessStages.exposure.enabled = true;
+      viewer.scene.postProcessStages.exposure.uniforms.exposure = 0.7; // Film exposure level
+    }
+
     // Planet momentum & heavy inertia feel
     viewer.scene.screenSpaceCameraController.inertiaSpin = 0.88;
     viewer.scene.screenSpaceCameraController.inertiaTranslate = 0.85;
@@ -408,12 +415,23 @@ export default function CesiumGlobeContent({
       }
     }
 
-    // Set camera viewpoint distance dynamically to let the Earth occupy 60% of the viewport area (improved scale)
+    // Set camera starting viewpoint way out in deep space
     const cameraHeight = isMobileDevice ? 18000000 : 23500000;
     viewer.camera.setView({
-      destination: Cesium.Cartesian3.fromDegrees(0.0, 20.0, cameraHeight),
+      destination: Cesium.Cartesian3.fromDegrees(0.0, 20.0, 38000000), // Deep space start
       orientation: { heading: 0, pitch: Cesium.Math.toRadians(-90), roll: 0 },
     });
+
+    // Smooth cinematic zoom-in fly-in on load
+    const flyTimeout = setTimeout(() => {
+      if (viewer.isDestroyed()) return;
+      viewer.camera.flyTo({
+        destination: Cesium.Cartesian3.fromDegrees(0.0, 20.0, cameraHeight),
+        orientation: { heading: 0, pitch: Cesium.Math.toRadians(-90), roll: 0 },
+        duration: 4.5,
+        easingFunction: Cesium.EasingFunction.CUBIC_OUT,
+      });
+    }, 600);
     viewerRef.current = viewer;
      (window as any).viewer = viewer;
 
@@ -489,6 +507,7 @@ export default function CesiumGlobeContent({
     return () => {
       window.removeEventListener('resize', handleResize);
       clearTimeout(safety);
+      clearTimeout(flyTimeout);
       if (viewer.scene.globe) {
         try { viewer.scene.globe.tileLoadProgressEvent.removeEventListener(onProgress); } catch(e){}
       }
@@ -541,9 +560,10 @@ export default function CesiumGlobeContent({
     //  REALISTIC MODE
     // ══════════════════════════════════════════════════════════════════════════
     if (!isCyber) {
-      // 1. Terrain Provider (World Terrain with normals for hill shading)
+      // 1. Terrain Provider (World Terrain with normals for hill shading and water mask for specular reflections)
       Cesium.CesiumTerrainProvider.fromUrl('https://assets.ion.cesium.com/1/terrain', {
-        requestVertexNormals: true
+        requestVertexNormals: true,
+        requestWaterMask: true
       })
       .then((tp: any) => {
         if (viewer.isDestroyed() || isCyber) return;
@@ -2042,6 +2062,40 @@ safeAddEntity({
       });
     }
   }, [earthquakes, activeLayers.seismic, isGlobeReady]);
+
+  // ─── Sync 3D Starfield Parallax & Rotation ──────────────────────────────────
+  useEffect(() => {
+    if (!isGlobeReady || !viewerRef.current) return;
+    const viewer = viewerRef.current;
+    if (viewer.isDestroyed()) return;
+
+    const mouseRef = { x: 0, y: 0 };
+    const handleMouseMove = (e: MouseEvent) => {
+      mouseRef.x = (e.clientX / window.innerWidth - 0.5) * 12;
+      mouseRef.y = (e.clientY / window.innerHeight - 0.5) * 12;
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+
+    const syncBackground = () => {
+      if (viewer.isDestroyed()) return;
+      const bg = document.getElementById('space-background');
+      if (bg) {
+        const heading = viewer.camera.heading;
+        bg.style.transform = `translate(${-mouseRef.x}px, ${-mouseRef.y}px) rotate(${-heading}rad) scale(1.15)`;
+      }
+    };
+
+    viewer.scene.postRender.addEventListener(syncBackground);
+    viewer.camera.changed.addEventListener(syncBackground);
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      if (!viewer.isDestroyed()) {
+        viewer.scene.postRender.removeEventListener(syncBackground);
+        viewer.camera.changed.removeEventListener(syncBackground);
+      }
+    };
+  }, [isGlobeReady]);
 
   // ─── Hover tracker ──────────────────────────────────────────────────────────
   useEffect(() => {
