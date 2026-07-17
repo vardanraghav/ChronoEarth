@@ -322,6 +322,18 @@ export default function CesiumGlobeContent({
 
   const isCyber = earthMode === 'cyber';
 
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      const x = (e.clientX / window.innerWidth - 0.5) * 8;
+      const y = (e.clientY / window.innerHeight - 0.5) * 8;
+      setMousePos({ x, y });
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
   // Animation clock
   useEffect(() => {
     let id: number;
@@ -348,6 +360,17 @@ export default function CesiumGlobeContent({
     });
 
     viewer.scene.backgroundColor = Cesium.Color.TRANSPARENT;
+    
+    // Planet momentum & heavy inertia feel
+    viewer.scene.screenSpaceCameraController.inertiaSpin = 0.88;
+    viewer.scene.screenSpaceCameraController.inertiaTranslate = 0.85;
+    viewer.scene.screenSpaceCameraController.inertiaZoom = 0.80;
+    viewer.scene.screenSpaceCameraController.enableLook = false;
+
+    // Pull camera FOV back for cinematic telephoto compression
+    if (viewer.camera.frustum instanceof Cesium.PerspectiveFrustum) {
+      viewer.camera.frustum.fov = Cesium.Math.toRadians(38.0);
+    }
     
     // Resolution scale & Device Pixel Ratio handling
     const pixelRatio = window.devicePixelRatio || 1.0;
@@ -386,7 +409,7 @@ export default function CesiumGlobeContent({
     }
 
     // Set camera viewpoint distance dynamically to let the Earth occupy 60% of the viewport area (improved scale)
-    const cameraHeight = isMobileDevice ? 9000000 : 10500000;
+    const cameraHeight = isMobileDevice ? 18000000 : 23500000;
     viewer.camera.setView({
       destination: Cesium.Cartesian3.fromDegrees(0.0, 20.0, cameraHeight),
       orientation: { heading: 0, pitch: Cesium.Math.toRadians(-90), roll: 0 },
@@ -518,7 +541,17 @@ export default function CesiumGlobeContent({
     //  REALISTIC MODE
     // ══════════════════════════════════════════════════════════════════════════
     if (!isCyber) {
-      // 1. Day Imagery Layer
+      // 1. Terrain Provider (World Terrain with normals for hill shading)
+      Cesium.CesiumTerrainProvider.fromUrl('https://assets.ion.cesium.com/1/terrain', {
+        requestVertexNormals: true
+      })
+      .then((tp: any) => {
+        if (viewer.isDestroyed() || isCyber) return;
+        viewer.terrainProvider = tp;
+      })
+      .catch(() => {});
+
+      // 2. Day Imagery Layer
       Cesium.createWorldImageryAsync({ style: Cesium.IonWorldImageryStyle.AERIAL })
         .then((provider: any) => {
           if (viewer.isDestroyed() || isCyber) return;
@@ -598,6 +631,22 @@ export default function CesiumGlobeContent({
         viewer.scene.skyAtmosphere.saturationShift = 0.1;
       }
 
+      // Cloud Shadows (performant simulated shadow projection)
+      safeAddEntity({
+        position: Cesium.Cartesian3.ZERO,
+        orientation: new Cesium.CallbackProperty(() =>
+          // Rotated slightly behind the actual clouds to project shadows away from the light source
+          Cesium.Quaternion.fromAxisAngle(Cesium.Cartesian3.UNIT_Z, timeRef.current * 0.005 - 0.003), false),
+        ellipsoid: {
+          radii: new Cesium.Cartesian3(6378137 + 6000, 6378137 + 6000, 6378137 + 6000),
+          material: new Cesium.ImageMaterialProperty({
+            image: 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_clouds_1024.png',
+            transparent: true,
+            color: Cesium.Color.BLACK.withAlpha(0.28), // Soft dark shadow
+          }),
+        },
+      });
+
       // Clouds
       safeAddEntity({
         position: Cesium.Cartesian3.ZERO,
@@ -607,24 +656,46 @@ export default function CesiumGlobeContent({
           radii: new Cesium.Cartesian3(6378137 + 15000, 6378137 + 15000, 6378137 + 15000),
           material: new Cesium.ImageMaterialProperty({
             image: 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_clouds_1024.png',
-            transparent: true, color: Cesium.Color.WHITE.withAlpha(0.40),
+            transparent: true,
+            color: Cesium.Color.WHITE.withAlpha(0.35),
           }),
         },
       });
 
       let rNodeCount = 0;
+      const baseCityColor = Cesium.Color.fromCssColorString('#FF9D20'); // Natural warm sodium-vapor glow
       cities.forEach((city) => {
-        if (rNodeCount >= 200) return;
+        if (rNodeCount >= 250) return;
         rNodeCount++;
         const isVisible = (!city.year || city.year <= activeYear);
+        
+        // 1. Inner Core
         safeAddEntity({
-          position: Cesium.Cartesian3.fromDegrees(city.lon, city.lat, 8000), // Raised slightly to prevent terrain clipping
+          position: Cesium.Cartesian3.fromDegrees(city.lon, city.lat),
           show: isVisible,
           point: {
-            pixelSize: 4,
-            color: Cesium.Color.WHITE.withAlpha(0.50),
+            pixelSize: 2.2,
+            color: Cesium.Color.fromCssColorString('#FFFDF5'), // Warm white core
+            heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
           },
           properties: { cityData: city },
+        });
+
+        // 2. Outer Pulse Bloom
+        safeAddEntity({
+          position: Cesium.Cartesian3.fromDegrees(city.lon, city.lat),
+          show: isVisible,
+          point: {
+            pixelSize: new Cesium.CallbackProperty(() => {
+              const pulse = 0.85 + 0.15 * Math.sin(timeRef.current * 1.6 + city.lon * 0.2);
+              return 6.5 * pulse;
+            }, false),
+            color: new Cesium.CallbackProperty(() => {
+              const pulse = 0.5 + 0.3 * Math.sin(timeRef.current * 1.6 + city.lon * 0.2);
+              return baseCityColor.withAlpha(0.38 * pulse);
+            }, false),
+            heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
+          }
         });
       });
 
@@ -642,6 +713,8 @@ export default function CesiumGlobeContent({
     // ══════════════════════════════════════════════════════════════════════════
     //  CYBER 2050 MODE — PLANETARY AI OPERATING SYSTEM
     // ══════════════════════════════════════════════════════════════════════════
+
+    viewer.terrainProvider = new Cesium.EllipsoidTerrainProvider();
 
     // Set black/very dark base globe
     if (viewer.scene.globe) {
@@ -2095,6 +2168,10 @@ safeAddEntity({
       className="absolute inset-0 w-full h-full bg-transparent z-0 overflow-hidden"
       onMouseDown={() => setIsInteracting(true)}   onMouseUp={() => setIsInteracting(false)}
       onTouchStart={() => setIsInteracting(true)}  onTouchEnd={() => setIsInteracting(false)}
+      style={{
+        transform: `translate(${mousePos.x}px, ${mousePos.y}px)`,
+        transition: 'transform 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+      }}
     >
       <div ref={containerRef} className="w-full h-full animate-globe-breathe" />
 
