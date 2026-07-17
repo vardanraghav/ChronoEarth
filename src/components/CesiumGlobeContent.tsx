@@ -683,19 +683,30 @@ export default function CesiumGlobeContent({
 
       let rNodeCount = 0;
       const baseCityColor = Cesium.Color.fromCssColorString('#FF9D20'); // Natural warm sodium-vapor glow
+      const fadeCondition = new Cesium.NearFarScalar(2000000, 1.0, 16000000, 0.0);
+      const scaleCondition = new Cesium.NearFarScalar(2000000, 1.0, 16000000, 0.35);
+
       cities.forEach((city) => {
         if (rNodeCount >= 250) return;
         rNodeCount++;
         const isVisible = (!city.year || city.year <= activeYear);
+        
+        const pop = city.offsets.population || 0.01;
+        const scaleFactor = Math.max(0.6, Math.min(1.8, pop * 50.0));
+        const coreSize = 1.6 + 1.2 * scaleFactor;
+        const bloomSize = 4.5 + 4.5 * scaleFactor;
+        const maxAlpha = 0.2 + 0.3 * Math.min(1.0, pop * 40.0);
         
         // 1. Inner Core
         safeAddEntity({
           position: Cesium.Cartesian3.fromDegrees(city.lon, city.lat),
           show: isVisible,
           point: {
-            pixelSize: 2.2,
+            pixelSize: coreSize,
             color: Cesium.Color.fromCssColorString('#FFFDF5'), // Warm white core
-            heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
+            heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+            translucencyByDistance: fadeCondition,
+            scaleByDistance: scaleCondition
           },
           properties: { cityData: city },
         });
@@ -707,13 +718,15 @@ export default function CesiumGlobeContent({
           point: {
             pixelSize: new Cesium.CallbackProperty(() => {
               const pulse = 0.85 + 0.15 * Math.sin(timeRef.current * 1.6 + city.lon * 0.2);
-              return 6.5 * pulse;
+              return bloomSize * pulse;
             }, false),
             color: new Cesium.CallbackProperty(() => {
               const pulse = 0.5 + 0.3 * Math.sin(timeRef.current * 1.6 + city.lon * 0.2);
-              return baseCityColor.withAlpha(0.38 * pulse);
+              return baseCityColor.withAlpha(maxAlpha * pulse);
             }, false),
-            heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
+            heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+            translucencyByDistance: fadeCondition,
+            scaleByDistance: scaleCondition
           }
         });
       });
@@ -885,6 +898,8 @@ export default function CesiumGlobeContent({
         color: Cesium.Color.WHITE,
         pixelSize: 7,
         show: isVisible,
+        translucencyByDistance: new Cesium.NearFarScalar(1500000, 1.0, 16000000, 0.15),
+        scaleByDistance: new Cesium.NearFarScalar(1500000, 1.0, 16000000, 0.4),
       });
 
       // Inner glow (colored) - size 14, alpha 0.40
@@ -893,6 +908,8 @@ export default function CesiumGlobeContent({
         color: color.withAlpha(0.40),
         pixelSize: 14,
         show: isVisible,
+        translucencyByDistance: new Cesium.NearFarScalar(1500000, 1.0, 16000000, 0.10),
+        scaleByDistance: new Cesium.NearFarScalar(1500000, 1.0, 16000000, 0.4),
       });
 
       // Outer halo (soft color) - size 22, alpha 0.08
@@ -901,6 +918,8 @@ export default function CesiumGlobeContent({
         color: color.withAlpha(0.08),
         pixelSize: 22,
         show: isVisible,
+        translucencyByDistance: new Cesium.NearFarScalar(1500000, 1.0, 16000000, 0.05),
+        scaleByDistance: new Cesium.NearFarScalar(1500000, 1.0, 16000000, 0.4),
       });
 
       corePt._cityRef = fullCity;
@@ -1033,6 +1052,8 @@ export default function CesiumGlobeContent({
         color: Cesium.Color.WHITE,
         pixelSize: 12,
         show: isVisible,
+        translucencyByDistance: new Cesium.NearFarScalar(1500000, 1.0, 16000000, 0.15),
+        scaleByDistance: new Cesium.NearFarScalar(1500000, 1.0, 16000000, 0.4),
       });
 
       // Inner glow (colored) - size 24, alpha 0.55
@@ -1041,6 +1062,8 @@ export default function CesiumGlobeContent({
         color: color.withAlpha(0.55),
         pixelSize: 24,
         show: isVisible,
+        translucencyByDistance: new Cesium.NearFarScalar(1500000, 1.0, 16000000, 0.10),
+        scaleByDistance: new Cesium.NearFarScalar(1500000, 1.0, 16000000, 0.4),
       });
 
       // Outer halo (soft color) - size 40, alpha 0.12
@@ -1049,6 +1072,8 @@ export default function CesiumGlobeContent({
         color: color.withAlpha(0.12),
         pixelSize: 40,
         show: isVisible,
+        translucencyByDistance: new Cesium.NearFarScalar(1500000, 1.0, 16000000, 0.05),
+        scaleByDistance: new Cesium.NearFarScalar(1500000, 1.0, 16000000, 0.4),
       });
 
       corePt._cityRef = city;
@@ -1181,6 +1206,49 @@ export default function CesiumGlobeContent({
         if (satEnt) satEnt.layerId = 'space';
       }
     });
+
+    // ISS Low Earth Orbit Tracker (faint cinematic orbital tracker)
+    if (!isMobile) {
+      const R_iss = 6378137 + 420000; // 420km altitude
+      const tiltX_iss = Cesium.Math.toRadians(51.6); // 51.6 degrees LEO inclination
+      const tiltY_iss = Cesium.Math.toRadians(12.0);
+
+      // Track line (very faint trail)
+      const issTrackPts = Array.from({ length: 181 }, (_, i) => {
+        const a = (i / 180) * Math.PI * 2;
+        const { x, y, z } = rotateXY(R_iss * Math.cos(a), R_iss * Math.sin(a), 0, tiltX_iss, tiltY_iss);
+        return new Cesium.Cartesian3(x, y, z);
+      });
+
+      const issTrack = safeAddEntity({
+        polyline: {
+          positions: issTrackPts,
+          width: 0.6,
+          material: Cesium.Color.fromCssColorString('#FFDF9E').withAlpha(0.012),
+          arcType: Cesium.ArcType.GEODESIC,
+          granularity: Cesium.Math.toRadians(6.0),
+        },
+      });
+      if (issTrack) issTrack.layerId = 'space';
+
+      // ISS Satellite dot pulsing
+      const issSat = safeAddEntity({
+        position: new Cesium.CallbackProperty(() => {
+          const a = (timeRef.current * 0.08) % (Math.PI * 2); // Fast orbit speed
+          const { x, y, z } = rotateXY(R_iss * Math.cos(a), R_iss * Math.sin(a), 0, tiltX_iss, tiltY_iss);
+          return new Cesium.Cartesian3(x, y, z);
+        }, false),
+        point: {
+          pixelSize: new Cesium.CallbackProperty(() => {
+            return 2.5 + 0.8 * Math.sin(timeRef.current * 4.0); // Gentle pulsing
+          }, false),
+          color: Cesium.Color.fromCssColorString('#FFE6A3'),
+          outlineColor: Cesium.Color.fromCssColorString('#FF9D20').withAlpha(0.4),
+          outlineWidth: 1.0,
+        },
+      });
+      if (issSat) issSat.layerId = 'space';
+    }
 
     // Load land GeoJSON
     Cesium.GeoJsonDataSource.load(
@@ -1535,6 +1603,8 @@ safeAddEntity({
             color: Cesium.Color.fromCssColorString('#00BFFF'),
             outlineColor: Cesium.Color.WHITE,
             outlineWidth: 1,
+            translucencyByDistance: new Cesium.NearFarScalar(1500000, 1.0, 16000000, 0.2),
+            scaleByDistance: new Cesium.NearFarScalar(1500000, 1.0, 16000000, 0.4),
           }
         });
         if (ent) ent.layerId = 'tech';
@@ -1564,6 +1634,8 @@ safeAddEntity({
             color: Cesium.Color.fromCssColorString('#FF8C00'),
             outlineColor: Cesium.Color.YELLOW,
             outlineWidth: 1.5,
+            translucencyByDistance: new Cesium.NearFarScalar(1500000, 1.0, 16000000, 0.2),
+            scaleByDistance: new Cesium.NearFarScalar(1500000, 1.0, 16000000, 0.4),
           }
         });
         if (ent) ent.layerId = 'energy';
@@ -1593,6 +1665,8 @@ safeAddEntity({
             color: Cesium.Color.fromCssColorString('#9400D3'),
             outlineColor: Cesium.Color.WHITE,
             outlineWidth: 1,
+            translucencyByDistance: new Cesium.NearFarScalar(1500000, 1.0, 16000000, 0.2),
+            scaleByDistance: new Cesium.NearFarScalar(1500000, 1.0, 16000000, 0.4),
           }
         });
         if (ent) ent.layerId = 'space';
@@ -1628,6 +1702,8 @@ safeAddEntity({
             color: Cesium.Color.fromCssColorString('#FF1493'),
             outlineColor: Cesium.Color.WHITE,
             outlineWidth: 1,
+            translucencyByDistance: new Cesium.NearFarScalar(1500000, 1.0, 16000000, 0.2),
+            scaleByDistance: new Cesium.NearFarScalar(1500000, 1.0, 16000000, 0.4),
           }
         });
         if (ent) ent.layerId = 'geopolitical';
@@ -1642,6 +1718,8 @@ safeAddEntity({
             color: Cesium.Color.fromCssColorString('#FF3333'),
             outlineColor: Cesium.Color.YELLOW,
             outlineWidth: 1,
+            translucencyByDistance: new Cesium.NearFarScalar(1500000, 1.0, 16000000, 0.2),
+            scaleByDistance: new Cesium.NearFarScalar(1500000, 1.0, 16000000, 0.4),
           }
         });
         if (ent) ent.layerId = 'geopolitical';
@@ -2050,6 +2128,8 @@ safeAddEntity({
             color: color.withAlpha(0.85),
             outlineColor: Cesium.Color.WHITE,
             outlineWidth: 1.5,
+            translucencyByDistance: new Cesium.NearFarScalar(1500000, 1.0, 16000000, 0.3),
+            scaleByDistance: new Cesium.NearFarScalar(1500000, 1.0, 16000000, 0.4),
           },
           description: `Location: ${eq.place} | Mag: ${eq.magnitude}`
         });
@@ -2132,7 +2212,16 @@ safeAddEntity({
       const v = viewerRef.current;
       if (v.isDestroyed() || !v.scene?.camera) return;
       const now = Date.now(); const dt = (now - last) / 1000; last = now;
+      
+      // Auto-rotation around UNIT_Z
       v.scene.camera.rotate(Cesium.Cartesian3.UNIT_Z, speed * dt);
+      
+      // Faint floating/drift camera movement (slow orbital oscillation)
+      const time = timeRef.current;
+      const driftSpeed = 0.0006;
+      v.scene.camera.rotate(Cesium.Cartesian3.UNIT_X, Math.sin(time * 0.4) * driftSpeed * dt);
+      v.scene.camera.rotate(Cesium.Cartesian3.UNIT_Y, Math.cos(time * 0.3) * driftSpeed * dt);
+      
       v.scene.requestRender();
     };
     const t = setTimeout(() => {
