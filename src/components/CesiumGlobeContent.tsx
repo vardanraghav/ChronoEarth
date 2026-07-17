@@ -385,8 +385,8 @@ export default function CesiumGlobeContent({
       }
     }
 
-    // Set camera viewpoint distance dynamically to let the Earth occupy 65-75% of the viewport area
-    const cameraHeight = isMobileDevice ? 8200000 : 9000000;
+    // Set camera viewpoint distance dynamically to let the Earth occupy 60% of the viewport area (improved scale)
+    const cameraHeight = isMobileDevice ? 9000000 : 10500000;
     viewer.camera.setView({
       destination: Cesium.Cartesian3.fromDegrees(0.0, 20.0, cameraHeight),
       orientation: { heading: 0, pitch: Cesium.Math.toRadians(-90), roll: 0 },
@@ -518,11 +518,15 @@ export default function CesiumGlobeContent({
     //  REALISTIC MODE
     // ══════════════════════════════════════════════════════════════════════════
     if (!isCyber) {
+      // 1. Day Imagery Layer
       Cesium.createWorldImageryAsync({ style: Cesium.IonWorldImageryStyle.AERIAL })
         .then((provider: any) => {
           if (viewer.isDestroyed() || isCyber) return;
           const lyr = viewer.imageryLayers.addImageryProvider(provider);
-          lyr.brightness = 1.05; lyr.contrast = 1.05; lyr.saturation = 1.0;
+          lyr.brightness = 1.1;
+          lyr.contrast = 1.25;
+          lyr.saturation = 1.35;
+          lyr.gamma = 1.1;
         })
         .catch(async () => {
           if (viewer.isDestroyed() || isCyber) return;
@@ -532,26 +536,66 @@ export default function CesiumGlobeContent({
             );
             if (viewer.isDestroyed() || isCyber) return;
             const lyr = viewer.imageryLayers.addImageryProvider(fb);
-            lyr.brightness = 1.05; lyr.contrast = 1.05; lyr.saturation = 1.0;
+            lyr.brightness = 1.1;
+            lyr.contrast = 1.25;
+            lyr.saturation = 1.35;
+            lyr.gamma = 1.1;
+          } catch (err) {
+            // Fallback failed
+          }
+        });
+
+      // 2. Night Lights (Black Marble) Layer
+      Cesium.IonImageryProvider.fromAssetId(3812)
+        .then((provider: any) => {
+          if (viewer.isDestroyed() || isCyber) return;
+          const lyr = viewer.imageryLayers.addImageryProvider(provider);
+          lyr.dayAlpha = 0.0;
+          lyr.nightAlpha = 1.0;
+          lyr.brightness = 1.8;
+        })
+        .catch(async () => {
+          if (viewer.isDestroyed() || isCyber) return;
+          try {
+            const fb = new Cesium.WebMapTileServiceImageryProvider({
+              url: "https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/wmts.cgi",
+              layer: "VIIRS_CityLights_2012",
+              style: "default",
+              format: "image/png",
+              tileMatrixSetID: "EPSG4326_500m",
+              credit: "Black Marble imagery courtesy NASA Earthdata",
+              tilingScheme: new Cesium.GeographicTilingScheme()
+            });
+            if (viewer.isDestroyed() || isCyber) return;
+            const lyr = viewer.imageryLayers.addImageryProvider(fb);
+            lyr.dayAlpha = 0.0;
+            lyr.nightAlpha = 1.0;
+            lyr.brightness = 1.8;
           } catch (err) {
             // Fallback failed
           }
         });
 
       viewer.scene.light = new Cesium.DirectionalLight({
-        direction: new Cesium.Cartesian3(-0.7, -0.5, -0.5),
-        color: Cesium.Color.fromCssColorString('#ffffff'),
-        intensity: 3.5,
+        direction: new Cesium.Cartesian3(-0.85, 0.0, -0.5), // Cinematic terminator angle
+        color: Cesium.Color.fromCssColorString('#fffbe8'), // Warm golden sunlight
+        intensity: 4.2, // Bright crisp light
       });
-      viewer.scene.ambientColor = new Cesium.Color(0.02, 0.03, 0.05, 1.0);
+      viewer.scene.ambientColor = new Cesium.Color(0.01, 0.015, 0.03, 1.0);
 
       if (viewer.scene.globe) {
         viewer.scene.globe.showGroundAtmosphere = true;
         viewer.scene.globe.enableLighting = true;
-        viewer.scene.globe.atmosphereLightIntensity = 10.0;
+        viewer.scene.globe.atmosphereLightIntensity = 12.0; // Glow limb
         viewer.scene.globe.atmosphereHueShift = 0.0;
-        viewer.scene.globe.atmosphereSaturationShift = 0.0;
-        viewer.scene.globe.atmosphereBrightnessShift = 0.08;
+        viewer.scene.globe.atmosphereSaturationShift = 0.1;
+        viewer.scene.globe.atmosphereBrightnessShift = 0.15;
+      }
+
+      if (viewer.scene.skyAtmosphere) {
+        viewer.scene.skyAtmosphere.show = true;
+        viewer.scene.skyAtmosphere.brightnessShift = 0.1;
+        viewer.scene.skyAtmosphere.saturationShift = 0.1;
       }
 
       // Clouds
@@ -574,12 +618,11 @@ export default function CesiumGlobeContent({
         rNodeCount++;
         const isVisible = (!city.year || city.year <= activeYear);
         safeAddEntity({
-          position: Cesium.Cartesian3.fromDegrees(city.lon, city.lat),
+          position: Cesium.Cartesian3.fromDegrees(city.lon, city.lat, 8000), // Raised slightly to prevent terrain clipping
           show: isVisible,
           point: {
             pixelSize: 4,
             color: Cesium.Color.WHITE.withAlpha(0.50),
-            disableDepthTestDistance: Number.POSITIVE_INFINITY,
           },
           properties: { cityData: city },
         });
@@ -729,7 +772,7 @@ export default function CesiumGlobeContent({
       if (nodeCount >= maxSurfaceNodes) return;
       nodeCount++;
 
-      const pos = Cesium.Cartesian3.fromDegrees(hub.lon, hub.lat, 6000);
+      const pos = Cesium.Cartesian3.fromDegrees(hub.lon, hub.lat, 10000); // Raised to prevent clipping during depth testing
       const color = Cesium.Color.fromCssColorString(hub.color);
 
       const fullCity = cities.find(c => c.name.toLowerCase() === hub.name.toLowerCase()) || {
@@ -750,7 +793,6 @@ export default function CesiumGlobeContent({
         color: Cesium.Color.WHITE,
         pixelSize: 7,
         show: isVisible,
-        disableDepthTestDistance: Number.POSITIVE_INFINITY,
       });
 
       // Inner glow (colored) - size 14, alpha 0.40
@@ -759,7 +801,6 @@ export default function CesiumGlobeContent({
         color: color.withAlpha(0.40),
         pixelSize: 14,
         show: isVisible,
-        disableDepthTestDistance: Number.POSITIVE_INFINITY,
       });
 
       // Outer halo (soft color) - size 22, alpha 0.08
@@ -768,7 +809,6 @@ export default function CesiumGlobeContent({
         color: color.withAlpha(0.08),
         pixelSize: 22,
         show: isVisible,
-        disableDepthTestDistance: Number.POSITIVE_INFINITY,
       });
 
       corePt._cityRef = fullCity;
@@ -891,7 +931,7 @@ export default function CesiumGlobeContent({
       if (nodeCount >= maxSurfaceNodes) return;
       nodeCount++;
 
-      const pos = Cesium.Cartesian3.fromDegrees(city.lon, city.lat, 5000);
+      const pos = Cesium.Cartesian3.fromDegrees(city.lon, city.lat, 9000); // Raised for depth testing occlusion
       const color = Cesium.Color.fromCssColorString(C.emerald);
       const isVisible = (!city.year || city.year <= activeYear);
 
@@ -901,7 +941,6 @@ export default function CesiumGlobeContent({
         color: Cesium.Color.WHITE,
         pixelSize: 12,
         show: isVisible,
-        disableDepthTestDistance: Number.POSITIVE_INFINITY,
       });
 
       // Inner glow (colored) - size 24, alpha 0.55
@@ -910,7 +949,6 @@ export default function CesiumGlobeContent({
         color: color.withAlpha(0.55),
         pixelSize: 24,
         show: isVisible,
-        disableDepthTestDistance: Number.POSITIVE_INFINITY,
       });
 
       // Outer halo (soft color) - size 40, alpha 0.12
@@ -919,7 +957,6 @@ export default function CesiumGlobeContent({
         color: color.withAlpha(0.12),
         pixelSize: 40,
         show: isVisible,
-        disableDepthTestDistance: Number.POSITIVE_INFINITY,
       });
 
       corePt._cityRef = city;
@@ -1047,7 +1084,6 @@ export default function CesiumGlobeContent({
             color: Cesium.Color.WHITE.withAlpha(0.40),
             outlineColor: Cesium.Color.fromCssColorString(color).withAlpha(0.20),
             outlineWidth: 0.5,
-            disableDepthTestDistance: Number.POSITIVE_INFINITY,
           },
         });
         if (satEnt) satEnt.layerId = 'space';
@@ -1401,13 +1437,12 @@ safeAddEntity({
       TECH_HUBS.forEach((th, index) => {
         if (isMobile && index % 2 !== 0) return;
         const ent = safeAddEntity({
-          position: Cesium.Cartesian3.fromDegrees(th.lon, th.lat, 4000),
+          position: Cesium.Cartesian3.fromDegrees(th.lon, th.lat, 9000), // Raised to prevent terrain clipping
           point: {
             pixelSize: 8,
             color: Cesium.Color.fromCssColorString('#00BFFF'),
             outlineColor: Cesium.Color.WHITE,
             outlineWidth: 1,
-            disableDepthTestDistance: Number.POSITIVE_INFINITY
           }
         });
         if (ent) ent.layerId = 'tech';
@@ -1431,13 +1466,12 @@ safeAddEntity({
       FUSION_HUBS.forEach((fh, index) => {
         if (isMobile && index % 2 !== 0) return;
         const ent = safeAddEntity({
-          position: Cesium.Cartesian3.fromDegrees(fh.lon, fh.lat, 4000),
+          position: Cesium.Cartesian3.fromDegrees(fh.lon, fh.lat, 9000), // Raised to prevent terrain clipping
           point: {
             pixelSize: 8,
             color: Cesium.Color.fromCssColorString('#FF8C00'),
             outlineColor: Cesium.Color.YELLOW,
             outlineWidth: 1.5,
-            disableDepthTestDistance: Number.POSITIVE_INFINITY
           }
         });
         if (ent) ent.layerId = 'energy';
@@ -1461,13 +1495,12 @@ safeAddEntity({
       SPACEPORTS.forEach((sp, index) => {
         if (isMobile && index % 2 !== 0) return;
         const ent = safeAddEntity({
-          position: Cesium.Cartesian3.fromDegrees(sp.lon, sp.lat, 4000),
+          position: Cesium.Cartesian3.fromDegrees(sp.lon, sp.lat, 9000), // Raised to prevent terrain clipping
           point: {
             pixelSize: 8,
             color: Cesium.Color.fromCssColorString('#9400D3'),
             outlineColor: Cesium.Color.WHITE,
             outlineWidth: 1,
-            disableDepthTestDistance: Number.POSITIVE_INFINITY
           }
         });
         if (ent) ent.layerId = 'space';
@@ -1497,13 +1530,12 @@ safeAddEntity({
       MINERAL_NODES.forEach((mn, index) => {
         if (isMobile && index % 2 !== 0) return;
         const ent = safeAddEntity({
-          position: Cesium.Cartesian3.fromDegrees(mn.lon, mn.lat, 4000),
+          position: Cesium.Cartesian3.fromDegrees(mn.lon, mn.lat, 9000), // Raised to prevent terrain clipping
           point: {
             pixelSize: 7,
             color: Cesium.Color.fromCssColorString('#FF1493'),
             outlineColor: Cesium.Color.WHITE,
             outlineWidth: 1,
-            disableDepthTestDistance: Number.POSITIVE_INFINITY
           }
         });
         if (ent) ent.layerId = 'geopolitical';
@@ -1512,13 +1544,12 @@ safeAddEntity({
       CHOKE_POINTS.forEach((cp, index) => {
         if (isMobile && index % 2 !== 0) return;
         const ent = safeAddEntity({
-          position: Cesium.Cartesian3.fromDegrees(cp.lon, cp.lat, 4000),
+          position: Cesium.Cartesian3.fromDegrees(cp.lon, cp.lat, 9000), // Raised to prevent terrain clipping
           point: {
             pixelSize: 9,
             color: Cesium.Color.fromCssColorString('#FF3333'),
             outlineColor: Cesium.Color.YELLOW,
             outlineWidth: 1,
-            disableDepthTestDistance: Number.POSITIVE_INFINITY
           }
         });
         if (ent) ent.layerId = 'geopolitical';
@@ -1921,13 +1952,12 @@ safeAddEntity({
           : (eq.magnitude >= 5.0 ? Cesium.Color.fromCssColorString('#F97316') : Cesium.Color.fromCssColorString('#EAB308'));
         
         const eqEnt = viewer.entities.add({
-          position: Cesium.Cartesian3.fromDegrees(eq.lon, eq.lat, 5000),
+          position: Cesium.Cartesian3.fromDegrees(eq.lon, eq.lat, 8000), // Raised slightly for depth testing
           point: {
             pixelSize: Math.max(8, eq.magnitude * 2.5),
             color: color.withAlpha(0.85),
             outlineColor: Cesium.Color.WHITE,
             outlineWidth: 1.5,
-            disableDepthTestDistance: Number.POSITIVE_INFINITY
           },
           description: `Location: ${eq.place} | Mag: ${eq.magnitude}`
         });
@@ -2066,7 +2096,7 @@ safeAddEntity({
       onMouseDown={() => setIsInteracting(true)}   onMouseUp={() => setIsInteracting(false)}
       onTouchStart={() => setIsInteracting(true)}  onTouchEnd={() => setIsInteracting(false)}
     >
-      <div ref={containerRef} className="w-full h-full" />
+      <div ref={containerRef} className="w-full h-full animate-globe-breathe" />
 
       {/* Hover Card */}
       {hoveredCity && hoverPos && (

@@ -489,4 +489,17 @@ nav a, nav button {
   font-size: 10.5px !important; /* Metadata +5% */
 }
 
+/* Globe scale breathing animation */
+@keyframes globe-breathe {
+  0%, 100% {
+    transform: scale(1.0);
+  }
+  50% {
+    transform: scale(1.004);
+  }
+}
+.animate-globe-breathe {
+  animation: globe-breathe 8s ease-in-out infinite;
+}
+
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface BackgroundEffectsProps {
   earthMode?: 'realistic' | 'cyber';
@@ -9,6 +9,17 @@ interface BackgroundEffectsProps {
 export default function BackgroundEffects({ earthMode = 'realistic' }: BackgroundEffectsProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isCyber = earthMode === 'cyber';
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      const x = (e.clientX / window.innerWidth - 0.5) * -12;
+      const y = (e.clientY / window.innerHeight - 0.5) * -12;
+      setMousePos({ x, y });
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -162,9 +173,8 @@ export default function BackgroundEffects({ earthMode = 'realistic' }: Backgroun
 
     // Animation Loop
     const draw = () => {
-      // Clear Background
-      ctx.fillStyle = isCyber ? '#02060A' : '#050710';
-      ctx.fillRect(0, 0, width, height);
+      // Clear Background transparently to let the NASA space background show through
+      ctx.clearRect(0, 0, width, height);
 
       // Draw Grid overlay
       if (isCyber) {
@@ -307,7 +317,17 @@ export default function BackgroundEffects({ earthMode = 'realistic' }: Backgroun
   }, [isCyber]);
 
   return (
-    <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+    <div 
+      className="fixed inset-0 z-0 overflow-hidden pointer-events-none"
+      style={{
+        backgroundImage: "url('/nasa_deep_space_background.png')",
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundColor: isCyber ? '#02060A' : '#050710',
+        transform: `translate(${mousePos.x}px, ${mousePos.y}px) scale(1.03)`,
+        transition: 'transform 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+      }}
+    >
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full block" />
       
       {/* Fractal noise overlay */}
