@@ -274,42 +274,105 @@ export function getPredictionImage(prediction: any): string | null {
 /**
  * Resolves the best image URL for an Intel Feed Item.
  */
+const feedImages = {
+  // Semiconductors
+  asml: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&auto=format&fit=crop&q=80",
+  tsmc: "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=600&auto=format&fit=crop&q=80",
+  qualcomm: "https://images.unsplash.com/photo-1601524909162-be87252be298?w=600&auto=format&fit=crop&q=80",
+  intel: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=600&auto=format&fit=crop&q=80",
+  amd: "https://images.unsplash.com/photo-1591453089816-0fbb971b454c?w=600&auto=format&fit=crop&q=80",
+  nvidia: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=600&auto=format&fit=crop&q=80",
+  
+  // Cities
+  singapore: "https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=600&auto=format&fit=crop&q=80",
+  dubai: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=600&auto=format&fit=crop&q=80",
+  tokyo: "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=600&auto=format&fit=crop&q=80",
+  newyork: "https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=600&auto=format&fit=crop&q=80",
+
+  // Seismic (Earthquakes)
+  seismic1: "https://images.unsplash.com/photo-1503945438517-f65904a52ce6?w=600&auto=format&fit=crop&q=80",
+  seismic2: "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=600&auto=format&fit=crop&q=80",
+  seismic3: "https://images.unsplash.com/photo-1600298882283-40b4dca8704a?w=600&auto=format&fit=crop&q=80",
+
+  // Space
+  space1: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=600&auto=format&fit=crop&q=80",
+  space2: "https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?w=600&auto=format&fit=crop&q=80",
+  space3: "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?w=600&auto=format&fit=crop&q=80",
+
+  // Climate
+  climate1: "https://images.unsplash.com/photo-1504608524841-42fe6f032b4b?w=600&auto=format&fit=crop&q=80",
+  climate2: "https://images.unsplash.com/photo-1569163139599-0f4517e36f31?w=600&auto=format&fit=crop&q=80",
+  climate3: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&auto=format&fit=crop&q=80",
+
+  // Markets
+  markets1: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=600&auto=format&fit=crop&q=80",
+  markets2: "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=600&auto=format&fit=crop&q=80",
+  markets3: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=600&auto=format&fit=crop&q=80"
+};
+
+const hashString = (str: string): number => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash << 5) - hash + str.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash);
+};
+
 export function getIntelFeedImage(item: any): string {
   if (!item) return PREDICTION_CATEGORY_IMAGES.default;
 
   const source = (item?.source || '').toLowerCase();
   const category = (item?.category || '').toLowerCase();
   const title = (item?.title || '').toLowerCase();
-  const isSpace = source.includes('nasa') || source.includes('space') || category.includes('space') || title.includes('space') || title.includes('orbit') || title.includes('neo') || title.includes('apod') || title.includes('epic');
 
-  // Space priority: NASA image, existing image_url, category fallback
-  if (isSpace) {
+  // 1. Check for specific chip/semiconductor entities
+  if (title.includes('asml')) return feedImages.asml;
+  if (title.includes('tsmc')) return feedImages.tsmc;
+  if (title.includes('qualcomm')) return feedImages.qualcomm;
+  if (title.includes('intel') || title.includes('intc')) return feedImages.intel;
+  if (title.includes('amd')) return feedImages.amd;
+  if (title.includes('nvidia') || title.includes('nvda')) return feedImages.nvidia;
+
+  // 2. Check for specific cities
+  if (title.includes('singapore')) return feedImages.singapore;
+  if (title.includes('dubai')) return feedImages.dubai;
+  if (title.includes('tokyo')) return feedImages.tokyo;
+  if (title.includes('new york') || title.includes('new-york')) return feedImages.newyork;
+
+  // 3. Category/Type based stable hashing
+  const idHash = hashString(item?.id || item?.title || '');
+
+  if (category.includes('seismic') || title.includes('seismic') || title.includes('earthquake')) {
+    const list = [feedImages.seismic1, feedImages.seismic2, feedImages.seismic3];
+    return list[idHash % list.length];
+  }
+  if (category.includes('space') || title.includes('space') || source.includes('nasa')) {
     if (item.image_url) return item.image_url;
     if (item.image) return item.image;
-    return SENSOR_IMAGES.space;
+    const list = [feedImages.space1, feedImages.space2, feedImages.space3];
+    return list[idHash % list.length];
+  }
+  if (category.includes('market') || category.includes('stock') || category.includes('financial')) {
+    const list = [feedImages.markets1, feedImages.markets2, feedImages.markets3];
+    return list[idHash % list.length];
+  }
+  if (category.includes('climate') || category.includes('cities')) {
+    const list = [feedImages.climate1, feedImages.climate2, feedImages.climate3];
+    return list[idHash % list.length];
   }
 
-  // 1. Database-provided image
+  // 4. Database-provided image
   if (item.image_url) return item.image_url;
 
-  // 2. Title semantic match
+  // 5. Title semantic match
   const titleMatch = lookupByTitle(item.title);
   if (titleMatch) return titleMatch;
 
-  // 3. Source-based inference
-  if (source.includes('ipcc') || source.includes('climate'))  return SENSOR_IMAGES.climate;
-  if (source.includes('seismic') || source.includes('usgs'))  return SENSOR_IMAGES.earthquake;
-
-  // 4. Category inference from item metadata
-  if (category.includes('climate')) return SENSOR_IMAGES.climate;
-
-  // 5. Consistent hash-based category selection so same title always → same image
-  const hash = (item?.title || '').split('').reduce(
-    (acc: number, char: string) => acc + char.charCodeAt(0), 0
-  );
+  // 6. Final hash fallback using keys
   const keys = Object.keys(PREDICTION_CATEGORY_IMAGES).filter(k => k !== 'default');
-  const key = keys[hash % keys.length];
-  return PREDICTION_CATEGORY_IMAGES[key];
+  const fallbackKey = keys[idHash % keys.length];
+  return PREDICTION_CATEGORY_IMAGES[fallbackKey];
 }
 
 /**

@@ -15,18 +15,23 @@ const TOUR_STEPS: TourStep[] = [
     description: 'An AI-powered future intelligence platform combining live planetary monitoring, forecasting, semiconductor intelligence, research knowledge, and scenario simulation.',
   },
   {
-    title: 'MAP',
-    description: 'Explore Earth through real-time intelligence layers, future projections, planetary monitoring, and global event visualization.',
+    title: 'DASHBOARD',
+    description: "Dashboard is ChronoEarth's primary workspace. Use Feed to monitor intelligence through the Command Desk, or switch to Map to explore the same intelligence spatially on the 3D Earth.",
     target: '#nav-map',
   },
   {
-    title: 'DASHBOARD',
-    description: 'Monitor live intelligence streams including climate risk, market stability, seismic activity, and space surveillance.',
-    target: '#nav-dashboard',
+    title: 'FEED MODE',
+    description: "Feed is the primary Dashboard view, bringing ChronoEarth's intelligence streams and Command Desk into one place.",
+    target: '#dashboard-switcher-feed',
+  },
+  {
+    title: 'MAP MODE',
+    description: "Map switches the Dashboard into the orbital intelligence view, where planetary layers and intelligence signals are visualized directly on Earth.",
+    target: '#dashboard-switcher-map',
   },
   {
     title: 'INTEL FEED',
-    description: 'Track real-time technological, geopolitical, environmental, and scientific developments.',
+    description: 'Track real-time technological, geopolitical, environmental, and scientific developments in the standalone Intel Feed.',
     target: '#nav-intelfeed',
   },
   {
@@ -40,14 +45,39 @@ const TOUR_STEPS: TourStep[] = [
     target: '#nav-knowledge',
   },
   {
-    title: 'PREDICTIONS',
-    description: 'Explore future scenarios, probability forecasts, and long-term trend analysis.',
-    target: '#float-predictions',
+    title: 'ABOUT',
+    description: 'Explore the vision, system documentation, and architecture code behind ChronoEarth.',
+    target: '#nav-about',
   },
   {
     title: 'SENSORS',
-    description: 'Monitor earthquakes, climate indicators, market telemetry, and space activity in real time.',
+    description: "Sensors provides access to ChronoEarth's intelligence systems, including semiconductor, climate, space, seismic and market monitoring.",
     target: '#nav-sensors',
+  },
+  {
+    title: 'INTELLIGENCE SYSTEMS',
+    description: "This menu contains ChronoEarth's specialized intelligence systems.",
+    target: '#sensors-dropdown',
+  },
+  {
+    title: 'SOURCES & CREDITS',
+    description: "Sources & Credits shows the data sources, technology providers and attribution behind ChronoEarth.",
+    target: '#sensor-sources',
+  },
+  {
+    title: 'COMMS UPLINK',
+    description: "Comms Uplink provides a channel for submitting diagnostic telemetry and system feedback.",
+    target: '#sensor-feedback',
+  },
+  {
+    title: 'SEARCH',
+    description: 'Query the planetary intelligence index using the global Search engine (Ctrl+K).',
+    target: '#nav-search',
+  },
+  {
+    title: 'SETTINGS',
+    description: 'Configure interface parameters, map projection styles, and simulation defaults.',
+    target: '#nav-settings',
   },
   {
     title: 'FUTURECHAT',
@@ -64,15 +94,44 @@ export default function OnboardingTour() {
   const [isActive, setIsActive] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [rect, setRect] = useState<{ top: number; left: number; width: number; height: number } | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+  const [isAppReady, setIsAppReady] = useState(false);
 
-  // Check if first-time visitor
+  // 1. Detect when the application UI is fully loaded/rendered in the DOM
   useEffect(() => {
+    const checkInterval = setInterval(() => {
+      const navElement = document.querySelector('#nav-map');
+      if (navElement) {
+        setIsAppReady(true);
+        clearInterval(checkInterval);
+      }
+    }, 200);
+
+    return () => clearInterval(checkInterval);
+  }, []);
+
+  // 2. Monitor window size
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // 3. Check if first-time visitor only after application UI is ready
+  useEffect(() => {
+    if (!isAppReady) return;
+
     const completed = localStorage.getItem('chronoearth-tour-completed');
     if (completed !== 'true') {
       setIsActive(true);
     }
+  }, [isAppReady]);
 
-    // Listen to manual restart events
+  // 4. Listen to manual restart events
+  useEffect(() => {
     const handleRestart = () => {
       localStorage.removeItem('chronoearth-tour-completed');
       setCurrentStep(0);
@@ -84,6 +143,30 @@ export default function OnboardingTour() {
       window.removeEventListener('start-chronoearth-tour', handleRestart);
     };
   }, []);
+
+  // Enforce Sensors dropdown state on step changes
+  useEffect(() => {
+    if (!isActive) return;
+    const step = TOUR_STEPS[currentStep];
+    if (!step) return;
+
+    const isSensorsStep = step.title === 'INTELLIGENCE SYSTEMS' || step.title === 'SOURCES & CREDITS' || step.title === 'COMMS UPLINK';
+
+    const checkAndEnforce = () => {
+      if (isSensorsStep) {
+        window.dispatchEvent(new CustomEvent('chronoearth-tour-sensors-open'));
+      } else {
+        window.dispatchEvent(new CustomEvent('chronoearth-tour-sensors-close'));
+      }
+    };
+
+    checkAndEnforce();
+
+    if (isSensorsStep) {
+      const interval = setInterval(checkAndEnforce, 300);
+      return () => clearInterval(interval);
+    }
+  }, [currentStep, isActive]);
 
   // Update spotlight rect when step changes or window updates
   const updateSpotlight = useCallback(() => {
@@ -98,7 +181,15 @@ export default function OnboardingTour() {
       return;
     }
 
-    const el = document.querySelector(step.target);
+    let targetSelector = step.target;
+    if (isMobile) {
+      if (targetSelector === '#nav-sensors') targetSelector = '#mobile-menu-trigger';
+      else if (targetSelector === '#sensors-dropdown') targetSelector = '#mobile-sensors-section';
+      else if (targetSelector === '#sensor-sources') targetSelector = '#mobile-sensor-sources';
+      else if (targetSelector === '#sensor-feedback') targetSelector = '#mobile-sensor-feedback';
+    }
+
+    const el = document.querySelector(targetSelector);
     if (el) {
       const clientRect = el.getBoundingClientRect();
       if (clientRect.width > 0 && clientRect.height > 0) {
@@ -112,14 +203,17 @@ export default function OnboardingTour() {
       }
     }
     setRect(null);
-  }, [isActive, currentStep]);
+  }, [isActive, currentStep, isMobile]);
 
   useEffect(() => {
     updateSpotlight();
+    const timer = setTimeout(updateSpotlight, 150);
+
     window.addEventListener('resize', updateSpotlight);
     window.addEventListener('scroll', updateSpotlight);
 
     return () => {
+      clearTimeout(timer);
       window.removeEventListener('resize', updateSpotlight);
       window.removeEventListener('scroll', updateSpotlight);
     };
@@ -174,8 +268,73 @@ export default function OnboardingTour() {
   const isFirst = currentStep === 0;
   const isLast = currentStep === TOUR_STEPS.length - 1;
 
+  // Determine modal card positioning dynamically to prevent overlap
+  const isSensorsStep = step.title === 'INTELLIGENCE SYSTEMS' || step.title === 'SOURCES & CREDITS' || step.title === 'COMMS UPLINK';
+  
+  let cardPositionStyle: React.CSSProperties = {};
+
+  if (!isMobile) {
+    if (isSensorsStep) {
+      cardPositionStyle = {
+        left: '80px',
+        right: 'auto',
+        top: '50%',
+        transform: 'translateY(-50%)',
+        width: 'calc(100vw - 120px)',
+        maxWidth: '448px',
+        maxHeight: 'none',
+        padding: '32px',
+      };
+    } else {
+      cardPositionStyle = {
+        left: '50%',
+        right: 'auto',
+        top: isFirst || isLast ? '50%' : '65%',
+        transform: 'translate(-50%, -50%)',
+        width: 'calc(100vw - 48px)',
+        maxWidth: '448px',
+        maxHeight: 'none',
+        padding: '32px',
+      };
+    }
+  } else {
+    let topValue = '50%';
+    let bottomValue = 'auto';
+    let transformValue = 'translateY(-50%)';
+
+    if (rect) {
+      const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 800;
+      const elementCenterY = rect.top - (typeof window !== 'undefined' ? window.scrollY : 0) + rect.height / 2;
+      
+      if (elementCenterY < viewportHeight / 2) {
+        topValue = 'auto';
+        bottomValue = '16px';
+        transformValue = 'none';
+      } else {
+        topValue = '90px';
+        bottomValue = 'auto';
+        transformValue = 'none';
+      }
+    } else if (!isFirst && !isLast) {
+      topValue = '65%';
+    }
+
+    cardPositionStyle = {
+      left: '16px',
+      right: '16px',
+      top: topValue,
+      bottom: bottomValue,
+      transform: transformValue,
+      width: 'calc(100vw - 32px)',
+      maxWidth: 'none',
+      margin: '0 auto',
+      maxHeight: 'calc(100vh - 120px)',
+      padding: '24px',
+    };
+  }
+
   return (
-    <div className="fixed inset-0 z-[9999] overflow-hidden select-none pointer-events-none">
+    <div className="fixed inset-0 w-screen h-screen z-[9999] overflow-hidden select-none pointer-events-none">
       
       {/* SVG Mask Spotlight cutout */}
       <svg className="absolute inset-0 w-full h-full pointer-events-auto">
@@ -225,19 +384,19 @@ export default function OnboardingTour() {
 
       {/* Main Tour HUD Dialogue Card */}
       <div 
-        className="absolute left-1/2 -translate-x-1/2 flex flex-col justify-between max-w-md w-[calc(100vw-48px)] p-6 md:p-8 rounded-2xl premium-glass border pointer-events-auto animate-fade-in text-left shadow-[0_12px_40px_rgba(0,0,0,0.8),0_0_30px_rgba(0,229,255,0.05)] transition-all duration-300"
+        className="fixed flex flex-col justify-between rounded-2xl premium-glass border pointer-events-auto animate-fade-in text-left shadow-[0_12px_40px_rgba(0,0,0,0.8),0_0_30px_rgba(0,229,255,0.05)] transition-all duration-300 overflow-y-auto"
         style={{
-          top: isFirst || isLast ? '50%' : '65%',
-          transform: isFirst || isLast ? 'translate(-50%, -50%)' : 'translate(-50%, -50%)',
+          boxSizing: 'border-box',
           backgroundColor: 'rgba(2, 8, 16, 0.95)',
           borderColor: 'rgba(0, 229, 255, 0.25)',
+          ...cardPositionStyle
         }}
       >
         {/* Skip button at top right */}
         {!isLast && (
           <button
             onClick={completeTour}
-            className="absolute top-4 right-4 bg-transparent border-none text-[#7A8694] hover:text-white text-[9px] font-mono tracking-wider cursor-pointer uppercase py-1"
+            className="absolute top-4 right-4 bg-transparent border-none text-[#7A8694] hover:text-white text-[9px] font-mono tracking-wider cursor-pointer uppercase py-2 px-3 min-h-[36px]"
           >
             [Skip Tour]
           </button>
@@ -280,13 +439,13 @@ export default function OnboardingTour() {
               <>
                 <button
                   onClick={completeTour}
-                  className="px-4 py-2 border border-white/15 hover:border-white/30 text-white/70 hover:text-white rounded-lg text-xs font-mono tracking-wider uppercase bg-transparent cursor-pointer transition-all duration-300"
+                  className="px-4 py-2 border border-white/15 hover:border-white/30 text-white/70 hover:text-white rounded-lg text-xs font-mono tracking-wider uppercase bg-transparent cursor-pointer transition-all duration-300 min-h-[44px] flex items-center justify-center"
                 >
                   Skip Tour
                 </button>
                 <button
                   onClick={handleNext}
-                  className="px-5 py-2.5 bg-[#00E5FF] hover:bg-[#00B9D1] text-[#02060A] rounded-lg text-xs font-bold font-mono tracking-wider uppercase cursor-pointer transition-all duration-300 shadow-[0_0_12px_rgba(0,229,255,0.3)]"
+                  className="px-6 py-2.5 bg-[#00E5FF] hover:bg-[#00B9D1] text-[#02060A] rounded-lg text-xs font-bold font-mono tracking-wider uppercase cursor-pointer transition-all duration-300 shadow-[0_0_12px_rgba(0,229,255,0.3)] min-h-[44px] flex items-center justify-center"
                 >
                   Start Tour →
                 </button>
@@ -294,7 +453,7 @@ export default function OnboardingTour() {
             ) : isLast ? (
               <button
                 onClick={completeTour}
-                className="w-full py-3 bg-[#00F5B0] hover:bg-[#00D98F] text-[#02060A] rounded-lg text-xs font-bold font-mono tracking-widest uppercase cursor-pointer transition-all duration-300 shadow-[0_0_15px_rgba(0,245,176,0.35)] text-center"
+                className="w-full py-3 bg-[#00F5B0] hover:bg-[#00D98F] text-[#02060A] rounded-lg text-xs font-bold font-mono tracking-widest uppercase cursor-pointer transition-all duration-300 shadow-[0_0_15px_rgba(0,245,176,0.35)] text-center min-h-[44px]"
               >
                 Enter Platform
               </button>
@@ -302,13 +461,13 @@ export default function OnboardingTour() {
               <>
                 <button
                   onClick={handlePrev}
-                  className="px-4 py-2 border border-white/10 hover:border-white/20 text-[#7A8694] hover:text-white rounded-lg text-xs font-mono tracking-wider uppercase bg-transparent cursor-pointer transition-all duration-300"
+                  className="px-4 py-2 border border-white/10 hover:border-white/20 text-[#7A8694] hover:text-white rounded-lg text-xs font-mono tracking-wider uppercase bg-transparent cursor-pointer transition-all duration-300 min-h-[44px] flex items-center justify-center"
                 >
                   ← Previous
                 </button>
                 <button
                   onClick={handleNext}
-                  className="px-5 py-2 bg-[#00E5FF]/10 hover:bg-[#00E5FF] border border-[#00E5FF]/40 hover:border-transparent text-[#00E5FF] hover:text-[#02060A] rounded-lg text-xs font-semibold font-mono tracking-wider uppercase cursor-pointer transition-all duration-300 shadow-[0_0_10px_rgba(0,229,255,0.1)]"
+                  className="px-5 py-2 bg-[#00E5FF]/10 hover:bg-[#00E5FF] border border-[#00E5FF]/40 hover:border-transparent text-[#00E5FF] hover:text-[#02060A] rounded-lg text-xs font-semibold font-mono tracking-wider uppercase cursor-pointer transition-all duration-300 shadow-[0_0_10px_rgba(0,229,255,0.1)] min-h-[44px] flex items-center justify-center"
                 >
                   Next step →
                 </button>

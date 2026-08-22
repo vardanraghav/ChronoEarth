@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Navbar            from '@/components/Navbar';
 import CesiumGlobe       from '@/components/CesiumGlobe';
 import BackgroundEffects from '@/components/BackgroundEffects';
 import CityPreviewCard   from '@/components/CityPreviewCard';
+import CommandDesk       from '@/components/CommandDesk';
 import { getCitySlug } from '@/data/citiesExtendedData';
 import { CityData, citiesRawData, generateCityIntelligence } from '@/data/citiesData';
 import { generateCountryProjections } from '@/data/countryData';
@@ -18,6 +19,7 @@ import { useSpaceEvents } from '@/hooks/useSpaceEvents';
 import { useEarthquakes } from '@/hooks/useEarthquakes';
 import { useMarketOverview } from '@/hooks/useMarketOverview';
 import { useNews } from '@/hooks/useNews';
+import { useKnowledgeBase } from '@/hooks/useKnowledgeBase';
 import Image from 'next/image';
 import { getIntelFeedImage, getPredictionImage, getSensorImage, getMarketLogo } from '@/lib/imageUtils';
 import { SiliconAnalystsPayload } from '@/services/siliconAnalysts';
@@ -117,13 +119,26 @@ function DashboardContent() {
   const { earthquakes } = useEarthquakes(4.0);
   const { snapshots } = useMarketOverview();
   const { news } = useNews();
+  const { kbArticles } = useKnowledgeBase();
 
   const [focusCoords, setFocusCoords] = useState<{ lat: number; lon: number; height?: number } | null>(null);
   const [activeCategory, setActiveCategory] = useState<string>('AI');
+  const [isMobile, setIsMobile] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   const cityParam = searchParams.get('city');
   const countryParam = searchParams.get('country');
   const predictionParam = searchParams.get('prediction');
+  const latParam = searchParams.get('lat');
+  const lonParam = searchParams.get('lon');
+  const heightParam = searchParams.get('height');
+  const layerParam = searchParams.get('layer');
+  const yearParam = searchParams.get('year');
+  const eqParam = searchParams.get('eq');
+  const viewParam = searchParams.get('view');
+
+  const [dashboardMode, setDashboardMode] = useState<'feed' | 'map'>((viewParam === 'map' || cityParam || countryParam || predictionParam || eqParam || latParam) ? 'map' : 'feed');
+  const [cesiumLoaded, setCesiumLoaded] = useState(dashboardMode === 'map');
 
   const [activeYear, setActiveYear] = useState(2050);
   const [activeCity, setActiveCity] = useState<CityData | null>(null);
@@ -151,11 +166,44 @@ function DashboardContent() {
   });
   const [newDossierMsg, setNewDossierMsg] = useState('');
 
+  const [isAppReady, setIsAppReady] = useState(false);
+
+  const handleEarthReady = useCallback(() => {
+    console.log("[EXEC_TRACE] J = global loader disappears at " + performance.now().toFixed(1) + "ms");
+    setIsAppReady(true);
+  }, []);
+
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
-      setIsLeftPanelCollapsed(true);
-      setIsRightPanelCollapsed(true);
-    }
+    console.log("[EXEC_TRACE] B = global loading component mounts at " + performance.now().toFixed(1) + "ms");
+    console.log("[EXEC_TRACE] C = main dashboard component mounts at " + performance.now().toFixed(1) + "ms");
+    setMounted(true);
+    
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (window.innerWidth < 1024) {
+        setIsLeftPanelCollapsed(true);
+        setIsRightPanelCollapsed(true);
+      }
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+
+    // Safety fallback: if WebGL or satellite tile network has issues, do not lock forever
+    const safetyTimeout = setTimeout(() => {
+      setIsAppReady(prev => {
+        if (!prev) {
+          console.log("[EXEC_TRACE] J = global loader fallback triggered at " + performance.now().toFixed(1) + "ms");
+          return true;
+        }
+        return prev;
+      });
+    }, 12000);
+
+    return () => {
+      clearTimeout(safetyTimeout);
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
 
   const [semiData, setSemiData] = useState<SiliconAnalystsPayload | null>(null);
@@ -207,6 +255,28 @@ function DashboardContent() {
 
   // Sync state with query parameters
   useEffect(() => {
+    if (yearParam) {
+      const yr = Number(yearParam);
+      if (yr === 2030 || yr === 2040 || yr === 2050) {
+        setActiveYear(yr);
+      }
+    }
+
+    if (latParam && lonParam) {
+      setFocusCoords({
+        lat: Number(latParam),
+        lon: Number(lonParam),
+        height: heightParam ? Number(heightParam) : undefined
+      });
+    }
+
+    if (layerParam) {
+      setActiveLayers(prev => ({
+        ...prev,
+        [layerParam]: true
+      }));
+    }
+
     if (cityParam) {
       const cityObj = cities.find(c => c.name.toLowerCase() === cityParam.toLowerCase());
       if (cityObj) {
@@ -231,12 +301,110 @@ function DashboardContent() {
         setActiveEarthquake(null);
         setIsRightPanelCollapsed(false); // Auto-expand right panel on selection
       }
+    } else if (eqParam && earthquakes && earthquakes.length > 0) {
+      const eqObj = earthquakes.find(e => (e.id === eqParam || e.place.toLowerCase().includes(eqParam.toLowerCase())));
+      if (eqObj) {
+        setActiveEarthquake(eqObj);
+        setActiveCity(null);
+        setActiveCountry(null);
+        setActivePrediction(null);
+      }
     } else {
       setActiveCity(null);
       setActiveCountry(null);
       setActivePrediction(null);
     }
-  }, [cityParam, countryParam, predictionParam, cities, predictions]);
+  }, [cityParam, countryParam, predictionParam, latParam, lonParam, heightParam, layerParam, yearParam, eqParam, cities, predictions, earthquakes]);
+
+  // Sync viewParam
+  useEffect(() => {
+    if (viewParam === 'map') {
+      setDashboardMode('map');
+      setCesiumLoaded(true);
+    } else if (viewParam === 'feed') {
+      setDashboardMode('feed');
+    }
+  }, [viewParam]);
+
+  const handleToggleMode = (mode: 'feed' | 'map') => {
+    setDashboardMode(mode);
+    if (mode === 'map') {
+      setCesiumLoaded(true);
+    }
+    const url = new URL(window.location.href);
+    url.searchParams.set('view', mode);
+    router.push(url.pathname + url.search);
+  };
+
+  const handleFeedClick = (item: { lat: number; lon: number; height?: number; layer?: string; city?: any; prediction?: any; eq?: any }) => {
+    if (item.lat !== undefined && item.lon !== undefined) {
+      setFocusCoords({ lat: item.lat, lon: item.lon, height: item.height });
+    }
+    if (item.layer) {
+      setActiveLayers(prev => ({ ...prev, [item.layer!]: true }));
+    }
+    if (item.city) {
+      setActiveCity(item.city);
+      setActiveCountry(null);
+      setActivePrediction(null);
+      setActiveEarthquake(null);
+    } else if (item.prediction) {
+      setActivePrediction(item.prediction);
+      setActiveCity(null);
+      setActiveCountry(null);
+      setActiveEarthquake(null);
+    } else if (item.eq) {
+      setActiveEarthquake(item.eq);
+      setActiveCity(null);
+      setActiveCountry(null);
+      setActivePrediction(null);
+    }
+    setDashboardMode('map');
+    setCesiumLoaded(true);
+    
+    const url = new URL(window.location.origin + '/dashboard');
+    url.searchParams.set('view', 'map');
+    url.searchParams.set('year', activeYear.toString());
+    if (item.lat !== undefined && item.lon !== undefined) {
+      url.searchParams.set('lat', item.lat.toString());
+      url.searchParams.set('lon', item.lon.toString());
+      if (item.height) url.searchParams.set('height', item.height.toString());
+    }
+    if (item.layer) url.searchParams.set('layer', item.layer);
+    if (item.city) url.searchParams.set('city', typeof item.city === 'string' ? item.city : item.city.name);
+    if (item.prediction) url.searchParams.set('prediction', item.prediction.slug);
+    if (item.eq) url.searchParams.set('eq', item.eq.id || item.eq.place);
+    router.push(url.pathname + url.search);
+  };
+
+  const handleCityClick = (cityName: string) => {
+    const cityObj = cities.find(c => c.name.toLowerCase() === cityName.toLowerCase());
+    if (cityObj) {
+      handleFeedClick({
+        lat: cityObj.lat,
+        lon: cityObj.lon,
+        height: 1200000,
+        layer: 'cities',
+        city: cityObj
+      });
+    }
+  };
+
+  const renderMiniSparkline = (points: number[], color: string) => {
+    const max = Math.max(...points, 1);
+    const min = Math.min(...points, 0);
+    const range = max - min || 1;
+    const svgPoints = points.map((val, idx) => {
+      const x = idx * 20;
+      const y = 18 - ((val - min) / range) * 14;
+      return `${x},${y}`;
+    }).join(' ');
+    return (
+      <svg className="w-20 h-6" viewBox="0 0 100 20" style={{ overflow: 'visible' }}>
+        <polyline points={svgPoints} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    );
+  };
 
   const handleSelectCity = (city: CityData | null) => {
     const url = new URL(window.location.href);
@@ -508,7 +676,7 @@ function DashboardContent() {
         title: `Climate alert: ${c.name} risk at ${cityStats.climateRisk}%`,
         description: `Projected temp delta +${c.offsets.tempRise.toFixed(1)}°C, sea level rise +${(c.offsets.seaLevel || 0.1).toFixed(2)}m.`,
         timestamp: `Last Updated: Jun 19, 2026 08:31 UTC`,
-        timeSort: new Date().getTime() - 7200000 - idx * 60000,
+        timeSort: 1770000000000 - 7200000 - idx * 60000,
         severity: cityStats.climateRisk >= 75 ? 'Critical' : (cityStats.climateRisk >= 50 ? 'High' : 'Medium'),
         image: getSensorImage(c, 'climate'),
         onClick: () => {
@@ -535,7 +703,7 @@ function DashboardContent() {
         title: `Forecast: ${p.title} (${p.confidenceScore}% probability)`,
         description: p.description,
         timestamp: `${p.year} Target`,
-        timeSort: new Date().getTime() - 14400000 - idx * 60000,
+        timeSort: 1770000000000 - 14400000 - idx * 60000,
         severity: p.confidenceScore >= 80 ? 'High' : 'Medium',
         image: getPredictionImage(p),
         onClick: () => {
@@ -557,950 +725,310 @@ function DashboardContent() {
     (aiReadinessIndex + (100 - climateRiskIndex) + marketStabilityIndex + spaceActivityIndex + seismicActivityIndex) / 5
   );
 
+  const spaceSweep = activeYear === 2050 ? '42 Sweep' : (activeYear === 2040 ? '28 Sweep' : (activeYear === 2030 ? '15 Sweep' : '8 Sweep'));
+  const climateTemp = activeYear === 2050 ? '+1.8°C' : (activeYear === 2040 ? '+1.45°C' : (activeYear === 2030 ? '+1.10°C' : '+0.85°C'));
+  const siliconYield = activeYear === 2050 ? '98.5%' : (activeYear === 2040 ? '95.8%' : (activeYear === 2030 ? '92.5%' : '88.2%'));
+  const seismicMag = activeYear === 2050 ? '4.8 Mag' : (activeYear === 2040 ? '4.5 Mag' : (activeYear === 2030 ? '4.2 Mag' : '3.8 Mag'));
+
+  const yearPredictions = predictions.filter(p => p.year === activeYear);
+  const sortedPredictions = [...yearPredictions].sort((a, b) => b.votes - a.votes);
+  const latestPrediction = predictions.length > 0 ? predictions[0] : null;
+  const latestSpaceEvent = spaceEvents.length > 0 ? spaceEvents[0] : null;
+  const apodEvent = spaceEvents.find(e => e.event_type === 'APOD') || spaceEvents.find(e => e.image_url);
+  const marketAlert = snapshots.length > 0 ? snapshots[0] : null;
+  const latestQuake = earthquakes.length > 0 ? earthquakes[0] : null;
+
   return (
-    <main className="relative h-screen w-screen overflow-hidden" style={{ background: '#02060A' }}>
+    <main 
+      className={`relative min-h-screen w-full ${dashboardMode === 'feed' ? 'overflow-y-auto custom-scrollbar pb-20' : 'h-screen w-screen overflow-hidden'}`} 
+      style={{ background: '#02060A' }}
+    >
+      {/* Global Application Loading Overlay: EXPLORING NEW WAYS... */}
+      <div
+        className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#02060A] text-white/60 font-mono text-[11px] tracking-[0.35em] uppercase transition-opacity duration-500 ${
+          (!isAppReady && dashboardMode === 'map') ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
+      >
+        <div className="flex items-center gap-2.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-white/50 animate-pulse shadow-[0_0_8px_rgba(255,255,255,0.4)]" />
+          <span>EXPLORING NEW WAYS...</span>
+        </div>
+      </div>
+
       {/* Top Navigation */}
       <Navbar setActiveCity={handleSelectCity} />
 
-      {/* Top Index Bar: Global Intelligence Score */}
+      {/* Switcher Mode: FEED | MAP */}
       <div 
-        className="fixed left-10 right-10 z-40 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4"
-        style={{ top: '110px' }}
+        style={{ top: isMobile ? '84px' : '96px' }}
+        className="fixed left-1/2 -translate-x-1/2 z-50 flex items-center bg-[#02060A]/85 border border-[#00F5B0]/30 p-1 rounded-full backdrop-blur-xl shadow-[0_4px_20px_rgba(0,245,176,0.15)]"
       >
-        {[
-          { 
-            id: 'global', 
-            label: 'Global Intelligence', 
-            val: globalIntelligenceScore, 
-            color: '#A8EFFF', 
-            icon: '🌐',
-            onClick: () => {
-              setActiveCategory('AI');
-              setFocusCoords({ lat: 20.0, lon: 0.0, height: 12000000 }); // Global view
-            } 
-          },
-          { 
-            id: 'prediction', 
-            label: 'Future Predictions', 
-            val: predictionsCountIndex, 
-            color: '#FF9500', 
-            icon: '🔮',
-            onClick: () => {
-              setActiveCategory('AI');
-              setActiveLayers(prev => ({ ...prev, cities: true, tech: true }));
-              setFocusCoords({ lat: 1.3521, lon: 103.8198, height: 1800000 }); // Singapore
-            } 
-          },
-          { 
-            id: 'climate', 
-            label: 'Climate Risk', 
-            val: climateRiskIndex, 
-            color: '#FF0055', 
-            icon: '🌡️',
-            onClick: () => {
-              setActiveCategory('Ocean Monitoring');
-              setActiveLayers(prev => ({ ...prev, climate: true }));
-              setFocusCoords({ lat: -3.0, lon: -60.0, height: 2800000 }); // Amazon
-            } 
-          },
-          { 
-            id: 'market', 
-            label: 'Market Stability', 
-            val: marketStabilityIndex, 
-            color: '#00F5B0', 
-            icon: '📈',
-            onClick: () => {
-              setActiveCategory('Clean Energy');
-              setActiveLayers(prev => ({ ...prev, geopolitical: true, markets: true }));
-              setFocusCoords({ lat: 24.78, lon: 120.97, height: 1800000 }); // TSMC / Hsinchu Fab Cluster
-            } 
-          },
-          { 
-            id: 'space', 
-            label: 'Space Activity', 
-            val: spaceActivityIndex, 
-            color: '#BF5AF2', 
-            icon: '🚀',
-            onClick: () => {
-              setActiveCategory('Satellite Network');
-              setActiveLayers(prev => ({ ...prev, space: true }));
-              setFocusCoords({ lat: 28.39, lon: -80.60, height: 8000000 }); // Cape Canaveral
-            } 
-          },
-          { 
-            id: 'seismic', 
-            label: 'Seismic Activity', 
-            val: seismicActivityIndex, 
-            color: '#EF4444', 
-            icon: '🌋',
-            onClick: () => {
-              setActiveCategory('Seismic');
-              setActiveLayers(prev => ({ ...prev, seismic: true }));
-              if (earthquakes && earthquakes.length > 0) {
-                const eq = earthquakes[0];
-                setFocusCoords({ lat: eq.lat, lon: eq.lon, height: 1500000 });
-                setActiveEarthquake(eq);
-                setActiveCity(null);
-                setActiveCountry(null);
-                setActivePrediction(null);
-                setIsRightPanelCollapsed(false);
-              } else {
-                setFocusCoords({ lat: 35.6762, lon: 139.6503, height: 2500000 }); // Japan fault line
-              }
-            } 
-          }
-        ].map((card) => {
-          let lastUpdatedStr = "Last Updated: 2 min ago";
-          if (card.id === 'market') {
-            const latestSnapshot = snapshots[0];
-            if (latestSnapshot?.timestamp) {
-              const diffMs = new Date().getTime() - new Date(latestSnapshot.timestamp).getTime();
-              const mins = Math.max(1, Math.floor(diffMs / 60000));
-              lastUpdatedStr = mins < 60 ? `Last Updated: ${mins} min ago` : `Last Updated: 2 min ago`;
-            }
-          } else if (card.id === 'seismic') {
-            const latestEq = earthquakes[0];
-            if (latestEq?.time) {
-              const diffMs = new Date().getTime() - new Date(latestEq.time).getTime();
-              const mins = Math.max(1, Math.floor(diffMs / 60000));
-              lastUpdatedStr = mins < 60 ? `Last Updated: ${mins} min ago` : `Last Updated: 2 min ago`;
-            }
-          } else if (card.id === 'space') {
-            const latestSpace = spaceEvents[0];
-            if (latestSpace?.event_date) {
-              const diffMs = new Date().getTime() - new Date(latestSpace.event_date).getTime();
-              const mins = Math.max(1, Math.floor(diffMs / 60000));
-              lastUpdatedStr = mins < 60 ? `Last Updated: ${mins} min ago` : `Last Updated: 2 min ago`;
-            }
-          } else if (card.id === 'climate') {
-            lastUpdatedStr = "Last Updated: 2 min ago";
-          } else if (card.id === 'global') {
-            lastUpdatedStr = "Last Updated: 2 min ago";
-          } else if (card.id === 'prediction') {
-            lastUpdatedStr = "Last Updated: 2 min ago";
-          }
-
-          return (
-            <button
-              key={card.id}
-              onClick={card.onClick}
-              className="premium-glass p-3 rounded-xl flex flex-col justify-between border hover:border-white/20 transition-all text-left group cursor-pointer"
-              style={{
-                borderColor: `rgba(255, 255, 255, 0.05)`,
-              }}
-            >
-              <div className="flex items-center justify-between w-full">
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-[9px] font-mono text-white/40 uppercase tracking-widest">{card.label}</span>
-                  <span className="text-xs font-bold font-mono group-hover:glow-primary transition-all" style={{ color: card.color }}>
-                    {card.icon} {card.val}%
-                  </span>
-                </div>
-                <span className="text-[10px] text-white/25 group-hover:text-white/80 transition-colors">→</span>
-              </div>
-              <span className="text-[8px] font-mono text-white/30 mt-2 block border-t border-white/5 pt-1 w-full tracking-wide">
-                {lastUpdatedStr}
-              </span>
-            </button>
-          );
-        })}
+        <button
+          id="dashboard-switcher-feed"
+          onClick={() => handleToggleMode('feed')}
+          className={`px-6 py-1.5 rounded-full font-mono text-[10px] tracking-widest uppercase transition-all duration-300 cursor-pointer ${
+            dashboardMode === 'feed'
+              ? 'bg-[#00F5B0] text-[#02060A] font-semibold'
+              : 'text-[#8CA8B8] hover:text-white bg-transparent'
+          }`}
+        >
+          FEED
+        </button>
+        <button
+          id="dashboard-switcher-map"
+          onClick={() => handleToggleMode('map')}
+          className={`px-6 py-1.5 rounded-full font-mono text-[10px] tracking-widest uppercase transition-all duration-300 cursor-pointer ${
+            dashboardMode === 'map'
+              ? 'bg-[#00F5B0] text-[#02060A] font-semibold'
+              : 'text-[#8CA8B8] hover:text-white bg-transparent'
+          }`}
+        >
+          MAP
+        </button>
       </div>
+
+      {/* Command Desk view (FEED mode) */}
+      {dashboardMode === 'feed' && (
+        <CommandDesk
+          activeYear={activeYear}
+          setActiveYear={setActiveYear}
+          cities={cities}
+          predictions={predictions}
+          spaceEvents={spaceEvents}
+          earthquakes={earthquakes}
+          snapshots={snapshots}
+          kbArticles={kbArticles}
+          handleFeedClick={handleFeedClick}
+          handleCityClick={handleCityClick}
+          handleToggleMode={handleToggleMode}
+        />
+      )}
+
+
 
       {/* Full screen Globe */}
-      <div 
-        style={{
-          position: 'absolute',
-          left: 0,
-          top: 0,
-          width: '100vw',
-          height: '100%',
-          zIndex: 0,
-          overflow: 'hidden',
-        }}
-      >
-        <BackgroundEffects earthMode="cyber" />
-        <CesiumGlobe
-          activeYear={activeYear}
-          activeCategory={activeCategory}
-          activeCity={activeCity}
-          setActiveCity={handleSelectCity}
-          activeCountry={activeCountry}
-          setActiveCountry={handleSelectCountry}
-          overlays={DEFAULT_OVERLAYS}
-          earthMode="cyber"
-          activeLayers={activeLayers}
-          activeSimulations={activeSimulations}
-          cities={cities}
-          focusCoords={focusCoords}
-          earthquakes={earthquakes}
-        />
-      </div>
+      {mounted && cesiumLoaded && (
+        <div 
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            width: '100vw',
+            height: '100%',
+            zIndex: 0,
+            overflow: 'hidden',
+            visibility: dashboardMode === 'map' ? 'visible' : 'hidden',
+            pointerEvents: dashboardMode === 'map' ? 'auto' : 'none',
+          }}
+        >
+          <BackgroundEffects earthMode="cyber" />
+          <CesiumGlobe
+            activeYear={activeYear}
+            activeCategory={activeCategory}
+            activeCity={activeCity}
+            setActiveCity={handleSelectCity}
+            activeCountry={activeCountry}
+            setActiveCountry={handleSelectCountry}
+            overlays={DEFAULT_OVERLAYS}
+            earthMode="cyber"
+            activeLayers={activeLayers}
+            activeSimulations={activeSimulations}
+            cities={cities}
+            focusCoords={focusCoords}
+            earthquakes={earthquakes}
+            onEarthReady={handleEarthReady}
+          />
+        </div>
+      )}
 
       {/* Depth Vignettes */}
-      <div
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 1,
-          height: '160px',
-          background: 'linear-gradient(180deg, rgba(2,6,10,0.85) 0%, transparent 100%)',
-          pointerEvents: 'none',
-        }}
-      />
-      <div
-        style={{
-          position: 'fixed',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          zIndex: 1,
-          height: '180px',
-          background: 'linear-gradient(0deg, rgba(2,6,10,0.90) 0%, transparent 100%)',
-          pointerEvents: 'none',
-        }}
-      />
+      {dashboardMode === 'map' && (
+        <>
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              zIndex: 1,
+              height: '160px',
+              background: 'linear-gradient(180deg, rgba(2,6,10,0.85) 0%, transparent 100%)',
+              pointerEvents: 'none',
+            }}
+          />
+          <div
+            style={{
+              position: 'fixed',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              zIndex: 1,
+              height: '180px',
+              background: 'linear-gradient(0deg, rgba(2,6,10,0.90) 0%, transparent 100%)',
+              pointerEvents: 'none',
+            }}
+          />
+        </>
+      )}
 
       {/* Floating Left: Intelligence Layers Panel */}
-      <div 
-        style={{
-          position: 'fixed',
-          left: '40px',
-          top: '205px',
-          width: '280px',
-          zIndex: 30,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '24px',
-          pointerEvents: 'auto',
-          transform: isLeftPanelCollapsed ? 'translateX(calc(-100% - 60px))' : 'translateX(0)',
-          transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-        }}
-        className="premium-glass p-6 rounded-lg animate-fade-in"
-      >
-        {/* Left Chevron Toggler Button */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsLeftPanelCollapsed(!isLeftPanelCollapsed);
+      {dashboardMode === 'map' && (
+        <div 
+          style={{
+            position: 'fixed',
+            left: isMobile ? '16px' : '40px',
+            right: isMobile ? '16px' : 'auto',
+            top: isMobile ? 'auto' : '120px',
+            bottom: isMobile ? '100px' : 'auto',
+            width: isMobile ? 'auto' : '280px',
+            zIndex: 100,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '24px',
+            pointerEvents: 'auto',
+            transform: isMobile
+              ? (isLeftPanelCollapsed ? 'translateY(calc(100% + 150px))' : 'translateY(0)')
+              : (isLeftPanelCollapsed ? 'translateX(calc(-100% - 60px))' : 'translateX(0)'),
+            transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
           }}
-          className="absolute top-0 -right-6 w-6 h-12 bg-[#02060A]/85 backdrop-blur-md border-y border-r border-[#00F5B0]/30 hover:border-[#00F5B0]/60 rounded-r-md text-[10px] text-[#00F5B0] flex items-center justify-center transition-all duration-300 cursor-pointer shadow-[5px_0_15px_rgba(0,245,176,0.15)] focus:outline-none"
+          className="premium-glass p-6 rounded-lg animate-fade-in"
         >
-          {isLeftPanelCollapsed ? '❯' : '❮'}
-        </button>
-        <div className="flex flex-col gap-1 border-b border-[#00F5B0]/15 pb-3">
-          <span className="text-[10px] font-mono text-[#00F5B0] uppercase tracking-widest font-semibold">Intelligence</span>
-          <h3 className="text-sm font-light text-white tracking-wider uppercase font-mono m-0">Planetary Layers</h3>
-        </div>
-
-        <div className="flex flex-col gap-4">
-          {([
-            { key: 'cities', label: 'Future Cities', icon: '🏙️' },
-            { key: 'climate', label: 'Climate Intel', icon: '🌍' },
-            { key: 'tech', label: 'AI & Technology', icon: '💻' },
-            { key: 'semiconductor', label: 'Semiconductor Intel', icon: '💾' },
-            { key: 'energy', label: 'Planetary Energy', icon: '⚡' },
-            { key: 'space', label: 'Space Infrastructure', icon: '🚀' },
-            { key: 'geopolitical', label: 'Geopolitical Grid', icon: '🗺️' }
-          ] as const).map(({ key, label, icon }) => (
-            <div key={key} className="flex items-center justify-between group py-1">
-              <div className="flex items-center gap-3">
-                <span className="text-base group-hover:scale-110 transition-transform">{icon}</span>
-                <span className="text-xs text-white/75 group-hover:text-white transition-colors tracking-wide font-sans">{label}</span>
-              </div>
-              <button
-                onClick={() => setActiveLayers(prev => ({ ...prev, [key]: !prev[key] }))}
-                className="relative w-9 h-5 rounded-full transition-colors duration-300 focus:outline-none cursor-pointer"
-                style={{
-                  background: activeLayers[key] ? '#00F5B0' : 'rgba(255, 255, 255, 0.1)',
-                  border: '1px solid rgba(255, 255, 255, 0.05)',
-                  boxShadow: activeLayers[key] ? '0 0 10px rgba(0, 245, 176, 0.4)' : 'none',
-                }}
-              >
-                <span
-                  className="absolute top-[2px] left-[2px] w-[14px] h-[14px] rounded-full bg-white transition-transform duration-300"
-                  style={{
-                    transform: activeLayers[key] ? 'translateX(16px)' : 'translateX(0)',
-                    boxShadow: '0 1px 3px rgba(0,0,0,0.4)',
-                  }}
-                />
-              </button>
+          {/* Left Chevron Toggler Button */}
+          {!isMobile && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsLeftPanelCollapsed(!isLeftPanelCollapsed);
+              }}
+              className="absolute top-0 -right-6 w-6 h-12 bg-[#02060A]/85 backdrop-blur-md border-y border-r border-[#00F5B0]/30 hover:border-[#00F5B0]/60 rounded-r-md text-[10px] text-[#00F5B0] flex items-center justify-center transition-all duration-300 cursor-pointer shadow-[5px_0_15px_rgba(0,245,176,0.15)] focus:outline-none"
+            >
+              {isLeftPanelCollapsed ? '❯' : '❮'}
+            </button>
+          )}
+          <div className="flex justify-between items-center border-b border-[#00F5B0]/15 pb-3">
+            <div className="flex flex-col gap-1 text-left">
+              <span className="text-[10px] font-mono text-[#00F5B0] uppercase tracking-widest font-semibold">Intelligence</span>
+              <h3 className="text-sm font-light text-white tracking-wider uppercase font-mono m-0">Planetary Layers</h3>
             </div>
-          ))}
-        </div>
-      </div>
+            {isMobile && (
+              <button
+                onClick={() => setIsLeftPanelCollapsed(true)}
+                className="bg-transparent border-none text-rose-450 hover:text-rose-450 font-mono text-[10px] cursor-pointer"
+              >
+                [✕ CLOSE]
+              </button>
+            )}
+          </div>
 
-      {/* Floating Center-Bottom: Timeline Selector */}
-      <div 
-        style={{
-          position: 'fixed',
-          bottom: '40px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          zIndex: 40,
-          pointerEvents: 'auto',
-        }}
-        className="premium-glass px-8 py-3 rounded-full flex items-center gap-6"
-      >
-        <span className="text-[10px] font-mono text-[#7A8694] uppercase tracking-[0.2em] font-semibold">Timeline</span>
-        <div className="flex items-center">
-          {([2030, 2040, 2050] as const).map((year, index) => {
-            const isActive = activeYear === year;
-            return (
-              <div key={year} className="flex items-center">
-                {index > 0 && (
-                  <div className="w-16 h-[1px] bg-white/10 mx-3 relative">
-                    <div 
-                      className="absolute inset-0 bg-[#00F5B0] transition-all duration-500"
-                      style={{
-                        opacity: activeYear >= year ? 0.35 : 0,
-                        boxShadow: activeYear >= year ? '0 0 4px #00F5B0' : 'none'
-                      }}
-                    />
-                  </div>
-                )}
+          <div className="flex flex-col gap-4">
+            {([
+              { key: 'cities', label: 'Future Cities', icon: '🏙️' },
+              { key: 'climate', label: 'Climate Intel', icon: '🌍' },
+              { key: 'tech', label: 'AI & Technology', icon: '💻' },
+              { key: 'semiconductor', label: 'Semiconductor Intel', icon: '💾' },
+              { key: 'energy', label: 'Planetary Energy', icon: '⚡' },
+              { key: 'space', label: 'Space Infrastructure', icon: '🚀' },
+              { key: 'geopolitical', label: 'Geopolitical Grid', icon: '🗺️' }
+            ] as const).map(({ key, label, icon }) => (
+              <div key={key} className="flex items-center justify-between group py-1">
+                <div className="flex items-center gap-3">
+                  <span className="text-base group-hover:scale-110 transition-transform">{icon}</span>
+                  <span className="text-xs text-white/75 group-hover:text-white transition-colors tracking-wide font-sans">{label}</span>
+                </div>
                 <button
-                  onClick={() => setActiveYear(year)}
+                  onClick={() => setActiveLayers(prev => ({ ...prev, [key]: !prev[key] }))}
+                  className="relative w-9 h-5 rounded-full transition-colors duration-300 focus:outline-none cursor-pointer"
                   style={{
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    fontSize: '12px',
-                    fontWeight: isActive ? 600 : 300,
-                    color: isActive ? '#00F5B0' : 'rgba(255, 255, 255, 0.45)',
-                    transition: 'all 0.3s ease',
-                    textShadow: isActive ? '0 0 10px rgba(0,245,176,0.6)' : 'none',
-                    fontFamily: 'monospace'
+                    background: activeLayers[key] ? '#00F5B0' : 'rgba(255, 255, 255, 0.1)',
+                    border: '1px solid rgba(255, 255, 255, 0.05)',
+                    boxShadow: activeLayers[key] ? '0 0 10px rgba(0, 245, 176, 0.4)' : 'none',
                   }}
-                  className={`hover:text-white flex flex-col items-center gap-1 ${isActive ? 'timeline-dot-pulse font-bold' : ''}`}
                 >
-                  <span>{year}</span>
+                  <span
+                    className="absolute top-[2px] left-[2px] w-[14px] h-[14px] rounded-full bg-white transition-transform duration-300"
+                    style={{
+                      transform: activeLayers[key] ? 'translateX(16px)' : 'translateX(0)',
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.4)',
+                    }}
+                  />
                 </button>
               </div>
-            );
-          })}
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Floating Right: Briefing Profile Panel */}
-      <div 
-        style={{
-          position: 'fixed',
-          right: '40px',
-          top: '205px',
-          bottom: '40px',
-          width: 'min(340px, calc(100vw - 80px))',
-          zIndex: 30,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '20px',
-          pointerEvents: 'auto',
-          overflowY: 'auto',
-          transform: isRightPanelCollapsed ? 'translateX(calc(100% + 60px))' : 'translateX(0)',
-          transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-        }}
-        className="premium-glass p-6 rounded-lg custom-scrollbar animate-fade-in"
-      >
-        {/* Right Chevron Toggler Button */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsRightPanelCollapsed(!isRightPanelCollapsed);
+      {/* Floating Center-Bottom: Timeline Selector */}
+      {dashboardMode === 'map' && (
+        <div 
+          style={{
+            position: 'fixed',
+            bottom: '40px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 40,
+            pointerEvents: 'auto',
+            width: isMobile ? 'calc(100% - 120px)' : 'auto',
+            maxWidth: isMobile ? '240px' : 'none',
+            justifyContent: 'center',
           }}
-          className="absolute top-0 -left-6 w-6 h-12 bg-[#02060A]/85 backdrop-blur-md border-y border-l border-[#00F5B0]/30 hover:border-[#00F5B0]/60 rounded-l-md text-[10px] text-[#00F5B0] flex items-center justify-center transition-all duration-300 cursor-pointer shadow-[-5px_0_15px_rgba(0,245,176,0.15)] focus:outline-none"
+          className={`premium-glass rounded-full flex items-center justify-between ${isMobile ? 'px-4 py-2 gap-3' : 'px-8 py-3 gap-6'} animate-fade-in`}
         >
-          {isRightPanelCollapsed ? '❮' : '❯'}
-        </button>
-        {activeCity ? (
-          // CITY DOSSIER
-          (() => {
-            const cityStats = generateCityIntelligence(activeCity, activeYear, activeSimulations);
-            const cityGdp = cityStats.population * 0.045 * (cityStats.smartCityIndex / 100);
-            return (
-              <div className="flex flex-col gap-5">
-                <div className="border-b border-[#00F5B0]/15 pb-3">
-                  <span className="text-[10px] font-mono text-[#00F5B0] uppercase tracking-widest font-semibold">City Dossier</span>
-                  <h2 className="text-lg font-light text-white m-0 mt-0.5 tracking-wide">{activeCity.name}</h2>
-                  <span className="text-[10px] text-[#7A8694] font-mono uppercase tracking-wider">{activeCity.country}</span>
-                </div>
-
-                <div className="flex flex-col gap-2 bg-black/30 border border-white/5 rounded-lg p-3">
-                  <div className="flex justify-between items-center text-[10px] font-mono text-[#7A8694]">
-                    <span>Growth Vector</span>
-                    <span className="text-white">Active</span>
-                  </div>
-                  {generateSparkline(cityStats.population, 1.05)}
-                </div>
-
-                <div className="flex flex-col gap-4 bg-black/20 border border-white/5 rounded-lg p-4">
-                  <div className="flex justify-between items-center border-b border-white/5 pb-2">
-                    <span className="text-[10px] text-[#7A8694] font-mono uppercase tracking-wider">Population</span>
-                    <span className="text-xs font-medium text-white">{cityStats.population.toFixed(1)}M</span>
-                  </div>
-                  <div className="flex justify-between items-center border-b border-white/5 pb-2">
-                    <span className="text-[10px] text-[#7A8694] font-mono uppercase tracking-wider">Estimated GDP</span>
-                    <span className="text-xs font-medium text-white">${cityGdp.toFixed(1)}B</span>
-                  </div>
-                  <ProgressBar value={cityStats.smartCityIndex} label="AI Readiness" />
-                  <ProgressBar value={cityStats.climateRisk} label="Climate Risk" isRisk={true} />
-                </div>
-
-                <div className="flex flex-col gap-2.5 mt-auto">
-                  <Link
-                    href={`/city/${getCitySlug(activeCity.name)}`}
-                    className="w-full py-2.5 bg-[#00F5B0] hover:bg-[#00D98F] text-[#02060A] text-xs font-semibold rounded text-center transition-all duration-300 no-underline cursor-pointer tracking-wider uppercase font-mono shadow-[0_0_15px_rgba(0,245,176,0.2)] hover:shadow-[0_0_20px_rgba(0,245,176,0.4)]"
-                  >
-                    Open Full Briefing →
-                  </Link>
-                  <button
-                    onClick={handleClearSelection}
-                    className="w-full py-2 bg-transparent hover:bg-white/5 border border-white/10 hover:border-white/20 text-[#7A8694] hover:text-white text-xs rounded transition-all duration-300 cursor-pointer font-mono uppercase tracking-wider"
-                  >
-                    Close Briefing
-                  </button>
-                  <Link
-                    href="/"
-                    className="w-full py-2 border border-[#00F5B0]/30 hover:border-[#00F5B0]/60 text-[#00F5B0] hover:text-[#00F5B0]/80 text-xs rounded transition-all duration-300 cursor-pointer font-mono uppercase tracking-wider text-center no-underline"
-                  >
-                    ← Return to Orbit
-                  </Link>
-                </div>
-              </div>
-            );
-          })()
-        ) : activeCountry ? (
-          // COUNTRY DOSSIER
-          (() => {
-            const countryProfile = generateCountryProjections(activeCountry, activeYear, activeSimulations);
-            return (
-              <div className="flex flex-col gap-5">
-                <div className="border-b border-[#00F5B0]/15 pb-3">
-                  <span className="text-[10px] font-mono text-[#00F5B0] uppercase tracking-widest font-semibold">Country Dossier</span>
-                  <h2 className="text-lg font-light text-white m-0 mt-0.5 tracking-wide">{countryProfile.name}</h2>
-                  <span className="text-[10px] text-[#7A8694] font-mono uppercase tracking-wider">Timeline {activeYear}</span>
-                </div>
-
-                <div className="flex flex-col gap-2 bg-black/30 border border-white/5 rounded-lg p-3">
-                  <div className="flex justify-between items-center text-[10px] font-mono text-[#7A8694]">
-                    <span>Macro Growth Forecast</span>
-                    <span className="text-white">Active</span>
-                  </div>
-                  {generateSparkline(countryProfile.stats.gdp, 1.03)}
-                </div>
-
-                <div className="flex flex-col gap-4 bg-black/20 border border-white/5 rounded-lg p-4">
-                  <div className="flex justify-between items-center border-b border-white/5 pb-2">
-                    <span className="text-[10px] text-[#7A8694] font-mono uppercase tracking-wider">Population</span>
-                    <span className="text-xs font-medium text-white">{countryProfile.stats.population.toFixed(2)}B</span>
-                  </div>
-                  <div className="flex justify-between items-center border-b border-white/5 pb-2">
-                    <span className="text-[10px] text-[#7A8694] font-mono uppercase tracking-wider">GDP (Trillion)</span>
-                    <span className="text-xs font-medium text-white">${countryProfile.stats.gdp.toFixed(1)}T</span>
-                  </div>
-                  <ProgressBar value={countryProfile.scores.aiReadiness} label="AI Readiness" />
-                  <ProgressBar value={countryProfile.scores.climateRisk} label="Climate Risk" isRisk={true} />
-                </div>
-
-                <div className="flex flex-col gap-2 bg-black/10 border border-white/5 rounded-lg p-3">
-                  <span className="text-[9px] text-[#7A8694] uppercase tracking-wider font-mono">Future Core Industries</span>
-                  <div className="flex flex-wrap gap-1.5 mt-0.5">
-                    {countryProfile.industries.map((ind, idx) => (
-                      <span key={idx} className="text-[9px] bg-white/5 border border-white/10 text-white/85 rounded px-2 py-0.5 font-mono">
-                        {ind}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Future Community Live Feed */}
-                <div className="flex flex-col gap-3 bg-black/35 border border-[#00F5B0]/20 rounded-lg p-3">
-                  <div className="flex justify-between items-center border-b border-[#00F5B0]/15 pb-1.5">
-                    <span className="text-[10px] text-[#00F5B0] font-mono uppercase tracking-wider font-bold">Future Community</span>
-                    <span className="text-[9px] text-emerald-400 font-mono flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                      {Math.floor(((countryProfile.stats.population * 17) % 5) + 5)} Online
-                    </span>
-                  </div>
-
-                  {/* Micro message stream */}
-                  <div className="flex flex-col gap-2 max-h-[110px] overflow-y-auto custom-scrollbar">
-                    {((countryChatMessages[activeCountry] || [
-                      { author: 'Gita_Citizen', text: 'Monitoring developmental coefficients for this region...', time: '09:00' },
-                      { author: 'Pooja_Predictor', text: 'Planetary stabilization forecast index stable.', time: '09:12' }
-                    ])).map((msg, idx) => (
-                      <div key={idx} className="flex flex-col gap-0.5 text-[10px] border-l border-white/5 pl-2">
-                        <div className="flex justify-between font-mono text-[8px] text-[#94A3B8]">
-                          <span className="font-bold">{msg.author}</span>
-                          <span>{msg.time}</span>
-                        </div>
-                        <p className="text-white/85 leading-normal m-0 font-light text-[10px]">{msg.text}</p>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Submission form */}
-                  <form 
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      if (!newDossierMsg.trim()) return;
-                      const newMsg = {
-                        author: 'You_Citizen',
-                        text: newDossierMsg,
-                        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                      };
-                      setCountryChatMessages(prev => ({
-                        ...prev,
-                        [activeCountry]: [...(prev[activeCountry] || []), newMsg]
-                      }));
-                      setNewDossierMsg('');
-                    }}
-                    className="flex border border-white/10 rounded overflow-hidden"
-                  >
-                    <input
-                      type="text"
-                      placeholder="Comment on future..."
-                      value={newDossierMsg}
-                      onChange={(e) => setNewDossierMsg(e.target.value)}
-                      className="flex-1 bg-black/40 border-none outline-none text-[10px] text-white px-2 py-1 font-mono placeholder-white/20"
-                    />
-                    <button type="submit" className="px-2 bg-[#00F5B0]/10 border-l border-white/10 text-[#00F5B0] text-[9px] font-mono hover:bg-[#00F5B0] hover:text-black transition-colors font-bold uppercase cursor-pointer">
-                      Send
-                    </button>
-                  </form>
-                </div>
-
-                <div className="flex flex-col gap-2.5 mt-auto">
-                  <Link
-                    href={`/futurechat?room=${activeCountry}`}
-                    className="w-full py-2.5 bg-[#00F5B0] hover:bg-[#00D98F] text-[#02060A] text-xs font-semibold rounded text-center transition-all duration-300 cursor-pointer tracking-wider uppercase font-mono shadow-[0_0_15px_rgba(0,245,176,0.2)] no-underline"
-                  >
-                    ⚡ Join Live Debate Stage
-                  </Link>
-                  <button
-                    onClick={() => setSelectedDossier('layer-geopolitical')}
-                    className="w-full py-2 bg-transparent hover:bg-white/5 border border-white/10 hover:border-white/20 text-[#7A8694] hover:text-white text-xs rounded transition-all duration-300 cursor-pointer font-mono uppercase tracking-wider"
-                  >
-                    Open Full Briefing →
-                  </button>
-                  <button
-                    onClick={handleClearSelection}
-                    className="w-full py-2 bg-transparent hover:bg-white/5 border border-white/10 hover:border-white/20 text-[#7A8694] hover:text-white text-xs rounded transition-all duration-300 cursor-pointer font-mono uppercase tracking-wider"
-                  >
-                    Close Briefing
-                  </button>
-                  <Link
-                    href="/"
-                    className="w-full py-2 border border-[#00F5B0]/30 hover:border-[#00F5B0]/60 text-[#00F5B0] hover:text-[#00F5B0]/80 text-xs rounded transition-all duration-300 cursor-pointer font-mono uppercase tracking-wider text-center no-underline"
-                  >
-                    ← Return to Orbit
-                  </Link>
-                </div>
-              </div>
-            );
-          })()
-        ) : activePrediction ? (
-          // EVENT/PREDICTION DOSSIER
-          (scalePrediction => {
-            return (
-              <div className="flex flex-col gap-5">
-                <div className="border-b border-[#00F5B0]/15 pb-3">
-                  <span className="text-[10px] font-mono text-[#00F5B0] uppercase tracking-widest font-semibold">Event Dossier</span>
-                  <h2 className="text-lg font-light text-white m-0 mt-0.5 tracking-wide">{activePrediction.title}</h2>
-                  <span className="text-[10px] text-[#7A8694] font-mono uppercase tracking-wider">{activePrediction.category} • {activePrediction.city}</span>
-                </div>
-
-                <div className="flex flex-col gap-3 bg-black/20 border border-white/5 rounded-lg p-4">
-                  <p className="text-xs text-[#A8B3BC] leading-relaxed font-light m-0">{activePrediction.description}</p>
-                  <ProgressBar value={activePrediction.confidenceScore} label="Confidence Score" />
-                </div>
-
-                <div className="flex flex-col gap-2 bg-black/10 border border-white/5 rounded-lg p-3">
-                  <span className="text-[9px] text-[#7A8694] uppercase tracking-wider font-mono">Futurologist Vector</span>
-                  <div className="flex justify-between items-center text-xs font-mono text-white/90 mt-1">
-                    <span>{activePrediction.author}</span>
-                    <span className="text-[#00F5B0]">{activePrediction.votes} Votes</span>
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-2 bg-black/10 border border-white/5 rounded-lg p-3">
-                  <span className="text-[9px] text-[#7A8694] uppercase tracking-wider font-mono">Comments & Signals</span>
-                  <div className="max-h-[140px] overflow-y-auto pr-1 custom-scrollbar flex flex-col gap-2 mt-1">
-                    {activePrediction.comments && activePrediction.comments.map((comment: any) => (
-                      <div key={comment.id} className="text-[10px] bg-white/5 p-2 rounded border border-white/5">
-                        <div className="flex justify-between text-[#7A8694] mb-1 font-mono">
-                          <span>@{comment.author}</span>
-                          <span>{comment.votes} pts</span>
-                        </div>
-                        <p className="text-white/80 m-0 font-light leading-normal">{comment.content}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-2.5 mt-auto">
-                  <Link
-                    href={`/predictions/${activePrediction.slug}`}
-                    className="w-full py-2.5 bg-[#00F5B0] hover:bg-[#00D98F] text-[#02060A] text-xs font-semibold rounded text-center transition-all duration-300 no-underline cursor-pointer tracking-wider uppercase font-mono shadow-[0_0_15px_rgba(0,245,176,0.2)]"
-                  >
-                    Open Deep Analysis →
-                  </Link>
-                  <button
-                    onClick={handleClearSelection}
-                    className="w-full py-2 bg-transparent hover:bg-white/5 border border-white/10 hover:border-white/20 text-[#7A8694] hover:text-white text-xs rounded transition-all duration-300 cursor-pointer font-mono uppercase tracking-wider"
-                  >
-                    Close Briefing
-                  </button>
-                  <Link
-                    href="/"
-                    className="w-full py-2 border border-[#00F5B0]/30 hover:border-[#00F5B0]/60 text-[#00F5B0] hover:text-[#00F5B0]/80 text-xs rounded transition-all duration-300 cursor-pointer font-mono uppercase tracking-wider text-center no-underline"
-                  >
-                    ← Return to Orbit
-                  </Link>
-                </div>
-              </div>
-            );
-          })()
-        ) : activeEarthquake ? (
-          // EARTHQUAKE DOSSIER
-          (() => {
-            return (
-              <div className="flex flex-col gap-5">
-                <div className="border-b border-rose-500/15 pb-3">
-                  <span className="text-[10px] font-mono text-rose-400 uppercase tracking-widest font-semibold">Seismic Event Dossier</span>
-                  <h2 className="text-lg font-light text-white m-0 mt-0.5 tracking-wide">{activeEarthquake.place}</h2>
-                  <span className="text-[10px] text-[#7A8694] font-mono uppercase tracking-wider">USGS Network</span>
-                </div>
-
-                <div className="flex flex-col gap-4 bg-black/20 border border-white/5 rounded-lg p-4">
-                  <div className="flex justify-between items-center border-b border-white/5 pb-2">
-                    <span className="text-[10px] text-[#7A8694] font-mono uppercase tracking-wider">Magnitude</span>
-                    <span className="text-sm font-bold text-rose-400 font-mono">{activeEarthquake.magnitude.toFixed(1)} M</span>
-                  </div>
-                  <div className="flex justify-between items-center border-b border-white/5 pb-2">
-                    <span className="text-[10px] text-[#7A8694] font-mono uppercase tracking-wider">Depth</span>
-                    <span className="text-xs font-medium text-white">{activeEarthquake.depth?.toFixed(1) || '0.0'} km</span>
-                  </div>
-                  <div className="flex justify-between items-center border-b border-white/5 pb-2">
-                    <span className="text-[10px] text-[#7A8694] font-mono uppercase tracking-wider">Timestamp</span>
-                    <span className="text-xs font-medium text-white">{new Date(activeEarthquake.ts).toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-[10px] text-[#7A8694] font-mono uppercase tracking-wider">Status</span>
-                    <span className="text-[10px] text-emerald-400 font-mono uppercase">Telemetry Verified</span>
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-2 bg-black/10 border border-white/5 rounded-lg p-3 font-mono text-xs">
-                  <span className="text-[9px] text-[#7A8694] uppercase tracking-wider block">Geographic Vector</span>
-                  <span className="text-white/90 font-mono">
-                    Lat: {activeEarthquake.latitude.toFixed(4)}° N
-                  </span>
-                  <span className="text-white/90 font-mono">
-                    Lon: {activeEarthquake.longitude.toFixed(4)}° E
-                  </span>
-                </div>
-
-                <div className="flex flex-col gap-2.5 mt-auto">
-                  <Link
-                    href="/earthquakes"
-                    className="w-full py-2.5 bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold rounded text-center transition-all duration-300 no-underline cursor-pointer tracking-wider uppercase font-mono shadow-[0_0_15px_rgba(239,68,68,0.2)]"
-                  >
-                    Open Live Seismic Core →
-                  </Link>
-                  <button
-                    onClick={handleClearSelection}
-                    className="w-full py-2 bg-transparent hover:bg-white/5 border border-white/10 hover:border-white/20 text-[#7A8694] hover:text-white text-xs rounded transition-all duration-300 cursor-pointer font-mono uppercase tracking-wider"
-                  >
-                    Close Briefing
-                  </button>
-                </div>
-              </div>
-            );
-          })()
-        ) : (
-          // PLANET EARTH (DEFAULT GLOBAL BRIEFING)
-          (() => {
-            let baseTemp = 1.4 + ((activeYear - 2025) / 25) * 1.0;
-            if (activeSimulations.fusionBreakthrough) baseTemp -= 0.4;
-            else if (activeSimulations.renewableTransition) baseTemp -= 0.2;
-
-            let baseSeaLevel = 0.1 + ((activeYear - 2025) / 25) * 0.4;
-            if (activeSimulations.seaLevelRise > 0) {
-              baseSeaLevel = activeSimulations.seaLevelRise;
-            }
-
-            let basePop = 8.0 + ((activeYear - 2025) / 25) * 1.7;
-            if (activeSimulations.popDecline) {
-              basePop *= 0.88;
-            }
-
-            let baseGdp = 105.0 + ((activeYear - 2025) / 25) * 65.0;
-            if (activeSimulations.semiDisruptions) baseGdp -= 10.0;
-
-            const aiReadiness = activeSimulations.agiEmergence ? 92 : (activeYear === 2030 ? 62 : (activeYear === 2040 ? 76 : 85));
-            const climateRisk = activeSimulations.seaLevelRise > 0 ? 82 : (activeSimulations.fusionBreakthrough ? 35 : 55);
-
-            return (
-              <div className="flex flex-col gap-5">
-                <div className="border-b border-[#00F5B0]/15 pb-3">
-                  <span className="text-[10px] font-mono text-[#00F5B0] uppercase tracking-widest font-semibold">Planetary Dossier</span>
-                  <h2 className="text-lg font-light text-white m-0 mt-0.5 tracking-wide">Planet Earth</h2>
-                  <span className="text-[10px] text-[#7A8694] font-mono uppercase tracking-wider">Simulation Timeline {activeYear}</span>
-                </div>
-
-                <div className="flex flex-col gap-2 bg-black/30 border border-white/5 rounded-lg p-3">
-                  <div className="flex justify-between items-center text-[10px] font-mono text-[#7A8694]">
-                    <span>Global GDP Projection</span>
-                    <span className="text-[#00F5B0] font-semibold">${baseGdp.toFixed(0)}T</span>
-                  </div>
-                  {generateSparkline(baseGdp, 1.04)}
-                </div>
-
-                <div className="flex flex-col gap-4 bg-black/20 border border-white/5 rounded-lg p-4">
-                  <div className="flex justify-between items-center border-b border-white/5 pb-2">
-                    <span className="text-[10px] text-[#7A8694] font-mono uppercase tracking-wider">Population</span>
-                    <span className="text-xs font-medium text-white">{basePop.toFixed(1)}B</span>
-                  </div>
-                  <div className="flex justify-between items-center border-b border-white/5 pb-2">
-                    <span className="text-[10px] text-[#7A8694] font-mono uppercase tracking-wider">Sea Level Rise</span>
-                    <span className="text-xs font-medium text-white">+{baseSeaLevel.toFixed(2)}m</span>
-                  </div>
-                  <ProgressBar value={aiReadiness} label="AI Readiness" />
-                  <ProgressBar value={climateRisk} label="Climate Risk" isRisk={true} />
-                </div>
-
-                {/* SEMICONDUCTOR INTELLIGENCE SECTION */}
-                <div className="flex flex-col gap-3 bg-gradient-to-br from-indigo-950/40 to-slate-900/40 border border-indigo-500/20 rounded-lg p-4 relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 blur-3xl rounded-full pointer-events-none" />
-                  <div className="flex justify-between items-center border-b border-indigo-500/20 pb-2">
-                    <div className="flex flex-col">
-                      <span className="text-[9px] font-mono text-[#00F5B0] uppercase tracking-widest font-semibold">Flagship Intel</span>
-                      <h3 className="text-xs font-bold text-white tracking-wide uppercase font-mono m-0">Semiconductor Intelligence</h3>
-                    </div>
-                    <span className="text-[8px] font-mono bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 px-1.5 py-0.5 rounded shadow-[0_0_8px_rgba(99,102,241,0.2)]">
-                      Silicon Analysts API
-                    </span>
-                  </div>
-
-                  {semiError ? (
-                    <div className="py-4 text-center text-xs font-mono text-rose-400/80 bg-rose-500/5 border border-rose-500/10 rounded">
-                      ⚠️ {semiError}
-                    </div>
-                  ) : semiLoading ? (
-                    <div className="py-6 text-center text-[10px] font-mono text-indigo-300 animate-pulse">
-                      FETCHING SEMICONDUCTOR TELEMETRY...
-                    </div>
-                  ) : (
-                    <div className="flex flex-col gap-3">
-                      {/* Interactive metrics cards */}
-                      <div className="grid grid-cols-2 gap-2">
-                        {/* HBM Market Pulse */}
-                        <div className="bg-black/35 border border-white/5 rounded p-2 flex flex-col gap-1">
-                          <span className="text-[8px] font-mono text-white/40 uppercase">HBM Market Stack</span>
-                          <span className="text-xs font-mono font-bold text-white">
-                            {semiData?.hbm?.stacks || 8} Hi / ${semiData?.hbm?.costPerStackUsd || 1500}
-                          </span>
-                          <div className="flex justify-between items-center text-[8px] font-mono">
-                            <span className="text-[#00F5B0]">▲ {semiData?.hbm?.trend || 'Stable'}</span>
-                            <span className="text-white/30">HBM</span>
-                          </div>
-                        </div>
-
-                        {/* CoWoS Capacity */}
-                        <div className="bg-black/35 border border-white/5 rounded p-2 flex flex-col gap-1">
-                          <span className="text-[8px] font-mono text-white/40 uppercase">CoWoS Capacity</span>
-                          <span className="text-xs font-mono font-bold text-white">
-                            {semiData?.cowosCapacity?.currentWspm ? `${(semiData.cowosCapacity.currentWspm/1000).toFixed(0)}k WSPM` : '45k WSPM'}
-                          </span>
-                          <div className="flex justify-between items-center text-[8px] font-mono">
-                            <span className="text-indigo-400">Target {semiData?.cowosCapacity?.targetWspm ? `${(semiData.cowosCapacity.targetWspm/1000).toFixed(0)}k` : '80k'}</span>
-                            <span className="text-white/30">{semiData?.cowosCapacity?.utilizationPercent || 98}% Util</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Wafer pricing mini list */}
-                      <div className="bg-black/40 border border-white/5 rounded p-2.5 flex flex-col gap-1.5">
-                        <span className="text-[8px] font-mono text-white/40 uppercase tracking-wider">Foundry Wafer Node Prices</span>
-                        <div className="flex flex-col gap-1">
-                          {(semiData?.waferPricing || []).slice(0, 3).map((w, idx) => (
-                            <div key={idx} className="flex justify-between items-center text-[10px] font-mono border-b border-white/5 pb-1 last:border-0 last:pb-0">
-                              <span className="text-white/80">{w.nodeName}</span>
-                              <span className="text-[#00F5B0] font-semibold">${w.averagePriceUsd.toLocaleString()}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* AI Accelerator Pricing info */}
-                      <div className="bg-black/40 border border-white/5 rounded p-2.5 flex flex-col gap-1.5">
-                        <span className="text-[8px] font-mono text-white/40 uppercase tracking-wider">AI Accelerator Margin Yields</span>
-                        <div className="flex flex-col gap-1">
-                          {(semiData?.accelerators || []).slice(0, 2).map((a, idx) => (
-                            <div key={idx} className="flex justify-between items-center text-[10px] font-mono border-b border-white/5 pb-1 last:border-0 last:pb-0">
-                              <span className="text-white/80 truncate max-w-[120px]">{a.acceleratorName} ({a.vendor})</span>
-                              <span className="text-indigo-300 font-semibold">{a.grossMarginPercent}% Margin</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Last updated and packaging trend info */}
-                      <div className="flex justify-between items-center text-[8px] font-mono text-white/30 border-t border-white/5 pt-2">
-                        <span>Last Updated: {semiData?.lastUpdated ? new Date(semiData.lastUpdated).toLocaleTimeString() : 'Pending Sync'}</span>
-                        <span className="text-[#00F5B0] uppercase">Live Feeds Active</span>
-                      </div>
+          <span className="text-[10px] font-mono text-[#7A8694] uppercase tracking-[0.2em] font-semibold">Timeline</span>
+          <div className="flex items-center">
+            {([2030, 2040, 2050] as const).map((year, index) => {
+              const isActive = activeYear === year;
+              return (
+                <div key={year} className="flex items-center">
+                  {index > 0 && (
+                    <div className={`${isMobile ? 'w-8' : 'w-16'} h-[1px] bg-white/10 mx-2 relative`}>
+                      <div 
+                        className="absolute inset-0 bg-[#00F5B0] transition-all duration-500"
+                        style={{
+                          opacity: activeYear >= year ? 0.35 : 0,
+                          boxShadow: activeYear >= year ? '0 0 4px #00F5B0' : 'none'
+                        }}
+                      />
                     </div>
                   )}
-                </div>
-
-                <div className="flex flex-col gap-2 mt-2 border-t border-white/5 pt-3">
-                  <span className="text-[10px] text-[#7A8694] font-mono uppercase tracking-wider">
-                    Explore Country Profiles
-                  </span>
-                  <div className="grid grid-cols-4 gap-1.5">
-                    {[
-                      { code: 'USA', name: '🇺🇸 US' },
-                      { code: 'IND', name: '🇮🇳 IN' },
-                      { code: 'CHN', name: '🇨🇳 CN' },
-                      { code: 'JPN', name: '🇯🇵 JP' },
-                    ].map((c) => (
-                      <button
-                        key={c.code}
-                        onClick={() => handleSelectCountry(c.code)}
-                        className="py-1 px-1 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#00F5B0]/30 rounded text-center text-[10px] text-white/90 hover:text-white transition-all cursor-pointer font-mono truncate"
-                      >
-                        {c.name}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Unified Intelligence Feed */}
-                <div className="flex flex-col gap-2.5 mt-3 border-t border-white/5 pt-3">
-                  <span className="text-[10px] text-[#7A8694] font-mono uppercase tracking-wider">
-                    Unified Intelligence Feed
-                  </span>
-
-                  {/* Category Filter Buttons */}
-                  <div className="flex flex-wrap gap-1 mt-0.5 mb-1.5">
-                    {['All', 'Semiconductor', 'Climate', 'Markets', 'Seismic', 'Space', 'Predictions'].map((f) => {
-                      const isActive = feedFilter === f;
-                      return (
-                        <button
-                           key={f}
-                           onClick={() => setFeedFilter(f)}
-                           className={`px-1.5 py-0.5 rounded text-[8px] font-mono border transition-all cursor-pointer ${
-                            isActive
-                              ? 'bg-[#00F5B0]/15 text-[#00F5B0] border-[#00F5B0]/30'
-                              : 'bg-transparent text-white/40 border-white/5 hover:border-white/20 hover:text-white/80'
-                          }`}
-                        >
-                          {f}
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  <div className="flex flex-col gap-2 max-h-[380px] overflow-y-auto pr-1 custom-scrollbar">
-                    {unifiedFeed
-                      .filter(item => {
-                        if (feedFilter === 'All') return true;
-                        if (feedFilter === 'Semiconductor') return item.category === 'SEMICONDUCTOR';
-                        if (feedFilter === 'Climate') return item.category === 'CLIMATE';
-                        if (feedFilter === 'Markets') return item.category === 'MARKETS';
-                        if (feedFilter === 'Seismic') return item.category === 'SEISMIC';
-                        if (feedFilter === 'Space') return item.category === 'SPACE';
-                        if (feedFilter === 'Predictions') return item.category === 'PREDICTIONS';
-                        return true;
-                      })
-                      .slice(0, 30)
-                      .map((item, idx) => {
-                        const badgeColors: Record<string, string> = {
-                          NEWS: '#00E5FF',
-                          SEMICONDUCTOR: '#D4AF37', // metallic gold or bright purple
-                          CLIMATE: '#FF0055',
-                          SEISMIC: '#EF4444',
-                          MARKETS: '#00F5B0',
-                          SPACE: '#BF5AF2',
-                          PREDICTIONS: '#FF9500'
-                        };
-                        const color = badgeColors[item.category] || '#00F5B0';
-                        const severityColors: Record<string, string> = {
-                          Critical: 'text-red-500 font-bold',
-                          High: 'text-orange-400 font-semibold',
-                          Medium: 'text-yellow-400',
-                          Low: 'text-emerald-400'
-                        };
-                        const severityClass = severityColors[item.severity] || 'text-white/60';
-                        return (
-                          <div
-                            key={idx}
-                            onClick={item.onClick}
-                            className="p-2.5 bg-black/45 hover:bg-white/5 border border-white/5 hover:border-white/20 rounded-xl transition-all text-left cursor-pointer flex flex-row gap-3 items-center group relative overflow-hidden"
-                          >
-                            {item.image && (
-                              <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 border border-white/10 group-hover:border-[#00F5B0]/30 transition-all duration-300">
-                                <Image
-                                  src={item.image}
-                                  alt={item.title}
-                                  fill
-                                  sizes="48px"
-                                  className="object-cover group-hover:scale-105 transition-transform duration-300"
-                                  loading="lazy"
-                                />
-                                <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-all duration-300" />
-                              </div>
-                            )}
-                            <div className="flex-1 flex flex-col gap-1 min-w-0">
-                              <div className="flex justify-between items-center text-[8px] font-mono">
-                                <span className="px-1.5 py-0.5 rounded font-bold uppercase" style={{ backgroundColor: `${color}15`, color }}>
-                                  {item.category}
-                                </span>
-                                <span className="text-white/40 truncate max-w-[120px]">{item.source} • {item.timestamp}</span>
-                              </div>
-                              
-                              <div className="flex flex-col gap-0.5">
-                                <h4 className="text-[11px] font-semibold text-white/95 group-hover:text-[#00F5B0] transition-colors leading-snug m-0 truncate">
-                                  {item.title}
-                                </h4>
-                                <p className="text-[9px] text-white/50 leading-relaxed m-0 font-light line-clamp-1">
-                                  {item.description}
-                                </p>
-                              </div>
-
-                              <div className="flex justify-between items-center text-[8px] font-mono border-t border-white/5 pt-1 mt-0.5">
-                                <span>
-                                  Severity: <span className={severityClass}>{item.severity}</span>
-                                </span>
-                                <span className="text-[#00F5B0] group-hover:underline uppercase tracking-wider font-semibold">
-                                  Open Details →
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-2 mt-auto pt-4 border-t border-white/5">
-                  <Link
-                    href="/"
-                    className="w-full py-2.5 border border-[#00F5B0]/30 hover:border-[#00F5B0]/60 text-[#00F5B0] hover:text-[#00F5B0]/80 text-xs rounded transition-all duration-300 cursor-pointer font-mono uppercase tracking-wider text-center no-underline"
+                  <button
+                    onClick={() => setActiveYear(year)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      fontSize: isMobile ? '10px' : '12px',
+                      fontWeight: isActive ? 600 : 300,
+                      color: isActive ? '#00F5B0' : 'rgba(255, 255, 255, 0.45)',
+                      transition: 'all 0.3s ease',
+                      textShadow: isActive ? '0 0 10px rgba(0,245,176,0.6)' : 'none',
+                      fontFamily: 'monospace'
+                    }}
+                    className={`hover:text-white flex flex-col items-center gap-1 ${isActive ? 'timeline-dot-pulse font-bold' : ''}`}
                   >
-                    ← Return to Orbit
-                  </Link>
+                    <span>{year}</span>
+                  </button>
                 </div>
-              </div>
-            );
-          })()
-        )}
-      </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Floating Layers Panel Trigger for Mobile */}
+      {isMobile && dashboardMode === 'map' && (
+        <button
+          onClick={() => setIsLeftPanelCollapsed(!isLeftPanelCollapsed)}
+          className="fixed bottom-10 left-4 z-50 p-3 rounded-full bg-[#02060A]/85 border border-[#00F5B0]/30 text-[#00F5B0] shadow-[0_0_15px_rgba(0,245,176,0.2)] backdrop-blur-xl flex items-center justify-center cursor-pointer hover:scale-105 transition-transform"
+          style={{ width: '44px', height: '44px' }}
+          title="Toggle Layers"
+        >
+          🗺️
+        </button>
+      )}
 
       {/* City Return Overlay */}
-      {(activeCity || activeCountry || activePrediction) && (
+      {dashboardMode === 'map' && (activeCity || activeCountry || activePrediction) && (
         <button
           onClick={handleClearSelection}
           style={{
@@ -1528,7 +1056,7 @@ function DashboardContent() {
       )}
 
       {/* City Preview Card Modal */}
-      {activeCity && (
+      {dashboardMode === 'map' && activeCity && (
         <CityPreviewCard 
           city={activeCity}
           activeYear={activeYear}
@@ -1538,7 +1066,7 @@ function DashboardContent() {
       )}
 
       {/* Interactive Dossier modal */}
-      {selectedDossier && (
+      {dashboardMode === 'map' && selectedDossier && (
         (() => {
           const card = getKnowledgeCard(selectedDossier);
           return (
@@ -1620,8 +1148,11 @@ function DashboardContent() {
 export default function DashboardPage() {
   return (
     <Suspense fallback={
-      <div className="h-screen w-screen bg-[#02060A] flex items-center justify-center font-mono text-[#00F5B0] text-xs">
-        CONNECTING TO ORBITAL ANALYTICS...
+      <div className="h-screen w-screen bg-[#02060A] flex flex-col items-center justify-center font-mono text-[11px] text-white/50 tracking-[0.35em] uppercase">
+        <div className="flex items-center gap-2.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-white/40 animate-pulse" />
+          <span>EXPLORING NEW WAYS...</span>
+        </div>
       </div>
     }>
       <DashboardContent />

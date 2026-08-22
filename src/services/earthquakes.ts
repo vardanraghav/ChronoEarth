@@ -20,7 +20,7 @@ export async function fetchRecentEarthquakes(minMagnitude = 4.5): Promise<DBEart
         usgs_id: feat.id,
         magnitude: props.mag ?? 0.0,
         place: props.place || 'Unknown Location',
-        time: new Date(props.time).toISOString(),
+        time: String(props.time || Date.now()),
         lon: coords[0],
         lat: coords[1],
         depth: coords[2] ?? null
@@ -29,23 +29,11 @@ export async function fetchRecentEarthquakes(minMagnitude = 4.5): Promise<DBEart
 
     if (earthquakes.length === 0) return [];
 
-    // Batch upsert to database on conflict of usgs_id
-    const { data: inserted, error: insertErr } = await supabase
-      .from('earthquakes')
-      .upsert(earthquakes, { onConflict: 'usgs_id' })
-      .select();
-
-    if (insertErr) {
-      console.error('Error inserting earthquakes into Supabase:', insertErr.message);
-      // Return temporary client-side mock if db fails
-      return earthquakes.map((eq, i) => ({
-        ...eq,
-        id: 'temp-' + i,
-        created_at: new Date().toISOString()
-      })) as DBEarthquake[];
-    }
-
-    return (inserted || []) as DBEarthquake[];
+    return earthquakes.map((eq, i) => ({
+      ...eq,
+      id: 'eq-' + i,
+      created_at: new Date().toISOString()
+    })) as DBEarthquake[];
   } catch (err) {
     console.error('Exception in fetchRecentEarthquakes:', err);
     return [];

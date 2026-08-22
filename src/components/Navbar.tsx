@@ -18,8 +18,40 @@ export default function Navbar({ setActiveCity }: NavbarProps) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [hubsDropdownOpen, setHubsDropdownOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  // Resize listener
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Listen for product tour sensors events
+  useEffect(() => {
+    const handleOpen = () => {
+      if (window.innerWidth < 768) {
+        setMobileMenuOpen(true);
+      } else {
+        setHubsDropdownOpen(true);
+      }
+    };
+    const handleClose = () => {
+      setMobileMenuOpen(false);
+      setHubsDropdownOpen(false);
+    };
+
+    window.addEventListener('chronoearth-tour-sensors-open', handleOpen);
+    window.addEventListener('chronoearth-tour-sensors-close', handleClose);
+    return () => {
+      window.removeEventListener('chronoearth-tour-sensors-open', handleOpen);
+      window.removeEventListener('chronoearth-tour-sensors-close', handleClose);
+    };
+  }, []);
 
   // Ctrl+K Global key binding
   useEffect(() => {
@@ -61,8 +93,7 @@ export default function Navbar({ setActiveCity }: NavbarProps) {
   }, []);
 
   const primaryLinks = [
-    { href: '/', label: 'Map', icon: '🌍', activePattern: /^\/$/ },
-    { href: '/dashboard', label: 'Dashboard', icon: '📊', activePattern: /^\/dashboard/ },
+    { href: '/', label: 'Map', icon: '🌍', activePattern: /^\/($|dashboard)/ },
     { href: '/feed', label: 'Intel Feed', icon: '📰', activePattern: /^\/feed/ },
     { href: '/semiconductor', label: 'Semiconductor', icon: '💾', activePattern: /^\/semiconductor/ },
     { href: '/knowledge', label: 'Knowledge', icon: '📚', activePattern: /^\/knowledge/ },
@@ -84,9 +115,11 @@ export default function Navbar({ setActiveCity }: NavbarProps) {
   return (
     <>
       <nav
-        className="fixed top-4 left-6 right-6 z-50 flex items-center justify-between transition-all duration-300 premium-glass"
+        className={`fixed z-50 flex items-center justify-between transition-all duration-300 premium-glass ${
+          isMobile ? 'top-2 left-2 right-2' : 'top-4 left-6 right-6'
+        }`}
         style={{
-          padding: '12px 30px',
+          padding: isMobile ? '8px 16px' : '12px 30px',
           border: '1px solid rgba(0, 229, 255, 0.15)',
           boxShadow: '0 8px 32px 0 rgba(0, 6, 12, 0.5), inset 0 0 12px rgba(0, 229, 255, 0.05)',
         }}
@@ -152,6 +185,7 @@ export default function Navbar({ setActiveCity }: NavbarProps) {
             {/* Dropdown Menu */}
             {hubsDropdownOpen && (
               <div 
+                id="sensors-dropdown"
                 className="absolute top-8 right-0 w-64 p-3 flex flex-col gap-2 rounded-lg premium-glass border"
                 style={{
                   backgroundColor: 'rgba(2, 6, 12, 0.95)',
@@ -168,6 +202,7 @@ export default function Navbar({ setActiveCity }: NavbarProps) {
                     <Link
                       key={link.href}
                       href={link.href}
+                      id={link.label === 'Sources & Credits' ? 'sensor-sources' : link.label === 'Comms Uplink' ? 'sensor-feedback' : undefined}
                       className="group flex items-start gap-2.5 p-2 rounded no-underline transition-all hover:bg-white/5"
                       onClick={() => setHubsDropdownOpen(false)}
                     >
@@ -192,6 +227,7 @@ export default function Navbar({ setActiveCity }: NavbarProps) {
 
           {/* Search Trigger */}
           <button
+            id="nav-search"
             onClick={() => setSearchOpen(true)}
             className="group flex items-center gap-1.5 py-1 px-2.5 bg-white/5 hover:bg-[#00E5FF]/10 rounded border border-[#00E5FF]/20 cursor-pointer text-xs tracking-wider uppercase font-mono transition-all text-white/70 hover:text-whitemr-2"
             title="Search database (Ctrl+K)"
@@ -205,6 +241,7 @@ export default function Navbar({ setActiveCity }: NavbarProps) {
 
           {/* Settings Link */}
           <Link
+            id="nav-settings"
             href="/settings"
             className="group flex items-center gap-1.5 py-1 px-2.5 bg-white/5 hover:bg-[#00E5FF]/10 rounded border border-[#00E5FF]/20 cursor-pointer text-xs tracking-wider uppercase font-mono transition-all text-white/70 hover:text-white"
             title="System Settings"
@@ -226,6 +263,7 @@ export default function Navbar({ setActiveCity }: NavbarProps) {
 
           {/* Mobile menu trigger */}
           <button
+            id="mobile-menu-trigger"
             className="flex flex-col gap-1.5 cursor-pointer bg-transparent border-none p-2 relative z-[100001]"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
@@ -321,7 +359,7 @@ export default function Navbar({ setActiveCity }: NavbarProps) {
             </div>
 
             {/* Real-time Telemetry Section */}
-            <div className="flex flex-col gap-2">
+            <div id="mobile-sensors-section" className="flex flex-col gap-2">
               <div className="text-[10px] text-[#BF5AF2] font-bold tracking-widest border-l-2 border-[#BF5AF2] pl-2 mb-1">
                 SENSORS & COGNITIVE CHANNELS
               </div>
@@ -332,6 +370,7 @@ export default function Navbar({ setActiveCity }: NavbarProps) {
                     <Link
                       key={link.href}
                       href={link.href}
+                      id={link.label === 'Sources & Credits' ? 'mobile-sensor-sources' : link.label === 'Comms Uplink' ? 'mobile-sensor-feedback' : undefined}
                       className="flex flex-col gap-0.5 p-3 rounded-lg border transition-all duration-300 no-underline"
                       style={{
                         backgroundColor: isActive ? 'rgba(191, 90, 242, 0.05)' : 'rgba(255, 255, 255, 0.02)',
