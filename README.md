@@ -1,138 +1,125 @@
 # ChronoEarth
 
-[![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![CesiumJS](https://img.shields.io/badge/CesiumJS-00A2FF?style=for-the-badge&logo=cesium&logoColor=white)](https://cesium.com/platform/cesiumjs/)
-[![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com/)
+ChronoEarth is an interactive platform for exploring how cities, technology, climate, infrastructure, and society could change in the future.
 
-> **A planetary intelligence interface for exploring cities, technologies, environments, and possible futures.**
+The project combines an interactive 3D Earth with a prediction feed, city intelligence pages, a knowledge base, and community-driven ideas about the future.
 
-ChronoEarth is an interactive planetary intelligence platform that combines **3D Earth visualization, future intelligence, city-level analytics, prediction systems, knowledge exploration, and community-driven foresight** into a single experience.
+## Features
 
-The platform is designed to make complex future-oriented information easier to explore through an interactive Earth interface and structured intelligence systems.
+### Interactive Earth
 
----
+- **3D Earth** with dynamic visual layers for climate, energy, satellites, and pollution.
+- **Interactive city markers** that let users select cities and explore their information.
+- **Atmospheric effects** and realistic Earth rendering using CesiumJS.
+- **Satellite and orbital visualizations** for communication and monitoring infrastructure.
+- **Animated routes and data paths** connecting important locations.
+- **Multiple visualization modes** for switching between a lightweight feed experience and the full interactive map.
 
-## ✨ Core Features
+### Predictions
 
-### 🌍 Interactive Earth Visualization
+- Browse predictions related to AI, climate, energy, space, transport, and other areas.
+- Open individual prediction pages with additional information and analysis.
+- Upvote predictions and save interesting ones for later.
+- Browse predictions through categories and search.
 
-- **Realistic Earth Mode** — High-fidelity Earth visualization with dynamic environmental and infrastructure layers.
-- **Holographic Intelligence Mode** — Futuristic visual overlays representing planetary telemetry, communication networks, and geographic intelligence.
-- **Dynamic Atmosphere** — Atmospheric lighting and scattering effects that respond to camera altitude and orientation.
-- **Orbital Infrastructure** — Visualized satellite nodes and orbital corridors representing communication and monitoring systems.
-- **Geodesic Data Highways** — Animated paths connecting important geographic and geopolitical locations.
-- **Interactive City Nodes** — Selectable city markers with visual highlighting, information panels, and camera focus transitions.
+### City Intelligence
 
-### 🔭 Future Intelligence
+ChronoEarth includes dedicated pages for major cities such as:
 
-- **Predictions Feed** — Explore technological, environmental, and societal projections organized chronologically and by category.
-- **Knowledge Base** — Structured documentation covering emerging technologies, systems, careers, and future-oriented concepts.
-- **Search Engine** — Unified search for predictions, cities, knowledge articles, and futurologists.
-- **AI Reports** — Generate concise intelligence briefs around technological and environmental developments.
-- **City Intelligence** — Explore detailed city-level projections across multiple future time periods.
-- **Community Voting** — Community-driven voting to represent perceived feasibility and relevance of predictions.
-- **Bookmark System** — Save important predictions and intelligence articles for later exploration.
+- London
+- Delhi
+- Dubai
+- Singapore
+- Tokyo
+- New York
 
----
+Each city page can include:
 
-## 🏙️ City Intelligence
+- Future projections
+- Climate and resilience metrics
+- Carbon and water-risk indicators
+- Population projections
+- AI adoption and automation indicators
+- Energy and transportation information
+- Infrastructure-related data
 
-ChronoEarth provides dedicated intelligence pages for major global cities.
+### Knowledge Base
 
-Each city can include:
+A collection of articles explaining technologies, systems, and ideas that could influence the future.
 
-- **Dynamic City Routes** — Dedicated URL routes for individual cities.
-- **Future Forecasts** — Compare projections across different years such as 2030, 2040, and 2050.
-- **Climate Metrics** — Climate resilience, carbon indicators, water-risk projections, and related environmental metrics.
-- **Population Projections** — Decadal population growth and stabilization trends.
-- **AI Readiness Indicators** — AI adoption, automation risk, and compute-access indicators.
-- **Infrastructure Analytics** — Clean-energy composition, transportation automation, and urban infrastructure insights.
+Topics include areas such as:
 
----
+- Artificial Intelligence
+- Climate technology
+- Energy
+- Urban infrastructure
+- Space technology
+- Emerging technologies
 
-## 👥 Community
+### Community
 
-ChronoEarth includes community-oriented systems for contributing to and evaluating future intelligence.
+The platform also includes features for community participation:
 
-- **Feedback Portal** — Submit bugs, feature ideas, prediction ideas, and general feedback.
-- **Voting System** — Vote on community-submitted ideas and platform improvements.
-- **Saved Intelligence** — Access bookmarked predictions and knowledge resources.
-- **Future Submissions** — Submit original predictions and future scenarios to the platform.
+- Submit future predictions
+- Suggest new features
+- Report issues
+- Vote on community requests
+- Save predictions and articles
 
----
+### Search
 
-## 🧭 Platform Pages
+A central search system helps users find:
+
+- Predictions
+- Cities
+- Futurologists
+- Knowledge articles
+- Other platform content
+
+## Pages
+
+The main routes currently included in the platform are:
 
 | Route | Description |
 |---|---|
-| `/` | Main planetary interface with the interactive Earth and intelligence HUD |
-| `/feed` | Stream of predictions, environmental alerts, and planetary telemetry |
-| `/predictions` | Organized prediction directory across multiple categories |
-| `/predictions/[slug]` | Detailed prediction briefs with analysis and community discussion |
-| `/knowledge` | Knowledge base covering technologies, systems, and future concepts |
-| `/futurologists` | Directory of contributors and future-focused analysts |
-| `/futurologists/[slug]` | Individual futurologist profiles, articles, and predictions |
-| `/city/[slug]` | Dynamic intelligence pages for major global cities |
-| `/feedback` | Community feedback and feature-request portal |
-| `/about` | Overview of the ChronoEarth platform and its intelligence systems |
+| `/` | Main ChronoEarth interface and Earth visualization |
+| `/feed` | Feed containing predictions and platform updates |
+| `/predictions` | Browse predictions by category |
+| `/predictions/[slug]` | Individual prediction pages |
+| `/knowledge` | Knowledge base |
+| `/futurologists` | Futurologist directory |
+| `/futurologists/[slug]` | Individual futurologist profiles |
+| `/city/[slug]` | City intelligence pages |
+| `/feedback` | Feedback and feature requests |
+| `/about` | About ChronoEarth |
 
----
+## Tech Stack
 
-## 🛠️ Technology Stack
+**Frontend**
+- Next.js
+- React
+- TypeScript
 
-### Frontend
+**3D Visualization**
+- CesiumJS
+- HTML5 Canvas
 
-- **Next.js** — App Router
-- **React**
-- **TypeScript**
+**Styling**
+- CSS
+- Tailwind CSS
 
-### Visualization
+**Deployment**
+- Vercel
 
-- **CesiumJS** — Interactive 3D Earth and geographic visualization
-- **HTML5 Canvas** — Lightweight planetary visualization for low-overhead feed experiences
+## Screenshots
 
-### Deployment
-
-- **Vercel**
-
----
-
-## ⚡ Performance Architecture
-
-ChronoEarth uses a dual-rendering approach to keep the experience responsive across different devices.
-
-### Feed Mode
-
-The default feed experience uses a lightweight Canvas-based Earth visualization instead of initializing the full 3D engine.
-
-This helps reduce:
-
-- Initial JavaScript workload
-- WebGL initialization
-- GPU usage
-- Memory consumption
-- Mobile battery usage
-
-### Interactive Map Mode
-
-The full CesiumJS environment is loaded only when interactive geographic exploration is required.
-
-When the user leaves Map Mode, the Cesium viewer is unmounted and its WebGL resources are released.
-
-This architecture allows ChronoEarth to maintain a visually rich experience without forcing the full 3D rendering pipeline onto every page load.
-
----
-
-## 📸 Screenshots
-
-### Home / Planetary Interface
+### Home
 
 ![Home Page](./public/screenshots/home.png)
 
-### Holographic Earth Mode
+### Interactive Map
 
-![Holographic Earth Mode](./public/screenshots/cyber_mode.png)
+![Map Mode](./public/screenshots/cyber_mode.png)
 
 ### City Intelligence
 
@@ -142,17 +129,14 @@ This architecture allows ChronoEarth to maintain a visually rich experience with
 
 ![Predictions Page](./public/screenshots/predictions_page.png)
 
-### Community Feedback
+### Feedback
 
 ![Feedback Page](./public/screenshots/feedback_page.png)
 
----
+## Getting Started
 
-## 🚀 Installation
-
-Clone the repository and install the dependencies:
+Clone the repository:
 
 ```bash
-git clone <YOUR_GITHUB_REPOSITORY_URL>
+git clone https://github.com/vardanraghav/ChronoEarth.git
 cd ChronoEarth/chronoearth
-npm install
