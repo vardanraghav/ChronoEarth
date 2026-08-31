@@ -75,7 +75,8 @@ export default function CityPreviewCard({ city, activeYear, activeSimulations, o
         {/* Close Button */}
         <button 
           onClick={onClose} 
-          className="absolute top-5 right-5 bg-transparent border-none text-[#7A8694] hover:text-white cursor-pointer text-[10px] font-mono uppercase tracking-wider transition-colors"
+          aria-label="Close city preview"
+          className="absolute top-5 right-5 bg-transparent border-none text-[#7A8694] hover:text-white cursor-pointer text-[10px] font-mono uppercase tracking-wider transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#00F5B0]"
         >
           [✕]
         </button>
@@ -91,6 +92,8 @@ export default function CityPreviewCard({ city, activeYear, activeSimulations, o
               src={cityExtended.image} 
               alt={city.name} 
               loading="lazy"
+              width={96}
+              height={96}
               onError={() => setImageError(true)}
               className="w-24 h-24 rounded-full object-cover border border-[#00F5B0]/30 shadow-[0_0_20px_rgba(0,245,176,0.2)] shrink-0" 
             />

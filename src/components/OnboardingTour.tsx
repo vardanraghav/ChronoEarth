@@ -16,12 +16,12 @@ const TOUR_STEPS: TourStep[] = [
   },
   {
     title: 'DASHBOARD',
-    description: "Dashboard is ChronoEarth's primary workspace. Use Feed to monitor intelligence through the Command Desk, or switch to Map to explore the same intelligence spatially on the 3D Earth.",
+    description: "Dashboard is ChronoEarth’s primary workspace. Use Feed to monitor intelligence through the Command Desk, or switch to Map to explore the same intelligence spatially on the 3D Earth.",
     target: '#nav-map',
   },
   {
     title: 'FEED MODE',
-    description: "Feed is the primary Dashboard view, bringing ChronoEarth's intelligence streams and Command Desk into one place.",
+    description: "Feed is the primary Dashboard view, bringing ChronoEarth’s intelligence streams and Command Desk into one place.",
     target: '#dashboard-switcher-feed',
   },
   {
@@ -51,12 +51,12 @@ const TOUR_STEPS: TourStep[] = [
   },
   {
     title: 'SENSORS',
-    description: "Sensors provides access to ChronoEarth's intelligence systems, including semiconductor, climate, space, seismic and market monitoring.",
+    description: "Sensors provides access to ChronoEarth’s intelligence systems, including semiconductor, climate, space, seismic and market monitoring.",
     target: '#nav-sensors',
   },
   {
     title: 'INTELLIGENCE SYSTEMS',
-    description: "This menu contains ChronoEarth's specialized intelligence systems.",
+    description: "This menu contains ChronoEarth’s specialized intelligence systems.",
     target: '#sensors-dropdown',
   },
   {
@@ -85,7 +85,7 @@ const TOUR_STEPS: TourStep[] = [
     target: '#float-futurechat',
   },
   {
-    title: "You're now connected to the ChronoEarth Intelligence Network.",
+    title: "You’re now connected to the ChronoEarth Intelligence Network.",
     description: 'The platform is now ready. Explore intelligence feeds, predictions, simulations, planetary monitoring, and AI-powered analysis.',
   }
 ];

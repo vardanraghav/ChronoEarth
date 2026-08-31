@@ -109,7 +109,7 @@
     letter-spacing: -0.03em;
     line-height: 1.1;
     color: #F5F5F5;
-    text-shadow: 0 0 15px rgba(245, 245, 245, 0.15);
+    text-shadow: none;
   }
 
   h2 {
@@ -128,8 +128,8 @@
 
   p, li {
     font-family: "Inter", sans-serif;
-    font-size: 1.2rem; /* +9% */
-    font-weight: 500;
+    font-size: 1.0rem;
+    font-weight: 400;
     line-height: 1.8;
     color: #CBD5E1;
   }
@@ -254,7 +254,7 @@
 .cesium-credit-logoContainer { display: none !important; }
 
 /* ═══════════════════════════════════════════════════════════
-   PREMIUM 2050.EARTH CARD TIERS & CONTAINERS
+   PREMIUM CHRONOEARTH CARD TIERS & CONTAINERS
    ═══════════════════════════════════════════════════════════ */
 .content-container {
   max-width: 1100px !important;
@@ -280,7 +280,7 @@
   letter-spacing: -0.04em !important;
   line-height: 1.05 !important;
   color: #F5F5F5 !important;
-  text-shadow: 0 0 20px rgba(245, 245, 245, 0.2) !important;
+  text-shadow: none !important;
 }
 
 .page-title, .editorial-title {
@@ -288,7 +288,7 @@
   font-weight: 800 !important;
   letter-spacing: -0.03em !important;
   line-height: 1.1 !important;
-  text-shadow: 0 0 15px rgba(245, 245, 245, 0.15) !important;
+  text-shadow: none !important;
   margin-bottom: 24px !important;
   text-transform: none !important;
   color: #F5F5F5 !important;
@@ -312,7 +312,7 @@
 }
 
 .metadata-text {
-  font-size: 1.1rem !important; /* +5% */
+  font-size: 0.9rem !important;
   font-weight: 500 !important;
   color: #A8B3BC !important;
   text-shadow: none !important;
@@ -320,8 +320,8 @@
 }
 
 .body-text, .editorial-subtitle {
-  font-size: 1.2rem !important; /* +9% */
-  font-weight: 500 !important;
+  font-size: 0.95rem !important;
+  font-weight: 400 !important;
   line-height: 1.8 !important;
   color: #E2E8F0 !important;
   letter-spacing: normal !important;
@@ -396,19 +396,19 @@ nextjs-portal {
   background: rgba(7, 18, 30, 0.88) !important; /* slightly brighter for panel visibility */
   backdrop-filter: blur(24px) !important;
   -webkit-backdrop-filter: blur(24px) !important;
-  border: 1px solid rgba(0, 245, 176, 0.22) !important; /* +15% border opacity */
+  border: 1px solid rgba(0, 245, 176, 0.10) !important;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.65), inset 0 0 0 1px rgba(255, 255, 255, 0.03) !important;
 }
 
 /* Text glow */
 .glow-primary {
-  text-shadow: 0 0 12px rgba(0, 245, 176, 0.65), 0 0 4px rgba(0, 245, 176, 0.35) !important; /* +15% glow strength */
+  text-shadow: 0 0 6px rgba(0, 245, 176, 0.35) !important;
 }
 
 /* Border & box shadow glow */
 .glow-border {
   border-color: #00F5B0 !important;
-  box-shadow: 0 0 18px rgba(0, 245, 176, 0.32), inset 0 0 18px rgba(0, 245, 176, 0.08) !important; /* +15% glow strength */
+  box-shadow: 0 0 8px rgba(0, 245, 176, 0.15), inset 0 0 8px rgba(0, 245, 176, 0.04) !important;
 }
 
 /* Timeline dot pulsing effect */
@@ -500,6 +500,22 @@ nav a, nav button {
 }
 .animate-globe-breathe {
   animation: globe-breathe 8s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-delay: -1ms !important;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    background-attachment: initial !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
+  }
+  .animate-pulse, .animate-spin, .animate-breathe, .animate-fade-up, .animate-fade-in, .animate-globe-breathe, .timeline-dot-pulse {
+    animation: none !important;
+    transition: none !important;
+  }
 }
 
 

@@ -599,22 +599,22 @@ export default function CityDetailPage({ params }: { params: Promise<Params> }) 
             <span className="text-xs text-[#7A8694]">Add comments to ledger</span>
             <input
               type="text"
-              placeholder="Identity alias..."
+              placeholder="Identity alias…"
               value={newAuthor}
               onChange={e => setNewAuthor(e.target.value)}
-              className="bg-transparent border-b border-[#00F5B0]/15 text-xs text-white py-2 outline-none focus:border-[#00F5B0] transition-colors"
+              className="bg-transparent border-b border-[#00F5B0]/15 text-xs text-white py-2 outline-none focus:border-[#00F5B0] focus-visible:ring-1 focus-visible:ring-[#00F5B0] transition-colors"
               required
             />
             <textarea
-              placeholder="Synthesize observations, critiques or recommendations for this timeline target..."
+              placeholder="Synthesize observations, critiques or recommendations for this timeline target…"
               value={newContent}
               onChange={e => setNewContent(e.target.value)}
-              className="bg-transparent border border-[#00F5B0]/15 text-xs text-[#7A8694] p-3 outline-none focus:border-[#00F5B0] rounded min-h-[80px] leading-relaxed"
+              className="bg-transparent border border-[#00F5B0]/15 text-xs text-[#7A8694] p-3 outline-none focus:border-[#00F5B0] focus-visible:ring-1 focus-visible:ring-[#00F5B0] rounded min-h-[80px] leading-relaxed"
               required
             />
             <button
               type="submit"
-              className="self-end px-5 py-1.5 border border-[#00F5B0]/20 hover:border-transparent hover:bg-[#00F5B0] hover:text-[#02060A] bg-transparent text-[#00F5B0] transition-all duration-300 text-xs"
+              className="self-end px-5 py-1.5 border border-[#00F5B0]/20 hover:border-transparent hover:bg-[#00F5B0] hover:text-[#02060A] bg-transparent text-[#00F5B0] transition-all duration-300 text-xs focus-visible:ring-1 focus-visible:ring-[#00F5B0] outline-none"
             >
               Transmit feedback
             </button>
@@ -624,7 +624,7 @@ export default function CityDetailPage({ params }: { params: Promise<Params> }) 
           <div className="flex flex-col gap-5 divide-y divide-[#00F5B0]/10 mt-2">
             {comments.length === 0 ? (
               <div className="text-center py-6 text-xs text-[#7A8694]">
-                Awaiting ledger shard data...
+                Awaiting ledger shard data…
               </div>
             ) : (
               comments.map(c => (

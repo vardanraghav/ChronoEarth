@@ -219,15 +219,18 @@ function PredictionsDirectoryContent() {
               <div className="relative border-b border-white/10 focus-within:border-[#00F5B0] transition-colors py-1">
                 <input
                   type="text"
+                  name="q"
+                  autoComplete="search"
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
-                  placeholder="Keywords, authors, cities..."
-                  className="w-full bg-transparent border-none px-0 text-xs text-white outline-none font-light placeholder-white/20"
+                  placeholder="Keywords, authors, cities…"
+                  className="w-full bg-transparent border-none px-0 text-xs text-white outline-none font-light placeholder-white/20 focus-visible:ring-1 focus-visible:ring-[#00F5B0]"
                 />
                 {searchQuery && (
                   <button 
                     onClick={() => setSearchQuery('')}
-                    className="absolute right-0 top-1/2 -translate-y-1/2 text-xs text-white/40 hover:text-white cursor-pointer bg-transparent border-none"
+                    aria-label="Clear search query"
+                    className="absolute right-0 top-1/2 -translate-y-1/2 text-xs text-white/40 hover:text-white cursor-pointer bg-transparent border-none outline-none focus-visible:ring-1 focus-visible:ring-[#00F5B0]"
                   >
                     ✕
                   </button>

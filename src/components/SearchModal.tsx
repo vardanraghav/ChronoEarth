@@ -323,7 +323,8 @@ export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchMo
           </div>
           <button 
             onClick={onClose} 
-            className="bg-transparent border-none text-[#7A8694] hover:text-white cursor-pointer tracking-wider transition-colors"
+            aria-label="Close search"
+            className="bg-transparent border-none text-[#7A8694] hover:text-white cursor-pointer tracking-wider transition-colors outline-none focus-visible:ring-1 focus-visible:ring-[#00F5B0]"
           >
             [ESC // CLOSE]
           </button>
@@ -331,12 +332,14 @@ export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchMo
 
         {/* AI prompt Search Bar */}
         <div className="flex flex-col gap-1.5">
-          <div className="relative flex items-center bg-black/40 border border-white/5 focus-within:border-[#00F5B0]/40 rounded px-4 py-3 transition-all">
+          <div className="relative flex items-center bg-black/40 border border-white/5 focus-within:border-[#00F5B0]/40 focus-within:ring-1 focus-within:ring-[#00F5B0] rounded px-4 py-3 transition-all">
             <span className="text-[#00F5B0] mr-2 font-bold select-none">chrono_os:~$ &gt;</span>
             <input
               ref={inputRef}
               type="text"
-              placeholder="Query matrix parameters..."
+              name="q"
+              autoComplete="search"
+              placeholder="Query matrix parameters…"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               className="w-full bg-transparent border-none outline-none text-xs text-white placeholder-white/20 font-mono tracking-wide"
@@ -344,7 +347,8 @@ export default function SearchModal({ isOpen, onClose, setActiveCity }: SearchMo
             {searchQuery && (
               <button 
                 onClick={() => setSearchQuery('')}
-                className="absolute right-4 text-[10px] text-[#7A8694] hover:text-white cursor-pointer bg-transparent border-none"
+                aria-label="Clear search query"
+                className="absolute right-4 text-[10px] text-[#7A8694] hover:text-white cursor-pointer bg-transparent border-none outline-none focus-visible:ring-1 focus-visible:ring-[#00F5B0]"
               >
                 [RESET]
               </button>

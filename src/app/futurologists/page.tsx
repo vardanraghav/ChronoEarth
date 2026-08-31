@@ -58,7 +58,7 @@ export default function FuturologistsPage() {
             Futurologists <span className="text-[#00F5B0] font-normal">Directory</span>
           </h1>
           <p className="editorial-subtitle text-[#7A8694]">
-            Meet the primary system architects and analysts modeling ChronoEarth's future timeline matrices.
+            Meet the primary system architects and analysts modeling ChronoEarth’s future timeline matrices.
           </p>
         </div>
 

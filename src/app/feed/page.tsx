@@ -289,7 +289,7 @@ function FeedContent() {
               System <span style={{ color: '#00F5B0' }} className="font-normal">Feed</span>
             </h1>
             <p className="text-[#7A8694] font-light text-xs leading-relaxed m-0">
-              Direct telemetry mapping ChronoEarth's active system events and future predictions.
+              Direct telemetry mapping ChronoEarth’s active system events and future predictions.
             </p>
           </div>
 
@@ -338,7 +338,10 @@ function FeedContent() {
                   </div>
                   <button
                     onClick={() => setActiveLayers(prev => ({ ...prev, [key]: !prev[key] }))}
-                    className="relative w-8 h-4.5 rounded-full transition-colors duration-300 focus:outline-none cursor-pointer"
+                    role="switch"
+                    aria-checked={activeLayers[key]}
+                    aria-label={`Toggle ${label} layer`}
+                    className="relative w-8 h-4.5 rounded-full transition-colors duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00F5B0] focus-visible:ring-offset-1 cursor-pointer"
                     style={{
                       background: activeLayers[key] ? '#00F5B0' : 'rgba(255, 255, 255, 0.1)',
                       border: '1px solid rgba(255, 255, 255, 0.05)',

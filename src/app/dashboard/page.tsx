@@ -4,7 +4,19 @@ import { useState, useEffect, Suspense, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Navbar            from '@/components/Navbar';
-import CesiumGlobe       from '@/components/CesiumGlobe';
+import dynamic           from 'next/dynamic';
+import LightweightGlobe  from '@/components/LightweightGlobe';
+
+const CesiumGlobe = dynamic(() => import('@/components/CesiumGlobe'), {
+  ssr: false,
+  loading: () => (
+    <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#02060A]/95 z-50 gap-4 font-mono text-xs uppercase tracking-[0.25em]">
+      <div className="w-10 h-10 border border-[#00F5B0]/20 border-t-[#00F5B0] rounded-full animate-spin" />
+      <span>BOOTING PLANETARY INFRASTRUCTURE GRID…</span>
+    </div>
+  ),
+});
+
 import BackgroundEffects from '@/components/BackgroundEffects';
 import CityPreviewCard   from '@/components/CityPreviewCard';
 import CommandDesk       from '@/components/CommandDesk';
@@ -323,6 +335,7 @@ function DashboardContent() {
       setCesiumLoaded(true);
     } else if (viewParam === 'feed') {
       setDashboardMode('feed');
+      setCesiumLoaded(false); // Unmount Cesium when viewing feed
     }
   }, [viewParam]);
 
@@ -330,6 +343,8 @@ function DashboardContent() {
     setDashboardMode(mode);
     if (mode === 'map') {
       setCesiumLoaded(true);
+    } else {
+      setCesiumLoaded(false); // Unmount Cesium when toggling back to feed
     }
     const url = new URL(window.location.href);
     url.searchParams.set('view', mode);
@@ -751,7 +766,7 @@ function DashboardContent() {
       >
         <div className="flex items-center gap-2.5">
           <span className="w-1.5 h-1.5 rounded-full bg-white/50 animate-pulse shadow-[0_0_8px_rgba(255,255,255,0.4)]" />
-          <span>EXPLORING NEW WAYS...</span>
+          <span>EXPLORING NEW WAYS…</span>
         </div>
       </div>
 
@@ -806,8 +821,8 @@ function DashboardContent() {
 
 
 
-      {/* Full screen Globe */}
-      {mounted && cesiumLoaded && (
+      {/* Full screen Globe (Holographic projection when idle, Cesium when map active) */}
+      {mounted && (
         <div 
           style={{
             position: 'absolute',
@@ -817,27 +832,30 @@ function DashboardContent() {
             height: '100%',
             zIndex: 0,
             overflow: 'hidden',
-            visibility: dashboardMode === 'map' ? 'visible' : 'hidden',
-            pointerEvents: dashboardMode === 'map' ? 'auto' : 'none',
           }}
         >
-          <BackgroundEffects earthMode="cyber" />
-          <CesiumGlobe
-            activeYear={activeYear}
-            activeCategory={activeCategory}
-            activeCity={activeCity}
-            setActiveCity={handleSelectCity}
-            activeCountry={activeCountry}
-            setActiveCountry={handleSelectCountry}
-            overlays={DEFAULT_OVERLAYS}
-            earthMode="cyber"
-            activeLayers={activeLayers}
-            activeSimulations={activeSimulations}
-            cities={cities}
-            focusCoords={focusCoords}
-            earthquakes={earthquakes}
-            onEarthReady={handleEarthReady}
-          />
+          {dashboardMode === 'feed' ? (
+            <LightweightGlobe />
+          ) : (
+            cesiumLoaded && (
+              <CesiumGlobe
+                activeYear={activeYear}
+                activeCategory={activeCategory}
+                activeCity={activeCity}
+                setActiveCity={handleSelectCity}
+                activeCountry={activeCountry}
+                setActiveCountry={handleSelectCountry}
+                overlays={DEFAULT_OVERLAYS}
+                earthMode="cyber"
+                activeLayers={activeLayers}
+                activeSimulations={activeSimulations}
+                cities={cities}
+                focusCoords={focusCoords}
+                earthquakes={earthquakes}
+                onEarthReady={handleEarthReady}
+              />
+            )
+          )}
         </div>
       )}
 
@@ -900,7 +918,9 @@ function DashboardContent() {
                 e.stopPropagation();
                 setIsLeftPanelCollapsed(!isLeftPanelCollapsed);
               }}
-              className="absolute top-0 -right-6 w-6 h-12 bg-[#02060A]/85 backdrop-blur-md border-y border-r border-[#00F5B0]/30 hover:border-[#00F5B0]/60 rounded-r-md text-[10px] text-[#00F5B0] flex items-center justify-center transition-all duration-300 cursor-pointer shadow-[5px_0_15px_rgba(0,245,176,0.15)] focus:outline-none"
+              aria-label={isLeftPanelCollapsed ? "Expand planetary layers panel" : "Collapse planetary layers panel"}
+              aria-expanded={!isLeftPanelCollapsed}
+              className="absolute top-0 -right-6 w-6 h-12 bg-[#02060A]/85 backdrop-blur-md border-y border-r border-[#00F5B0]/30 hover:border-[#00F5B0]/60 rounded-r-md text-[10px] text-[#00F5B0] flex items-center justify-center transition-all duration-300 cursor-pointer shadow-[5px_0_15px_rgba(0,245,176,0.15)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00F5B0]"
             >
               {isLeftPanelCollapsed ? '❯' : '❮'}
             </button>
@@ -937,7 +957,10 @@ function DashboardContent() {
                 </div>
                 <button
                   onClick={() => setActiveLayers(prev => ({ ...prev, [key]: !prev[key] }))}
-                  className="relative w-9 h-5 rounded-full transition-colors duration-300 focus:outline-none cursor-pointer"
+                  role="switch"
+                  aria-checked={activeLayers[key]}
+                  aria-label={`Toggle ${label} layer`}
+                  className="relative w-9 h-5 rounded-full transition-colors duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00F5B0] focus-visible:ring-offset-1 cursor-pointer"
                   style={{
                     background: activeLayers[key] ? '#00F5B0' : 'rgba(255, 255, 255, 0.1)',
                     border: '1px solid rgba(255, 255, 255, 0.05)',
@@ -1019,7 +1042,9 @@ function DashboardContent() {
       {isMobile && dashboardMode === 'map' && (
         <button
           onClick={() => setIsLeftPanelCollapsed(!isLeftPanelCollapsed)}
-          className="fixed bottom-10 left-4 z-50 p-3 rounded-full bg-[#02060A]/85 border border-[#00F5B0]/30 text-[#00F5B0] shadow-[0_0_15px_rgba(0,245,176,0.2)] backdrop-blur-xl flex items-center justify-center cursor-pointer hover:scale-105 transition-transform"
+          aria-label="Toggle planetary layers panel"
+          aria-expanded={!isLeftPanelCollapsed}
+          className="fixed bottom-10 left-4 z-50 p-3 rounded-full bg-[#02060A]/85 border border-[#00F5B0]/30 text-[#00F5B0] shadow-[0_0_15px_rgba(0,245,176,0.2)] backdrop-blur-xl flex items-center justify-center cursor-pointer hover:scale-105 transition-transform outline-none focus-visible:ring-2 focus-visible:ring-[#00F5B0]"
           style={{ width: '44px', height: '44px' }}
           title="Toggle Layers"
         >
@@ -1081,7 +1106,8 @@ function DashboardContent() {
               >
                 <button
                   onClick={() => setSelectedDossier(null)}
-                  className="absolute top-4 right-4 bg-transparent border-none text-rose-400/60 hover:text-rose-400 cursor-pointer text-xs transition-colors"
+                  aria-label="Close dossier briefing"
+                  className="absolute top-4 right-4 bg-transparent border-none text-rose-450 hover:text-rose-400 cursor-pointer text-xs transition-colors"
                 >
                   [✕]
                 </button>
@@ -1151,7 +1177,7 @@ export default function DashboardPage() {
       <div className="h-screen w-screen bg-[#02060A] flex flex-col items-center justify-center font-mono text-[11px] text-white/50 tracking-[0.35em] uppercase">
         <div className="flex items-center gap-2.5">
           <span className="w-1.5 h-1.5 rounded-full bg-white/40 animate-pulse" />
-          <span>EXPLORING NEW WAYS...</span>
+          <span>EXPLORING NEW WAYS…</span>
         </div>
       </div>
     }>

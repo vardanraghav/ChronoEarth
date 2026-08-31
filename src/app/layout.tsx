@@ -48,7 +48,6 @@ export default function RootLayout({
             __html: `console.log("[EXEC_TRACE] A = website JavaScript starts at " + performance.now().toFixed(1) + "ms");`,
           }}
         />
-        <link rel="stylesheet" href="/cesium/Widgets/widgets.css" />
         <style>{`
           nextjs-portal {
             display: none !important;
@@ -59,7 +58,6 @@ export default function RootLayout({
         `}</style>
       </head>
       <body className="h-full bg-[#060918] text-[#e8ecf4]">
-        <Script src="/cesium/Cesium.js" strategy="beforeInteractive" />
         {children}
         <FloatingActions />
         <OnboardingTour />

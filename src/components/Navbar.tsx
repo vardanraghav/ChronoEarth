@@ -132,7 +132,7 @@ export default function Navbar({ setActiveCity }: NavbarProps) {
         >
           <div className="flex items-center gap-1.5 font-light text-base tracking-[0.3em] text-white uppercase font-sans">
             <span>CHRONO</span>
-            <span style={{ color: '#00E5FF', textShadow: '0 0 10px rgba(0, 229, 255, 0.4)' }} className="font-semibold">EARTH</span>
+            <span style={{ color: '#00E5FF' }} className="font-semibold">EARTH</span>
           </div>
           <span className="text-[8px] font-mono text-[#8CA8B8] uppercase tracking-[0.15em] mt-0.5 transition-colors group-hover:text-white/50">
             Future Intelligence Platform
@@ -256,6 +256,7 @@ export default function Navbar({ setActiveCity }: NavbarProps) {
           {/* Quick search button */}
           <button
             onClick={() => setSearchOpen(true)}
+            aria-label="Open search database"
             className="p-2 cursor-pointer bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition-colors"
           >
             🔍
@@ -264,6 +265,8 @@ export default function Navbar({ setActiveCity }: NavbarProps) {
           {/* Mobile menu trigger */}
           <button
             id="mobile-menu-trigger"
+            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={mobileMenuOpen}
             className="flex flex-col gap-1.5 cursor-pointer bg-transparent border-none p-2 relative z-[100001]"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
@@ -290,7 +293,7 @@ export default function Navbar({ setActiveCity }: NavbarProps) {
             <div className="flex flex-col">
               <div className="flex items-center gap-1.5 font-light text-lg tracking-[0.3em] text-white uppercase font-sans">
                 <span>CHRONO</span>
-                <span style={{ color: '#00E5FF', textShadow: '0 0 10px rgba(0, 229, 255, 0.4)' }} className="font-semibold">EARTH</span>
+                <span style={{ color: '#00E5FF' }} className="font-semibold">EARTH</span>
               </div>
               <span className="text-[9px] text-[#8CA8B8] uppercase tracking-[0.15em] mt-0.5">
                 SYSTEM MENU
@@ -299,7 +302,6 @@ export default function Navbar({ setActiveCity }: NavbarProps) {
             <button
               onClick={() => setMobileMenuOpen(false)}
               className="bg-transparent border border-[#00E5FF]/20 text-[#00E5FF] hover:text-[#6FEAFF] cursor-pointer text-xs font-mono uppercase tracking-widest px-3 py-1 rounded transition-all"
-              style={{ textShadow: '0 0 10px rgba(0, 229, 255, 0.4)' }}
             >
               [✕ CLOSE]
             </button>

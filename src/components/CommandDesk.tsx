@@ -133,7 +133,8 @@ export default function CommandDesk({
             <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
               {/* Alert 1: Latest Prediction */}
               {latestPrediction && (
-                <div 
+                <button 
+                  type="button"
                   onClick={() => {
                     const cityObj = cities.find(c => c.name.toLowerCase() === latestPrediction.city.toLowerCase());
                     handleFeedClick({
@@ -144,24 +145,25 @@ export default function CommandDesk({
                       prediction: latestPrediction
                     });
                   }}
-                  className="p-4 bg-black/40 border border-white/5 hover:border-[#00F5B0]/30 rounded-xl flex flex-col gap-2 cursor-pointer group transition-all"
+                  className="p-4 bg-black/40 border border-white/5 hover:border-[#00F5B0]/30 rounded-xl flex flex-col gap-2 cursor-pointer group transition-all text-left w-full focus-visible:ring-2 focus-visible:ring-[#00F5B0] focus-visible:ring-offset-1 outline-none"
                 >
-                  <div className="flex justify-between items-center text-[9px] font-mono text-[#00F5B0]">
+                  <div className="flex justify-between items-center text-[9px] font-mono text-[#00F5B0] w-full">
                     <span>🔮 TIMELINE SHARD ALERT</span>
                     <span>{latestPrediction.confidenceScore}% Likelihood</span>
                   </div>
-                  <h4 className="text-xs font-bold text-white group-hover:text-[#00F5B0] transition-colors truncate m-0 font-mono">
+                  <h4 className="text-xs font-bold text-white group-hover:text-[#00F5B0] transition-colors truncate m-0 font-mono text-left w-full">
                     {latestPrediction.title}
                   </h4>
-                  <p className="text-[10px] text-white/50 m-0 font-sans line-clamp-2 leading-relaxed">
+                  <p className="text-[10px] text-white/50 m-0 font-sans line-clamp-2 leading-relaxed text-left">
                     {latestPrediction.description}
                   </p>
-                </div>
+                </button>
               )}
 
               {/* Alert 2: NASA Space Event */}
               {latestSpaceEvent && (
-                <div 
+                <button 
+                  type="button"
                   onClick={() => {
                     handleFeedClick({
                       lat: 25.0,
@@ -170,24 +172,25 @@ export default function CommandDesk({
                       layer: 'space'
                     });
                   }}
-                  className="p-4 bg-black/40 border border-white/5 hover:border-[#BF5AF2]/30 rounded-xl flex flex-col gap-2 cursor-pointer group transition-all"
+                  className="p-4 bg-black/40 border border-white/5 hover:border-[#BF5AF2]/30 rounded-xl flex flex-col gap-2 cursor-pointer group transition-all text-left w-full focus-visible:ring-2 focus-visible:ring-[#BF5AF2] focus-visible:ring-offset-1 outline-none"
                 >
-                  <div className="flex justify-between items-center text-[9px] font-mono text-[#BF5AF2]">
+                  <div className="flex justify-between items-center text-[9px] font-mono text-[#BF5AF2] w-full">
                     <span>🚀 ORBITAL EVENT SPEC</span>
                     <span>{latestSpaceEvent.event_date?.split('T')[0] || ''}</span>
                   </div>
-                  <h4 className="text-xs font-bold text-white group-hover:text-[#BF5AF2] transition-colors truncate m-0 font-mono">
+                  <h4 className="text-xs font-bold text-white group-hover:text-[#BF5AF2] transition-colors truncate m-0 font-mono text-left w-full">
                     {latestSpaceEvent.title}
                   </h4>
-                  <p className="text-[10px] text-white/50 m-0 font-sans line-clamp-2 leading-relaxed">
+                  <p className="text-[10px] text-white/50 m-0 font-sans line-clamp-2 leading-relaxed text-left">
                     {latestSpaceEvent.description || 'Live orbital telemetry scanning for near-Earth object corridors.'}
                   </p>
-                </div>
+                </button>
               )}
 
               {/* Alert 3: Market Alert */}
               {marketAlert && (
-                <div 
+                <button 
+                  type="button"
                   onClick={() => {
                     handleFeedClick({
                       lat: 22.3,
@@ -196,24 +199,25 @@ export default function CommandDesk({
                       layer: 'markets'
                     });
                   }}
-                  className="p-4 bg-black/40 border border-white/5 hover:border-[#00F5B0]/30 rounded-xl flex flex-col gap-2 cursor-pointer group transition-all"
+                  className="p-4 bg-black/40 border border-white/5 hover:border-[#00F5B0]/30 rounded-xl flex flex-col gap-2 cursor-pointer group transition-all text-left w-full focus-visible:ring-2 focus-visible:ring-[#00F5B0] focus-visible:ring-offset-1 outline-none"
                 >
-                  <div className="flex justify-between items-center text-[9px] font-mono text-[#00F5B0]">
+                  <div className="flex justify-between items-center text-[9px] font-mono text-[#00F5B0] w-full">
                     <span>📈 HARDWARE MARKET INDEX</span>
                     <span>{marketAlert.change_percent}</span>
                   </div>
-                  <h4 className="text-xs font-bold text-white group-hover:text-[#00F5B0] transition-colors m-0 font-mono">
+                  <h4 className="text-xs font-bold text-white group-hover:text-[#00F5B0] transition-colors m-0 font-mono text-left w-full">
                     {marketAlert.ticker} Stock Ticker
                   </h4>
-                  <p className="text-[10px] text-white/50 m-0 font-sans line-clamp-2 leading-relaxed">
+                  <p className="text-[10px] text-white/50 m-0 font-sans line-clamp-2 leading-relaxed text-left">
                     Current Price: ${marketAlert.price.toFixed(2)} USD. High volume trading detected on silicon hardware nodes.
                   </p>
-                </div>
+                </button>
               )}
 
               {/* Alert 4: Seismic Alert */}
               {latestQuake && (
-                <div 
+                <button 
+                  type="button"
                   onClick={() => {
                     handleFeedClick({
                       lat: latestQuake.lat,
@@ -223,19 +227,19 @@ export default function CommandDesk({
                       eq: latestQuake
                     });
                   }}
-                  className="p-4 bg-black/40 border border-white/5 hover:border-red-500/30 rounded-xl flex flex-col gap-2 cursor-pointer group transition-all"
+                  className="p-4 bg-black/40 border border-white/5 hover:border-red-500/30 rounded-xl flex flex-col gap-2 cursor-pointer group transition-all text-left w-full focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-1 outline-none"
                 >
-                  <div className="flex justify-between items-center text-[9px] font-mono text-red-400">
+                  <div className="flex justify-between items-center text-[9px] font-mono text-red-400 w-full">
                     <span>🌋 FAULT LINE ANOMALY</span>
                     <span>{latestQuake.magnitude.toFixed(1)} Magnitude</span>
                   </div>
-                  <h4 className="text-xs font-bold text-white group-hover:text-red-400 transition-colors truncate m-0 font-mono">
+                  <h4 className="text-xs font-bold text-white group-hover:text-red-400 transition-colors truncate m-0 font-mono text-left w-full">
                     {latestQuake.place}
                   </h4>
-                  <p className="text-[10px] text-white/50 m-0 font-sans line-clamp-2 leading-relaxed">
+                  <p className="text-[10px] text-white/50 m-0 font-sans line-clamp-2 leading-relaxed text-left">
                     Depth recorded: {latestQuake.depth?.toFixed(1) || '0.0'} km. Fault line activity registered under USGS.
                   </p>
-                </div>
+                </button>
               )}
             </div>
 
@@ -297,7 +301,7 @@ export default function CommandDesk({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         
         {/* Widget 1: Space Intelligence */}
-        <div className="premium-glass p-5 rounded-2xl flex flex-col justify-between min-h-[200px] border border-white/5 hover:border-[#BF5AF2]/30 hover:shadow-[0_0_15px_rgba(191,90,242,0.1)] transition-all duration-300 text-left">
+        <div className="premium-glass p-5 rounded-2xl flex flex-col justify-between min-h-[200px] border border-white/5 hover:border-white/10 transition-all duration-300 text-left">
           <div className="flex flex-col gap-2">
             <div className="flex justify-between items-start text-xs font-mono text-[#BF5AF2]">
               <span>🚀 SPACE INTEL</span>
@@ -322,7 +326,7 @@ export default function CommandDesk({
                   layer: 'space'
                 });
               }}
-              className="w-full py-1.5 bg-[#BF5AF2]/15 hover:bg-[#BF5AF2]/30 border border-[#BF5AF2]/20 text-[#BF5AF2] text-[10px] font-bold rounded text-center transition-all duration-300 tracking-widest uppercase font-mono cursor-pointer"
+              className="w-full py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white text-[10px] font-bold rounded text-center transition-all duration-300 tracking-widest uppercase font-mono cursor-pointer"
             >
               UPLINK HUB
             </button>
@@ -331,7 +335,7 @@ export default function CommandDesk({
         </div>
 
         {/* Widget 2: Climate Intelligence */}
-        <div className="premium-glass p-5 rounded-2xl flex flex-col justify-between min-h-[200px] border border-white/5 hover:border-[#FF0055]/30 hover:shadow-[0_0_15px_rgba(255,0,85,0.1)] transition-all duration-300 text-left">
+        <div className="premium-glass p-5 rounded-2xl flex flex-col justify-between min-h-[200px] border border-white/5 hover:border-white/10 transition-all duration-300 text-left">
           <div className="flex flex-col gap-2">
             <div className="flex justify-between items-start text-xs font-mono text-[#FF0055]">
               <span>🌡️ CLIMATE INTEL</span>
@@ -356,7 +360,7 @@ export default function CommandDesk({
                   layer: 'climate'
                 });
               }}
-              className="w-full py-1.5 bg-[#FF0055]/15 hover:bg-[#FF0055]/30 border border-[#FF0055]/20 text-[#FF0055] text-[10px] font-bold rounded text-center transition-all duration-300 tracking-widest uppercase font-mono cursor-pointer"
+              className="w-full py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white text-[10px] font-bold rounded text-center transition-all duration-300 tracking-widest uppercase font-mono cursor-pointer"
             >
               UPLINK HUB
             </button>
@@ -365,7 +369,7 @@ export default function CommandDesk({
         </div>
 
         {/* Widget 3: Semiconductor Markets */}
-        <div className="premium-glass p-5 rounded-2xl flex flex-col justify-between min-h-[200px] border border-white/5 hover:border-[#00F5B0]/30 hover:shadow-[0_0_15px_rgba(0,245,176,0.1)] transition-all duration-300 text-left">
+        <div className="premium-glass p-5 rounded-2xl flex flex-col justify-between min-h-[200px] border border-white/5 hover:border-white/10 transition-all duration-300 text-left">
           <div className="flex flex-col gap-2">
             <div className="flex justify-between items-start text-xs font-mono text-[#00F5B0]">
               <span>📈 SILICON MARKETS</span>
@@ -390,7 +394,7 @@ export default function CommandDesk({
                   layer: 'markets'
                 });
               }}
-              className="w-full py-1.5 bg-[#00F5B0]/15 hover:bg-[#00F5B0]/30 border border-[#00F5B0]/20 text-[#00F5B0] text-[10px] font-bold rounded text-center transition-all duration-300 tracking-widest uppercase font-mono cursor-pointer"
+              className="w-full py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white text-[10px] font-bold rounded text-center transition-all duration-300 tracking-widest uppercase font-mono cursor-pointer"
             >
               UPLINK HUB
             </button>
@@ -399,7 +403,7 @@ export default function CommandDesk({
         </div>
 
         {/* Widget 4: Earthquake Monitor */}
-        <div className="premium-glass p-5 rounded-2xl flex flex-col justify-between min-h-[200px] border border-white/5 hover:border-red-500/30 hover:shadow-[0_0_15px_rgba(239,68,68,0.1)] transition-all duration-300 text-left">
+        <div className="premium-glass p-5 rounded-2xl flex flex-col justify-between min-h-[200px] border border-white/5 hover:border-white/10 transition-all duration-300 text-left">
           <div className="flex flex-col gap-2">
             <div className="flex justify-between items-start text-xs font-mono text-red-400">
               <span>🌋 SEISMIC MONITOR</span>
@@ -424,7 +428,7 @@ export default function CommandDesk({
                   layer: 'seismic'
                 });
               }}
-              className="w-full py-1.5 bg-red-500/15 hover:bg-red-500/30 border border-red-500/20 text-red-450 text-[10px] font-bold rounded text-center transition-all duration-300 tracking-widest uppercase font-mono cursor-pointer"
+              className="w-full py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white text-[10px] font-bold rounded text-center transition-all duration-300 tracking-widest uppercase font-mono cursor-pointer"
             >
               UPLINK HUB
             </button>

@@ -16,6 +16,7 @@ export default function SettingsPage() {
   // Preference variables
   const [theme, setTheme] = useState('cyber');
   const [timeline, setTimeline] = useState(2050);
+  const [renderQuality, setRenderQuality] = useState('balanced');
 
   // Feedback states
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' | null }>({ text: '', type: null });
@@ -28,11 +29,13 @@ export default function SettingsPage() {
       const storedAvatarUrl = localStorage.getItem('chrono_settings_avatarUrl') || '';
       const storedTheme = localStorage.getItem('chrono_settings_theme') || 'cyber';
       const storedTimeline = localStorage.getItem('chrono_settings_timeline') || '2050';
+      const storedRenderQuality = localStorage.getItem('chronoearth-render-quality') || 'balanced';
 
       setFullName(storedFullName);
       setAvatarUrl(storedAvatarUrl);
       setTheme(storedTheme);
       setTimeline(Number(storedTimeline));
+      setRenderQuality(storedRenderQuality);
     } catch (e) {
       console.error('[Settings] Failed to load local settings:', e);
     } finally {
@@ -50,6 +53,7 @@ export default function SettingsPage() {
       localStorage.setItem('chrono_settings_avatarUrl', avatarUrl);
       localStorage.setItem('chrono_settings_theme', theme);
       localStorage.setItem('chrono_settings_timeline', String(timeline));
+      localStorage.setItem('chronoearth-render-quality', renderQuality);
 
       // Dispatch global configuration change event
       window.dispatchEvent(new Event('chrono_settings_changed'));
@@ -69,11 +73,13 @@ export default function SettingsPage() {
       localStorage.removeItem('chrono_settings_avatarUrl');
       localStorage.removeItem('chrono_settings_theme');
       localStorage.removeItem('chrono_settings_timeline');
+      localStorage.removeItem('chronoearth-render-quality');
       
       setFullName('Digital Citizen');
       setAvatarUrl('');
       setTheme('cyber');
       setTimeline(2050);
+      setRenderQuality('balanced');
       
       window.dispatchEvent(new Event('chrono_settings_changed'));
       setMessage({ text: 'Settings restored to factory defaults.', type: 'success' });
@@ -144,20 +150,22 @@ export default function SettingsPage() {
               
               {/* Full Name */}
               <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] text-[#7A8694] uppercase tracking-wider font-semibold">Full Name / Alias</label>
+                <label htmlFor="settings-fullname" className="text-[10px] text-[#7A8694] uppercase tracking-wider font-semibold">Full Name / Alias</label>
                 <input
+                  id="settings-fullname"
                   type="text"
                   required
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 focus:border-[#00E5FF] rounded px-3 py-2 text-xs text-white outline-none transition-colors font-mono"
+                  className="w-full bg-white/5 border border-white/10 focus:border-[#00E5FF] focus-visible:ring-1 focus-visible:ring-[#00E5FF] rounded px-3 py-2 text-xs text-white outline-none transition-colors font-mono"
                 />
               </div>
 
               {/* Uplink Status */}
               <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] text-[#7A8694] uppercase tracking-wider font-semibold">Uplink Status</label>
+                <label htmlFor="settings-uplinkstatus" className="text-[10px] text-[#7A8694] uppercase tracking-wider font-semibold">Uplink Status</label>
                 <input
+                  id="settings-uplinkstatus"
                   type="text"
                   readOnly
                   disabled
@@ -168,19 +176,22 @@ export default function SettingsPage() {
 
               {/* Avatar URL */}
               <div className="flex flex-col gap-1.5 md:col-span-2">
-                <label className="text-[10px] text-[#7A8694] uppercase tracking-wider font-semibold">Avatar Image URL</label>
+                <label htmlFor="settings-avatarurl" className="text-[10px] text-[#7A8694] uppercase tracking-wider font-semibold">Avatar Image URL</label>
                 <div className="flex gap-4 items-center">
                   <img
                     src={avatarUrl || `https://api.dicebear.com/7.x/bottts/svg?seed=${fullName || 'citizen'}`}
                     alt="avatar preview"
+                    width={40}
+                    height={40}
                     className="w-10 h-10 rounded-full border border-[#00E5FF]/20 object-cover shrink-0"
                   />
                   <input
+                    id="settings-avatarurl"
                     type="text"
                     value={avatarUrl}
                     onChange={(e) => setAvatarUrl(e.target.value)}
                     placeholder="https://example.com/avatar.png"
-                    className="w-full bg-white/5 border border-white/10 focus:border-[#00E5FF] rounded px-3 py-2 text-xs text-white outline-none transition-colors font-mono"
+                    className="w-full bg-white/5 border border-white/10 focus:border-[#00E5FF] focus-visible:ring-1 focus-visible:ring-[#00E5FF] rounded px-3 py-2 text-xs text-white outline-none transition-colors font-mono"
                   />
                 </div>
               </div>
@@ -199,11 +210,12 @@ export default function SettingsPage() {
               
               {/* Default Year */}
               <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] text-[#7A8694] uppercase tracking-wider font-semibold">Default Timeline Coordinates</label>
+                <label htmlFor="settings-timeline" className="text-[10px] text-[#7A8694] uppercase tracking-wider font-semibold">Default Timeline Coordinates</label>
                 <select
+                  id="settings-timeline"
                   value={timeline}
                   onChange={(e) => setTimeline(Number(e.target.value))}
-                  className="w-full bg-white/5 border border-white/10 focus:border-[#00F5B0] rounded px-3 py-2 text-xs text-white outline-none transition-colors font-mono cursor-pointer"
+                  className="w-full bg-white/5 border border-white/10 focus:border-[#00F5B0] focus-visible:ring-1 focus-visible:ring-[#00F5B0] rounded px-3 py-2 text-xs text-white outline-none transition-colors font-mono cursor-pointer"
                 >
                   <option value={2030} className="bg-[#02060A]">2030 (Decadal Shift)</option>
                   <option value={2040} className="bg-[#02060A]">2040 (Transition Era)</option>
@@ -213,14 +225,31 @@ export default function SettingsPage() {
 
               {/* Default Theme */}
               <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] text-[#7A8694] uppercase tracking-wider font-semibold">Visual Matrix Theme</label>
+                <label htmlFor="settings-theme" className="text-[10px] text-[#7A8694] uppercase tracking-wider font-semibold">Visual Matrix Theme</label>
                 <select
+                  id="settings-theme"
                   value={theme}
                   onChange={(e) => setTheme(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 focus:border-[#00F5B0] rounded px-3 py-2 text-xs text-white outline-none transition-colors font-mono cursor-pointer"
+                  className="w-full bg-white/5 border border-white/10 focus:border-[#00F5B0] focus-visible:ring-1 focus-visible:ring-[#00F5B0] rounded px-3 py-2 text-xs text-white outline-none transition-colors font-mono cursor-pointer"
                 >
                   <option value="cyber" className="bg-[#02060A]">Chrono Cyberpunk (Default)</option>
                   <option value="realistic" className="bg-[#02060A]">Realistic Telemetry</option>
+                </select>
+              </div>
+
+              {/* Earth Render Quality */}
+              <div className="flex flex-col gap-1.5 md:col-span-2">
+                <label htmlFor="settings-renderquality" className="text-[10px] text-[#7A8694] uppercase tracking-wider font-semibold">Earth Render Quality</label>
+                <select
+                  id="settings-renderquality"
+                  value={renderQuality}
+                  onChange={(e) => setRenderQuality(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 focus:border-[#00F5B0] focus-visible:ring-1 focus-visible:ring-[#00F5B0] rounded px-3 py-2 text-xs text-white outline-none transition-colors font-mono cursor-pointer"
+                >
+                  <option value="auto" className="bg-[#02060A]">Auto (Adaptive Dynamic Selection)</option>
+                  <option value="performance" className="bg-[#02060A]">⚡ Performance (Optimized for Weak Devices)</option>
+                  <option value="balanced" className="bg-[#02060A]">⚖️ Balanced (Recommended Experience)</option>
+                  <option value="cinematic" className="bg-[#02060A]">🎬 Cinematic (Highest Visual Detail)</option>
                 </select>
               </div>
 
@@ -232,7 +261,7 @@ export default function SettingsPage() {
             <button
               type="button"
               onClick={handleReset}
-              className="px-5 py-2.5 bg-transparent hover:bg-rose-500/10 border border-rose-500/30 hover:border-rose-500 text-rose-400 font-mono text-xs rounded transition-all cursor-pointer font-semibold uppercase tracking-wider"
+              className="px-5 py-2.5 bg-transparent hover:bg-rose-500/10 focus-visible:ring-2 focus-visible:ring-rose-500 border border-rose-500/30 hover:border-rose-500 text-rose-400 font-mono text-xs rounded transition-all cursor-pointer font-semibold uppercase tracking-wider outline-none"
             >
               Reset Local Settings
             </button>
@@ -240,9 +269,9 @@ export default function SettingsPage() {
             <button
               type="submit"
               disabled={saving}
-              className="px-6 py-2.5 bg-[#00E5FF]/10 hover:bg-[#00E5FF] hover:text-[#02060A] border border-[#00E5FF]/40 hover:border-transparent text-[#00E5FF] font-mono text-xs font-semibold rounded cursor-pointer transition-all duration-300 disabled:opacity-50 disabled:pointer-events-none hover:shadow-[0_0_15px_rgba(0,229,255,0.25)] uppercase tracking-wider"
+              className="px-6 py-2.5 bg-[#00E5FF]/10 hover:bg-[#00E5FF] hover:text-[#02060A] focus-visible:ring-2 focus-visible:ring-[#00E5FF] border border-[#00E5FF]/40 hover:border-transparent text-[#00E5FF] font-mono text-xs font-semibold rounded cursor-pointer transition-all duration-300 disabled:opacity-50 disabled:pointer-events-none hover:shadow-[0_0_15px_rgba(0,229,255,0.25)] uppercase tracking-wider outline-none"
             >
-              {saving ? 'Synchronising...' : 'Commit System Variables'}
+              {saving ? 'Synchronising…' : 'Commit System Variables'}
             </button>
           </div>
 
